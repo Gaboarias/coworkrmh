@@ -20,17 +20,33 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) {
+          console.error("[auth] missing email or password");
+          return null;
+        }
+
+        const email = credentials.email.trim().toLowerCase();
+        console.error(
+          `[auth] attempt email='${email}' pwLen=${credentials.password.length}`
+        );
 
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.email, credentials.email.toLowerCase()))
+          .where(eq(users.email, email))
           .limit(1);
 
-        if (!user || !user.passwordHash) return null;
+        if (!user) {
+          console.error(`[auth] no user for '${email}'`);
+          return null;
+        }
+        if (!user.passwordHash) {
+          console.error("[auth] user has no passwordHash");
+          return null;
+        }
 
         const valid = await compare(credentials.password, user.passwordHash);
+        console.error(`[auth] bcrypt valid=${valid}`);
         if (!valid) return null;
 
         return {
