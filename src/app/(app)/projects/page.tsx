@@ -1,0 +1,159 @@
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { projects, buckets } from "@/lib/db/schema";
+import { eq, ne, asc, desc } from "drizzle-orm";
+import { PageHeader } from "@/components/shared/PageHeader";
+import Link from "next/link";
+import { Plus, FolderKanban } from "lucide-react";
+import { EmptyState } from "@/components/shared/EmptyState";
+
+export default async function ProjectsPage() {
+  const session = await auth();
+  const role = (session?.user?.role as string) ?? "";
+  const isManager = role === "admin" || role === "manager";
+
+  // Fetch all buckets
+  const bucketRows = await db
+    .select()
+    .from(buckets)
+    .orderBy(asc(buckets.position));
+
+  // Fetch projects with bucket
+  const projectRows = await db
+    .select({ project: projects, bucket: buckets })
+    .from(projects)
+    .leftJoin(buckets, eq(projects.bucketId, buckets.id))
+    .where(ne(projects.status, "archived"))
+    .orderBy(desc(projects.createdAt));
+
+  // Group projects by bucket
+  type ProjectRow = (typeof projectRows)[number];
+  const projectsByBucket: Record<string, ProjectRow[]> = {
+    uncategorized: [],
+  };
+  bucketRows.forEach((b) => {
+    projectsByBucket[b.id] = [];
+  });
+  projectRows.forEach((row) => {
+    const key = row.project.bucketId ?? "uncategorized";
+    if (!projectsByBucket[key]) projectsByBucket[key] = [];
+    projectsByBucket[key]!.push(row);
+  });
+
+  const bucketList = [
+    ...bucketRows,
+    { id: "uncategorized", name: "Sin categoría", color: "#505065", position: 9999 },
+  ];
+
+  return (
+    <div className="animate-fade-in">
+      <PageHeader
+        title="Proyectos"
+        description="Gestiona los proyectos de tu equipo"
+        actions={
+          isManager ? (
+            <Link
+              href="/projects/new"
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
+            >
+              <Plus className="h-4 w-4" />
+              Nuevo proyecto
+            </Link>
+          ) : null
+        }
+      />
+
+      {!projectRows.length ? (
+        <EmptyState
+          icon={<FolderKanban className="h-12 w-12" />}
+          title="Sin proyectos aún"
+          description="Crea tu primer proyecto para comenzar a organizar el trabajo"
+          action={
+            isManager ? (
+              <Link
+                href="/projects/new"
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
+              >
+                Crear proyecto
+              </Link>
+            ) : undefined
+          }
+        />
+      ) : (
+        <div className="space-y-8">
+          {bucketList.map((bucket) => {
+            const bucketProjects = projectsByBucket[bucket.id] ?? [];
+            if (!bucketProjects.length) return null;
+
+            return (
+              <div key={bucket.id}>
+                <div className="mb-3 flex items-center gap-2">
+                  <span
+                    className="h-3 w-3 rounded-sm"
+                    style={{ backgroundColor: bucket.color ?? "#6B5FE4" }}
+                  />
+                  <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider">
+                    {bucket.name}
+                  </h3>
+                  <span className="rounded-full bg-surface-el px-1.5 py-0.5 text-xs text-text-tertiary">
+                    {bucketProjects.length}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {bucketProjects.map(({ project }) => (
+                    <Link
+                      key={project.id}
+                      href={`/projects/${project.id}`}
+                      className="group rounded-xl border border-border bg-surface p-4 transition hover:border-primary/50 hover:bg-surface-el"
+                    >
+                      <div className="mb-3 flex items-center gap-2">
+                        <span
+                          className="h-3 w-3 rounded-sm flex-shrink-0"
+                          style={{
+                            backgroundColor: project.color ?? "#6B5FE4",
+                          }}
+                        />
+                        <h4 className="flex-1 truncate font-medium text-text group-hover:text-primary">
+                          {project.name}
+                        </h4>
+                      </div>
+
+                      {project.description && (
+                        <p className="mb-3 line-clamp-2 text-xs text-text-muted">
+                          {project.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs ${
+                            project.status === "completed"
+                              ? "bg-success/10 text-success"
+                              : "bg-primary-muted text-primary"
+                          }`}
+                        >
+                          {project.status === "completed"
+                            ? "Completado"
+                            : "Activo"}
+                        </span>
+                        {project.dueDate && (
+                          <span className="text-xs text-text-tertiary">
+                            {new Date(project.dueDate).toLocaleDateString(
+                              "es",
+                              { day: "2-digit", month: "short" }
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

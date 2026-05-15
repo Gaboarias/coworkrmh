@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* RMH Dark Palette */
+    --background: 240 8% 4%;       /* #0A0A0F */
+    --surface: 240 8% 7%;          /* #111118 */
+    --surface-el: 240 8% 11%;      /* #1A1A24 */
+    --border: 240 10% 19%;         /* #2A2A38 */
+    --border-strong: 240 10% 26%;  /* #3A3A50 */
+
+    --primary: 249 68% 63%;        /* #6B5FE4 violet */
+    --primary-hover: 249 80% 69%;  /* #7C70F0 */
+    --primary-muted: 249 40% 20%;  /* #2A2540 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 20 72% 63%;       /* #E4845F amber */
+    --secondary-foreground: 0 0% 100%;
+
+    --text: 240 40% 95%;           /* #F0F0F8 */
+    --text-muted: 240 10% 62%;     /* #9090A8 */
+    --text-tertiary: 240 10% 39%;  /* #505065 */
+
+    --success: 142 69% 58%;        /* #4ADE80 */
+    --warning: 38 93% 57%;         /* #FBBF24 */
+    --danger: 0 91% 71%;           /* #F87171 */
+    --info: 213 94% 68%;           /* #60A5FA */
+
+    /* shadcn/ui compat aliases */
+    --card: var(--surface);
+    --card-foreground: var(--text);
+    --popover: var(--surface-el);
+    --popover-foreground: var(--text);
+    --muted: var(--surface-el);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--primary-muted);
+    --accent-foreground: var(--text);
+    --destructive: var(--danger);
+    --destructive-foreground: var(--text);
+    --input: var(--border);
+    --ring: var(--primary);
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-text;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--surface));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border-strong));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--text-tertiary));
+}
+
+/* Focus ring */
+:focus-visible {
+  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+}
+
+/* TipTap editor styles */
+.tiptap-editor .ProseMirror {
+  outline: none;
+  min-height: 300px;
+}
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--text-tertiary));
+  pointer-events: none;
+  height: 0;
+}
+
+/* Task status badge colors */
+.status-todo { @apply bg-[hsl(var(--text-tertiary)/0.2)] text-text-muted; }
+.status-in_progress { @apply bg-primary-muted text-primary; }
+.status-review { @apply bg-[hsl(var(--warning)/0.2)] text-warning; }
+.status-done { @apply bg-[hsl(var(--success)/0.2)] text-success; }
+
+/* Priority badge colors */
+.priority-low { @apply bg-[hsl(var(--info)/0.15)] text-info; }
+.priority-medium { @apply bg-[hsl(var(--warning)/0.15)] text-warning; }
+.priority-high { @apply bg-[hsl(var(--danger)/0.15)] text-danger; }
+.priority-urgent { @apply bg-[hsl(var(--danger)/0.2)] text-danger animate-pulse; }
