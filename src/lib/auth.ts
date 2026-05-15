@@ -26,16 +26,24 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, credentials.email.toLowerCase()))
-          .limit(1);
+        let user;
+        try {
+          const result = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, credentials.email.toLowerCase()))
+            .limit(1);
+          user = result[0];
+        } catch (e) {
+          console.error("[auth] DB query failed:", e);
+          return null;
+        }
 
-        if (!user || !user.passwordHash) return null;
+        if (!user) { console.error("[auth] No user found for:", credentials.email); return null; }
+        if (!user.passwordHash) { console.error("[auth] User has no passwordHash"); return null; }
 
         const valid = await compare(credentials.password, user.passwordHash);
-        if (!valid) return null;
+        if (!valid) { console.error("[auth] Password mismatch for:", credentials.email); return null; }
 
         return {
           id: user.id,
