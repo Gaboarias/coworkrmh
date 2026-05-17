@@ -37,10 +37,18 @@ export function Topbar() {
       </h2>
 
       <div className="flex items-center gap-3">
-        <button className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition hover:bg-surface-el hover:text-text">
+        <button
+          aria-label="Buscar"
+          title="Buscar (⌘K)"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-200 ease-out hover:bg-surface-el hover:text-text"
+        >
           <Search className="h-4 w-4" />
         </button>
-        <button className="relative flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition hover:bg-surface-el hover:text-text">
+        <button
+          aria-label="Notificaciones"
+          title="Notificaciones"
+          className="relative flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-200 ease-out hover:bg-surface-el hover:text-text"
+        >
           <Bell className="h-4 w-4" />
         </button>
         <ThemeToggle />
