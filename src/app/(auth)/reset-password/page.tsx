@@ -4,6 +4,9 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card, CardContent } from "@/components/ui/Card";
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -16,17 +19,12 @@ function Shell({ children }: { children: React.ReactNode }) {
         />
         <h1 className="text-2xl font-bold text-text">Pistachio</h1>
       </div>
-      <div className="rounded-xl border border-border bg-surface p-8">
-        {children}
-      </div>
+      <Card>
+        <CardContent className="p-8">{children}</CardContent>
+      </Card>
     </div>
   );
 }
-
-const inputCls =
-  "w-full rounded-lg border border-border bg-surface-el px-3 py-2.5 text-sm text-text placeholder-text-tertiary transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
-const btnCls =
-  "w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-60";
 
 function RequestForm() {
   const [email, setEmail] = useState("");
@@ -70,21 +68,24 @@ function RequestForm() {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
+            <label
+              htmlFor="reset-email"
+              className="mb-1.5 block text-sm font-medium text-text-muted"
+            >
               Correo electrónico
             </label>
-            <input
+            <Input
+              id="reset-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className={inputCls}
               placeholder="tu@ejemplo.com"
             />
           </div>
-          <button type="submit" disabled={loading} className={btnCls}>
-            {loading ? "Enviando..." : "Enviar enlace"}
-          </button>
+          <Button type="submit" loading={loading} className="w-full" size="lg">
+            {loading ? "Enviando…" : "Enviar enlace"}
+          </Button>
         </form>
       )}
 
@@ -144,36 +145,42 @@ function SetPasswordForm({ token }: { token: string }) {
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-text-muted">
+          <label
+            htmlFor="new-password"
+            className="mb-1.5 block text-sm font-medium text-text-muted"
+          >
             Nueva contraseña
           </label>
-          <input
+          <Input
+            id="new-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={8}
-            className={inputCls}
             placeholder="Mínimo 8 caracteres"
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-text-muted">
+          <label
+            htmlFor="confirm-password"
+            className="mb-1.5 block text-sm font-medium text-text-muted"
+          >
             Confirmar contraseña
           </label>
-          <input
+          <Input
+            id="confirm-password"
             type="password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             required
             minLength={8}
-            className={inputCls}
             placeholder="Repite la contraseña"
           />
         </div>
-        <button type="submit" disabled={loading} className={btnCls}>
-          {loading ? "Guardando..." : "Restablecer contraseña"}
-        </button>
+        <Button type="submit" loading={loading} className="w-full" size="lg">
+          {loading ? "Guardando…" : "Restablecer contraseña"}
+        </Button>
       </form>
       <p className="mt-6 text-center text-sm text-text-muted">
         <Link href="/login" className="text-primary hover:text-primary-hover">

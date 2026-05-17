@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card, CardContent } from "@/components/ui/Card";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -47,69 +50,84 @@ export default function SignupPage() {
         <p className="mt-1 text-sm text-text-muted">Rewind Media House</p>
       </div>
 
-      <div className="rounded-xl border border-border bg-surface p-8">
-        <h2 className="mb-6 text-xl font-semibold text-text">Crear cuenta</h2>
+      <Card>
+        <CardContent className="p-8">
+          <h2 className="mb-6 text-xl font-semibold text-text">Crear cuenta</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Nombre completo
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full rounded-lg border border-border bg-surface-el px-3 py-2.5 text-sm text-text placeholder-text-tertiary transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Juan Pérez"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label
+                htmlFor="name"
+                className="mb-1.5 block text-sm font-medium text-text-muted"
+              >
+                Nombre completo
+              </label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="Juan Pérez"
+              />
+            </div>
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Correo electrónico
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full rounded-lg border border-border bg-surface-el px-3 py-2.5 text-sm text-text placeholder-text-tertiary transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="tu@ejemplo.com"
-            />
-          </div>
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-medium text-text-muted"
+              >
+                Correo electrónico
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="tu@ejemplo.com"
+              />
+            </div>
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Contraseña
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-              className="w-full rounded-lg border border-border bg-surface-el px-3 py-2.5 text-sm text-text placeholder-text-tertiary transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Mínimo 8 caracteres"
-            />
-          </div>
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-1.5 block text-sm font-medium text-text-muted"
+              >
+                Contraseña
+              </label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+                placeholder="Mínimo 8 caracteres"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-60"
-          >
-            {loading ? "Creando cuenta..." : "Crear cuenta"}
-          </button>
-        </form>
+            <Button
+              type="submit"
+              loading={loading}
+              className="w-full"
+              size="lg"
+            >
+              {loading ? "Creando cuenta…" : "Crear cuenta"}
+            </Button>
+          </form>
 
-        <p className="mt-6 text-center text-sm text-text-muted">
-          ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="text-primary hover:text-primary-hover">
-            Iniciar sesión
-          </Link>
-        </p>
-      </div>
+          <p className="mt-6 text-center text-sm text-text-muted">
+            ¿Ya tienes cuenta?{" "}
+            <Link
+              href="/login"
+              className="text-primary hover:text-primary-hover"
+            >
+              Iniciar sesión
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
