@@ -54,16 +54,23 @@ export function Sidebar() {
     await signOut({ callbackUrl: "/login" });
   }
 
+  const navActive =
+    "bg-[color-mix(in_oklab,var(--sidebar-active)_16%,transparent)] text-sidebar-active";
+  const navIdle =
+    "text-sidebar-muted hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_8%,transparent)] hover:text-sidebar-foreground";
+
   return (
-    <aside className="flex h-full w-60 flex-col border-r border-border bg-surface">
+    <aside className="flex h-full w-60 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       {/* Logo */}
-      <div className="flex items-center gap-3 border-b border-border px-5 py-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <span className="text-sm font-bold text-white">R</span>
-        </div>
+      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
+        <img
+          src="/pistachio-logo.svg"
+          alt="Pistachio"
+          className="h-8 w-8 rounded-lg"
+        />
         <div>
-          <p className="text-sm font-bold text-text">Cowork RMH</p>
-          <p className="text-xs text-text-tertiary">Rewind Media House</p>
+          <p className="text-sm font-bold text-sidebar-foreground">Pistachio</p>
+          <p className="text-xs text-sidebar-muted">Rewind Media House</p>
         </div>
       </div>
 
@@ -75,20 +82,11 @@ export function Sidebar() {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive(item.href, item.exact)
-                    ? "bg-primary-muted text-primary"
-                    : "text-text-muted hover:bg-surface-el hover:text-text"
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
+                  isActive(item.href, item.exact) ? navActive : navIdle
                 )}
               >
-                <item.icon
-                  className={cn(
-                    "h-4 w-4",
-                    isActive(item.href, item.exact)
-                      ? "text-primary"
-                      : "text-text-tertiary"
-                  )}
-                />
+                <item.icon className="h-4 w-4" />
                 {item.label}
               </Link>
             </li>
@@ -98,7 +96,7 @@ export function Sidebar() {
         {/* CRM section (admin/manager only) */}
         {isManager && (
           <div className="mt-6">
-            <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+            <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-muted">
               CRM
             </p>
             <ul className="space-y-0.5">
@@ -107,20 +105,11 @@ export function Sidebar() {
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                      isActive(item.href, item.exact)
-                        ? "bg-primary-muted text-primary"
-                        : "text-text-muted hover:bg-surface-el hover:text-text"
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
+                      isActive(item.href, item.exact) ? navActive : navIdle
                     )}
                   >
-                    <item.icon
-                      className={cn(
-                        "h-4 w-4",
-                        isActive(item.href, item.exact)
-                          ? "text-primary"
-                          : "text-text-tertiary"
-                      )}
-                    />
+                    <item.icon className="h-4 w-4" />
                     {item.label}
                   </Link>
                 </li>
@@ -131,10 +120,13 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-border p-3">
+      <div className="border-t border-sidebar-border p-3">
         <Link
           href="/settings"
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-text-muted transition hover:bg-surface-el hover:text-text"
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200 ease-out",
+            navIdle
+          )}
         >
           <Settings className="h-4 w-4" />
           Configuración
@@ -144,14 +136,14 @@ export function Sidebar() {
         <div className="mt-2 flex items-center gap-3 rounded-lg px-3 py-2">
           <UserAvatar name={profile?.name ?? undefined} avatarUrl={profile?.image ?? undefined} size="sm" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-text">
+            <p className="truncate text-sm font-medium text-sidebar-foreground">
               {profile?.name ?? "Usuario"}
             </p>
-            <p className="truncate text-xs text-text-tertiary">{profile?.email}</p>
+            <p className="truncate text-xs text-sidebar-muted">{profile?.email}</p>
           </div>
           <button
             onClick={handleLogout}
-            className="text-text-tertiary transition hover:text-danger"
+            className="text-sidebar-muted transition-colors hover:text-danger"
             title="Cerrar sesión"
           >
             <LogOut className="h-4 w-4" />

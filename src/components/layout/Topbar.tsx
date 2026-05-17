@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Bell, Search } from "lucide-react";
 import { useUser } from "@/lib/hooks/useUser";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -22,7 +23,7 @@ function getTitle(pathname: string): string {
   }
   if (pathname.startsWith("/projects/")) return "Proyecto";
   if (pathname.startsWith("/crm/")) return "CRM";
-  return "Cowork RMH";
+  return "Pistachio";
 }
 
 export function Topbar() {
@@ -42,6 +43,7 @@ export function Topbar() {
         <button className="relative flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition hover:bg-surface-el hover:text-text">
           <Bell className="h-4 w-4" />
         </button>
+        <ThemeToggle />
         <UserAvatar
           name={profile?.full_name}
           avatarUrl={profile?.avatar_url}

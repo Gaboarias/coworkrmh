@@ -9,10 +9,12 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="animate-fade-in">
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-          <span className="text-xl font-bold text-white">R</span>
-        </div>
-        <h1 className="text-2xl font-bold text-text">Cowork RMH</h1>
+        <img
+          src="/pistachio-logo.svg"
+          alt="Pistachio"
+          className="mx-auto mb-4 h-12 w-12 rounded-xl"
+        />
+        <h1 className="text-2xl font-bold text-text">Pistachio</h1>
       </div>
       <div className="rounded-xl border border-border bg-surface p-8">
         {children}

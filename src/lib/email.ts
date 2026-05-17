@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM = "Cowork RMH <no-reply@rwndmedia.com>";
+const FROM = "Pistachio <no-reply@rwndmedia.com>";
 
 function getResend() {
   const key = process.env.RESEND_API_KEY;
@@ -13,7 +13,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   await resend.emails.send({
     from: FROM,
     to,
-    subject: "Restablece tu contraseña — Cowork RMH",
+    subject: "Restablece tu contraseña — Pistachio",
     text: `Recibimos una solicitud para restablecer tu contraseña.
 
 Abre este enlace para crear una nueva contraseña (válido 1 hora):
@@ -23,8 +23,8 @@ Si no solicitaste esto, ignora este correo. Tu contraseña no cambiará.`,
     html: `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#1a1a24">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
-          <div style="width:36px;height:36px;border-radius:9px;background:#6B5FE4;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px">R</div>
-          <strong style="font-size:18px">Cowork RMH</strong>
+          <div style="width:36px;height:36px;border-radius:9px;background:#10231A;color:#C9E58B;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">P</div>
+          <strong style="font-size:18px">Pistachio</strong>
         </div>
         <h1 style="font-size:20px;margin:0 0 12px">Restablece tu contraseña</h1>
         <p style="font-size:14px;line-height:1.6;color:#444;margin:0 0 24px">
