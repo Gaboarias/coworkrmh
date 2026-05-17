@@ -71,7 +71,7 @@ export function TaskDetail({ task, projectId, members, onClose }: TaskDetailProp
 
   async function handleAssigneeChange(newAssigneeId: string) {
     setAssigneeId(newAssigneeId);
-    await save({ assignee_id: newAssigneeId || null });
+    await save({ assigneeId: newAssigneeId || null });
   }
 
   async function handleDescriptionBlur() {

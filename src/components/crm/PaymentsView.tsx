@@ -61,12 +61,12 @@ export function PaymentsView({ client, payments: initialPayments, projects }: Pa
     setCreating(true);
     try {
       await createPayment({
-        client_id: client.id,
+        clientId: client.id,
         description: form.description,
         amount: parseFloat(form.amount),
         currency: form.currency,
-        due_date: form.due_date || undefined,
-        project_id: form.project_id || undefined,
+        dueDate: form.due_date || undefined,
+        projectId: form.project_id || undefined,
       });
       toast.success("Pago registrado");
       setShowForm(false);

@@ -60,7 +60,7 @@ export function ProjectSettingsForm({
       await updateProject(project.id, {
         name: form.name,
         description: form.description || null,
-        bucket_id: form.bucket_id || null,
+        bucketId: form.bucket_id || null,
         color: form.color,
         status: form.status,
       });

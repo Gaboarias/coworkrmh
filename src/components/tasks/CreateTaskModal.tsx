@@ -38,12 +38,12 @@ export function CreateTaskModal({
 
     try {
       await createTask({
-        project_id: projectId,
+        projectId,
         title: title.trim(),
         description: description || undefined,
         priority,
-        assignee_id: assigneeId || undefined,
-        due_date: dueDate || undefined,
+        assigneeId: assigneeId || undefined,
+        dueDate: dueDate || undefined,
       });
       toast.success("Tarea creada");
       onCreated();

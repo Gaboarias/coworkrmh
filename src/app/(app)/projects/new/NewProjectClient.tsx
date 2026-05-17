@@ -51,9 +51,9 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
       const project = await createProject({
         name: name.trim(),
         description: description || undefined,
-        bucket_id: bucketId || undefined,
+        bucketId: bucketId || undefined,
         color,
-        due_date: dueDate || undefined,
+        dueDate: dueDate || undefined,
       });
       toast.success("Proyecto creado");
       router.push(`/projects/${project.id}`);

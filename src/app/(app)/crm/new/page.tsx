@@ -30,8 +30,8 @@ export default function NewClientPage() {
     setLoading(true);
     try {
       const client = await createClientRecord({
-        company_name: form.company_name,
-        contact_name: form.contact_name || undefined,
+        companyName: form.company_name,
+        contactName: form.contact_name || undefined,
         email: form.email || undefined,
         phone: form.phone || undefined,
         address: form.address || undefined,

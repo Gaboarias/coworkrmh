@@ -65,12 +65,12 @@ export function AccountsView({ client, accounts: initialAccounts }: AccountsView
     setCreating(true);
     try {
       await addClientAccount({
-        client_id: client.id,
-        bank_name: form.bank_name || undefined,
-        account_number: form.account_number,
-        account_type: form.account_type || undefined,
+        clientId: client.id,
+        bankName: form.bank_name || undefined,
+        accountNumber: form.account_number,
+        accountType: form.account_type || undefined,
         currency: form.currency,
-        is_primary: form.is_primary,
+        isPrimary: form.is_primary,
       });
       toast.success("Cuenta agregada");
       setShowForm(false);

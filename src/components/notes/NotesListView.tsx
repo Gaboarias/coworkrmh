@@ -41,7 +41,7 @@ export function NotesListView({ project, notes: initialNotes }: NotesListViewPro
     setCreating(true);
     try {
       const note = await createNote({
-        project_id: project.id,
+        projectId: project.id,
         title: "Nueva nota",
       });
       toast.success("Nota creada");

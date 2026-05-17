@@ -62,7 +62,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
         await updateNote(note.id, project.id, {
           title,
           content: editorInstance.getJSON(),
-          content_text: editorInstance.getText(),
+          contentText: editorInstance.getText(),
         });
         setLastSaved(new Date());
       } catch {
