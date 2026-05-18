@@ -14,18 +14,10 @@ import { TASK_STATUS_ORDER } from "@/lib/constants/taskStatus";
 interface Task {
   id: string;
   title: string;
-  description: string | null;
   status: TaskStatus;
   priority: TaskPriority;
-  assignee_id: string | null;
-  due_date: string | null;
-  completed_at: string | null;
-  position: number;
-  project_id: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-  assignee?: { full_name: string | null; avatar_url: string | null } | null;
+  dueDate: string | null;
+  assignee?: { name: string | null; avatarUrl: string | null } | null;
 }
 
 interface TaskRowProps {
@@ -47,7 +39,8 @@ export function TaskRow({
   async function cycleStatus() {
     if (!canEdit || loading) return;
     const currentIndex = TASK_STATUS_ORDER.indexOf(status);
-    const nextStatus = TASK_STATUS_ORDER[(currentIndex + 1) % TASK_STATUS_ORDER.length];
+    const nextStatus =
+      TASK_STATUS_ORDER[(currentIndex + 1) % TASK_STATUS_ORDER.length];
     setLoading(true);
     setStatus(nextStatus);
     try {
@@ -73,30 +66,27 @@ export function TaskRow({
   }
 
   const isOverdue =
-    task.due_date &&
-    new Date(task.due_date) < new Date() &&
-    status !== "done";
+    task.dueDate && new Date(task.dueDate) < new Date() && status !== "done";
 
   return (
     <div
-      className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 transition hover:border-border hover:bg-surface-el"
+      className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 transition-colors duration-200 ease-out hover:border-border hover:bg-surface-el"
       onClick={onClick}
       style={{ cursor: onClick ? "pointer" : "default" }}
     >
-      {/* Status toggle */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           cycleStatus();
         }}
         disabled={loading}
+        aria-label="Cambiar estado de la tarea"
         title="Cambiar estado"
         className="flex-shrink-0"
       >
         <TaskStatusBadge status={status} />
       </button>
 
-      {/* Title */}
       <span
         className={`flex-1 truncate text-sm ${
           status === "done" ? "text-text-tertiary line-through" : "text-text"
@@ -105,35 +95,32 @@ export function TaskRow({
         {task.title}
       </span>
 
-      {/* Priority */}
       <TaskPriorityBadge priority={task.priority} />
 
-      {/* Assignee */}
       {task.assignee && (
         <UserAvatar
-          name={task.assignee.full_name}
-          avatarUrl={task.assignee.avatar_url}
+          name={task.assignee.name}
+          avatarUrl={task.assignee.avatarUrl}
           size="xs"
         />
       )}
 
-      {/* Due date */}
-      {task.due_date && (
+      {task.dueDate && (
         <div
           className={`flex items-center gap-1 text-xs ${
             isOverdue ? "text-danger" : "text-text-tertiary"
           }`}
         >
           <CalendarDays className="h-3 w-3" />
-          {format(new Date(task.due_date), "dd/MM")}
+          {format(new Date(task.dueDate), "dd/MM")}
         </div>
       )}
 
-      {/* Delete button */}
       {canEdit && (
         <button
           onClick={handleDelete}
-          className="hidden text-text-tertiary transition hover:text-danger group-hover:block"
+          aria-label="Eliminar tarea"
+          className="hidden text-text-tertiary transition-colors hover:text-danger group-hover:block"
           title="Eliminar"
         >
           <Trash2 className="h-4 w-4" />

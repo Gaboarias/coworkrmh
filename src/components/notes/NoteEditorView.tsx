@@ -21,7 +21,6 @@ interface NoteEditorViewProps {
     id: string;
     title: string;
     content: unknown;
-    project_id: string;
   };
   project: { id: string; name: string };
   userId: string;
@@ -62,7 +61,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
         await updateNote(note.id, project.id, {
           title,
           content: editorInstance.getJSON(),
-          content_text: editorInstance.getText(),
+          contentText: editorInstance.getText(),
         });
         setLastSaved(new Date());
       } catch {

@@ -2,31 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   Pistachio design tokens
+   Base: Navy (default) · Pine via [data-base="pine"]
+   Mode: :root = Día (light) · .dark = Noche (night)
+   Colors are full values (consumed in Tailwind as var(--x)).
+   ============================================================ */
+
 @layer base {
   :root {
-    /* RMH Dark Palette */
-    --background: 240 8% 4%;       /* #0A0A0F */
-    --surface: 240 8% 7%;          /* #111118 */
-    --surface-el: 240 8% 11%;      /* #1A1A24 */
-    --border: 240 10% 19%;         /* #2A2A38 */
-    --border-strong: 240 10% 26%;  /* #3A3A50 */
+    /* ---- NAVY · DÍA ---- */
+    --background: #ebedf3;
+    --surface: #ffffff;
+    --surface-el: #f6f7fb;
+    --border: #d6d9e4;
+    --border-strong: #c2c6d6;
 
-    --primary: 249 68% 63%;        /* #6B5FE4 violet */
-    --primary-hover: 249 80% 69%;  /* #7C70F0 */
-    --primary-muted: 249 40% 20%;  /* #2A2540 */
-    --primary-foreground: 0 0% 100%;
+    --primary: #d4004f;            /* frambuesa (AA on light) */
+    --primary-hover: #b0003f;
+    --primary-muted: #f6dce4;      /* subtle active bg */
+    --primary-foreground: #fff6e9;
 
-    --secondary: 20 72% 63%;       /* #E4845F amber */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: #a87400;          /* gold (text-safe on light) */
+    --secondary-foreground: #ffffff;
 
-    --text: 240 40% 95%;           /* #F0F0F8 */
-    --text-muted: 240 10% 62%;     /* #9090A8 */
-    --text-tertiary: 240 10% 39%;  /* #505065 */
+    --text: #0e0f1f;
+    --text-muted: #434a60;
+    --text-tertiary: #757b92;
 
-    --success: 142 69% 58%;        /* #4ADE80 */
-    --warning: 38 93% 57%;         /* #FBBF24 */
-    --danger: 0 91% 71%;           /* #F87171 */
-    --info: 213 94% 68%;           /* #60A5FA */
+    --success: #0e7a4e;
+    --warning: #a87400;
+    --danger: #d81e3c;
+    --info: #6a45a0;
+
+    /* sidebar = brand-dark even in day (Linear/Height pattern) */
+    --sidebar: #0e0f1f;
+    --sidebar-foreground: #faf3e0;
+    --sidebar-muted: #9fa0c0;
+    --sidebar-border: #272948;
+    --sidebar-active: #ff2e72;
+
+    /* elevation (day: real soft shadows) */
+    --elev-1: 0 1px 2px rgba(16, 18, 42, 0.05);
+    --elev-2: 0 1px 2px rgba(16, 18, 42, 0.05), 0 8px 22px -12px rgba(16, 18, 42, 0.22);
+    --elev-3: 0 2px 4px rgba(16, 18, 42, 0.06), 0 16px 40px -16px rgba(16, 18, 42, 0.28);
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --radius: 0.625rem;
 
     /* shadcn/ui compat aliases */
     --card: var(--surface);
@@ -36,12 +58,110 @@
     --muted: var(--surface-el);
     --muted-foreground: var(--text-muted);
     --accent: var(--primary-muted);
-    --accent-foreground: var(--text);
+    --accent-foreground: var(--primary);
     --destructive: var(--danger);
-    --destructive-foreground: var(--text);
+    --destructive-foreground: #ffffff;
     --input: var(--border);
     --ring: var(--primary);
-    --radius: 0.5rem;
+  }
+
+  :root[data-base="pine"] {
+    /* ---- PINE · DÍA ---- */
+    --background: #e9efe9;
+    --surface: #ffffff;
+    --surface-el: #f4f8f3;
+    --border: #d2dcd0;
+    --border-strong: #bdc9bb;
+
+    --primary: #c9004d;
+    --primary-hover: #a8003f;
+    --primary-muted: #f3dbe2;
+    --primary-foreground: #fff6e9;
+
+    --secondary: #a87400;
+    --text: #06140f;
+    --text-muted: #3b524a;
+    --text-tertiary: #6f837a;
+
+    --success: #0e7a4e;
+    --warning: #a87400;
+    --danger: #d81e3c;
+    --info: #6a45a0;
+
+    --sidebar: #00382e;
+    --sidebar-foreground: #f2f7ef;
+    --sidebar-muted: #92b7a9;
+    --sidebar-border: #0e4c3e;
+    --sidebar-active: #ffc857;
+  }
+
+  .dark {
+    /* ---- NAVY · NOCHE (aprobado) ---- */
+    --background: #0e0f1f;
+    --surface: #1f2041;
+    --surface-el: #2a2c52;
+    --border: #3c3e5c;
+    --border-strong: #4b3f72;
+
+    --primary: #ff2e72;
+    --primary-hover: #ff5c8c;
+    --primary-muted: #34203a;
+    --primary-foreground: #0e0f1f;
+
+    --secondary: #ffc857;
+    --secondary-foreground: #2a1a00;
+
+    --text: #faf3e0;
+    --text-muted: #aeadcb;
+    --text-tertiary: #6e7099;
+
+    --success: #a8d3a8;
+    --warning: #ffc857;
+    --danger: #f8395a;
+    --info: #9967ca;
+
+    --sidebar: #16172e;
+    --sidebar-foreground: #faf3e0;
+    --sidebar-muted: #9a9bbe;
+    --sidebar-border: #2e3056;
+    --sidebar-active: #ff2e72;
+
+    /* dark: depth via surface lightness; shadows subtle */
+    --elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --elev-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.6);
+    --elev-3: 0 2px 4px rgba(0, 0, 0, 0.5), 0 18px 44px -18px rgba(0, 0, 0, 0.7);
+
+    --destructive-foreground: #0e0f1f;
+  }
+
+  .dark[data-base="pine"] {
+    /* ---- PINE · NOCHE (aprobado) ---- */
+    --background: #06140f;
+    --surface: #00382e;
+    --surface-el: #0b5142;
+    --border: #1c5c4c;
+    --border-strong: #2a6e5b;
+
+    --primary: #ff2e72;
+    --primary-hover: #ff5c8c;
+    --primary-muted: #15302a;
+    --primary-foreground: #06140f;
+
+    --secondary: #ffc857;
+    --text: #faf3e0;
+    --text-muted: #9fc3b5;
+    --text-tertiary: #5e8475;
+
+    --success: #a8d3a8;
+    --warning: #ffc857;
+    --danger: #f8395a;
+    --info: #c79bea;
+
+    --sidebar: #072019;
+    --sidebar-foreground: #faf3e0;
+    --sidebar-muted: #8fb3a5;
+    --sidebar-border: #11473a;
+    --sidebar-active: #ff2e72;
   }
 }
 
@@ -57,50 +177,47 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Homogeneous typography: Clash Display for all headings, Satoshi body */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    letter-spacing: -0.02em;
+  }
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: hsl(var(--surface));
-}
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--border-strong));
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--text-tertiary));
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
 /* Focus ring */
 :focus-visible {
-  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* TipTap editor styles */
-.tiptap-editor .ProseMirror {
-  outline: none;
-  min-height: 300px;
-}
+/* TipTap */
+.tiptap-editor .ProseMirror { outline: none; min-height: 300px; }
 .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: hsl(var(--text-tertiary));
+  color: var(--text-tertiary);
   pointer-events: none;
   height: 0;
 }
 
-/* Task status badge colors */
-.status-todo { @apply bg-[hsl(var(--text-tertiary)/0.2)] text-text-muted; }
-.status-in_progress { @apply bg-primary-muted text-primary; }
-.status-review { @apply bg-[hsl(var(--warning)/0.2)] text-warning; }
-.status-done { @apply bg-[hsl(var(--success)/0.2)] text-success; }
+/* Status badges */
+.status-todo { background: color-mix(in oklab, var(--text-tertiary) 16%, transparent); color: var(--text-muted); }
+.status-in_progress { background: color-mix(in oklab, var(--info) 18%, transparent); color: var(--info); }
+.status-review { background: color-mix(in oklab, var(--warning) 20%, transparent); color: var(--warning); }
+.status-done { background: color-mix(in oklab, var(--success) 20%, transparent); color: var(--success); }
 
-/* Priority badge colors */
-.priority-low { @apply bg-[hsl(var(--info)/0.15)] text-info; }
-.priority-medium { @apply bg-[hsl(var(--warning)/0.15)] text-warning; }
-.priority-high { @apply bg-[hsl(var(--danger)/0.15)] text-danger; }
-.priority-urgent { @apply bg-[hsl(var(--danger)/0.2)] text-danger animate-pulse; }
+/* Priority badges */
+.priority-low { background: color-mix(in oklab, var(--info) 15%, transparent); color: var(--info); }
+.priority-medium { background: color-mix(in oklab, var(--warning) 16%, transparent); color: var(--warning); }
+.priority-high { background: color-mix(in oklab, var(--danger) 16%, transparent); color: var(--danger); }
+.priority-urgent { background: color-mix(in oklab, var(--danger) 22%, transparent); color: var(--danger); @apply animate-pulse; }

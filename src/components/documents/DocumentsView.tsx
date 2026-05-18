@@ -3,24 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  FileText,
-  StickyNote,
-  History,
-  Settings,
-  Paperclip,
-} from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { FileUploadDropzone } from "./FileUploadDropzone";
 import { DocumentList } from "./DocumentList";
+import { cn } from "@/lib/utils/cn";
 
 interface Document {
   id: string;
   name: string;
-  storage_path: string;
-  mime_type: string;
-  size_bytes: number;
-  created_at: string;
-  uploaded_by: string;
+  blobUrl: string;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: string;
+  uploadedBy: string;
 }
 
 interface DocumentsViewProps {
@@ -48,28 +43,29 @@ export function DocumentsView({
   ];
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-6">
-        <Link
-          href={`/projects/${project.id}`}
-          className="text-sm text-text-muted hover:text-text"
-        >
-          ← {project.name}
-        </Link>
-        <h1 className="mt-1 text-2xl font-bold text-text">Documentos</h1>
-      </div>
+    <div className="animate-fade-in p-6 md:p-8">
+      <Link
+        href={`/projects/${project.id}`}
+        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        {project.name}
+      </Link>
+      <h1 className="mb-6 text-2xl font-bold tracking-tight text-text">
+        Documentos
+      </h1>
 
-      {/* Tabs */}
       <div className="mb-6 flex items-center gap-1 border-b border-border">
         {tabs.map((tab) => (
           <Link
             key={tab.href}
             href={tab.href}
-            className={`px-3 py-2 text-sm font-medium transition border-b-2 ${
+            className={cn(
+              "border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
               tab.active
                 ? "border-primary text-primary"
                 : "border-transparent text-text-muted hover:text-text"
-            }`}
+            )}
           >
             {tab.label}
           </Link>

@@ -37,7 +37,7 @@ export default async function MyTasksPage() {
   const done = taskRows.filter((t) => t.status === "done");
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in p-6 md:p-8">
       <PageHeader
         title="Mis tareas"
         description={`${pending.length} tarea${pending.length !== 1 ? "s" : ""} pendiente${pending.length !== 1 ? "s" : ""}`}
@@ -67,16 +67,16 @@ export default async function MyTasksPage() {
                       href={`/projects/${task.projectId}`}
                       className="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 transition hover:border-border hover:bg-surface-el"
                     >
-                      <TaskStatusBadge status={task.status as any} />
+                      <TaskStatusBadge status={task.status} />
                       <span className="flex-1 truncate text-sm text-text">
                         {task.title}
                       </span>
-                      <TaskPriorityBadge priority={task.priority as any} />
+                      <TaskPriorityBadge priority={task.priority} />
                       {task.projectName && (
                         <span className="flex items-center gap-1.5 text-xs text-text-muted">
                           <span
                             className="h-2 w-2 rounded-sm"
-                            style={{ backgroundColor: task.projectColor ?? "#6B5FE4" }}
+                            style={{ backgroundColor: task.projectColor ?? "var(--accent)" }}
                           />
                           {task.projectName}
                         </span>
@@ -107,7 +107,7 @@ export default async function MyTasksPage() {
                     href={`/projects/${task.projectId}`}
                     className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-surface-el"
                   >
-                    <TaskStatusBadge status={task.status as any} />
+                    <TaskStatusBadge status={task.status} />
                     <span className="flex-1 truncate text-sm text-text-tertiary line-through">
                       {task.title}
                     </span>

@@ -28,15 +28,14 @@ export default async function ProjectDocumentsPage({ params }: PageProps) {
     .where(eq(documents.projectId, params.projectId))
     .orderBy(desc(documents.createdAt));
 
-  // Shape to match DocumentsView interface (snake_case)
-  const shapedDocuments = documentRows.map((d) => ({
+  const documentsData = documentRows.map((d) => ({
     id: d.id,
     name: d.name,
-    storage_path: d.blobUrl ?? "",
-    mime_type: d.mimeType ?? "",
-    size_bytes: d.sizeBytes ?? 0,
-    created_at: d.createdAt ? String(d.createdAt) : "",
-    uploaded_by: d.uploadedBy ?? "",
+    blobUrl: d.blobUrl ?? "",
+    mimeType: d.mimeType ?? "",
+    sizeBytes: d.sizeBytes ?? 0,
+    createdAt: d.createdAt ? d.createdAt.toISOString() : "",
+    uploadedBy: d.uploadedBy ?? "",
   }));
 
   const role = (session?.user?.role as string) ?? "";
@@ -45,7 +44,7 @@ export default async function ProjectDocumentsPage({ params }: PageProps) {
   return (
     <DocumentsView
       project={project}
-      documents={shapedDocuments}
+      documents={documentsData}
       userId={session?.user?.id ?? ""}
       canDelete={canDelete}
     />

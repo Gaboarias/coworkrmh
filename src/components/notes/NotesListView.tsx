@@ -3,20 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, StickyNote, Trash2 } from "lucide-react";
+import { Plus, StickyNote, Trash2, ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { createNote, deleteNote } from "@/lib/actions/notes";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/utils/cn";
 
 interface Note {
   id: string;
   title: string;
-  content_text: string | null;
-  created_at: string;
-  updated_at: string;
-  creator?: { full_name: string | null; avatar_url: string | null } | null;
+  contentText: string | null;
+  updatedAt: string;
+  creator?: { name: string | null; avatarUrl: string | null } | null;
 }
 
 interface NotesListViewProps {
@@ -32,7 +33,10 @@ const tabs = (projectId: string) => [
   { href: `/projects/${projectId}/settings`, label: "Config." },
 ];
 
-export function NotesListView({ project, notes: initialNotes }: NotesListViewProps) {
+export function NotesListView({
+  project,
+  notes: initialNotes,
+}: NotesListViewProps) {
   const router = useRouter();
   const [notes, setNotes] = useState(initialNotes);
   const [creating, setCreating] = useState(false);
@@ -41,7 +45,7 @@ export function NotesListView({ project, notes: initialNotes }: NotesListViewPro
     setCreating(true);
     try {
       const note = await createNote({
-        project_id: project.id,
+        projectId: project.id,
         title: "Nueva nota",
       });
       toast.success("Nota creada");
@@ -65,38 +69,34 @@ export function NotesListView({ project, notes: initialNotes }: NotesListViewPro
   }
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-6">
-        <Link
-          href={`/projects/${project.id}`}
-          className="text-sm text-text-muted hover:text-text"
-        >
-          ← {project.name}
-        </Link>
-        <div className="mt-1 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-text">Notas</h1>
-          <button
-            onClick={handleCreate}
-            disabled={creating}
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-60"
-          >
-            <Plus className="h-4 w-4" />
-            Nueva nota
-          </button>
-        </div>
+    <div className="animate-fade-in p-6 md:p-8">
+      <Link
+        href={`/projects/${project.id}`}
+        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        {project.name}
+      </Link>
+
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight text-text">Notas</h1>
+        <Button onClick={handleCreate} loading={creating}>
+          <Plus className="h-4 w-4" />
+          Nueva nota
+        </Button>
       </div>
 
-      {/* Tabs */}
       <div className="mb-6 flex items-center gap-1 border-b border-border">
         {tabs(project.id).map((tab) => (
           <Link
             key={tab.href}
             href={tab.href}
-            className={`px-3 py-2 text-sm font-medium transition border-b-2 ${
+            className={cn(
+              "border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
               tab.active
                 ? "border-primary text-primary"
                 : "border-transparent text-text-muted hover:text-text"
-            }`}
+            )}
           >
             {tab.label}
           </Link>
@@ -109,12 +109,9 @@ export function NotesListView({ project, notes: initialNotes }: NotesListViewPro
           title="Sin notas"
           description="Crea la primera nota de este proyecto"
           action={
-            <button
-              onClick={handleCreate}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
-            >
+            <Button onClick={handleCreate} loading={creating}>
               Crear nota
-            </button>
+            </Button>
           }
         />
       ) : (
@@ -122,39 +119,39 @@ export function NotesListView({ project, notes: initialNotes }: NotesListViewPro
           {notes.map((note) => (
             <div
               key={note.id}
-              className="group relative rounded-xl border border-border bg-surface p-4 transition hover:border-primary/50"
+              className="group relative rounded-xl border border-border bg-surface p-4 shadow-elev-1 transition-colors hover:border-primary/50"
             >
               <Link
                 href={`/projects/${project.id}/notes/${note.id}`}
                 className="block"
               >
-                <h3 className="mb-2 font-semibold text-text line-clamp-1">
+                <h3 className="mb-2 line-clamp-1 font-semibold text-text">
                   {note.title}
                 </h3>
-                {note.content_text && (
-                  <p className="mb-3 text-xs text-text-muted line-clamp-3">
-                    {note.content_text}
+                {note.contentText && (
+                  <p className="mb-3 line-clamp-3 text-xs text-text-muted">
+                    {note.contentText}
                   </p>
                 )}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    {note.creator && (
-                      <UserAvatar
-                        name={note.creator.full_name}
-                        avatarUrl={note.creator.avatar_url}
-                        size="xs"
-                      />
-                    )}
-                    <span className="text-xs text-text-tertiary">
-                      {format(new Date(note.updated_at), "dd/MM/yyyy")}
-                    </span>
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  {note.creator && (
+                    <UserAvatar
+                      name={note.creator.name}
+                      avatarUrl={note.creator.avatarUrl}
+                      size="xs"
+                    />
+                  )}
+                  <span className="text-xs text-text-tertiary">
+                    {note.updatedAt &&
+                      format(new Date(note.updatedAt), "dd/MM/yyyy")}
+                  </span>
                 </div>
               </Link>
 
               <button
                 onClick={() => handleDelete(note.id)}
-                className="absolute right-3 top-3 hidden text-text-tertiary hover:text-danger group-hover:block"
+                aria-label={`Eliminar nota ${note.title}`}
+                className="absolute right-3 top-3 hidden rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger group-hover:block"
                 title="Eliminar"
               >
                 <Trash2 className="h-4 w-4" />

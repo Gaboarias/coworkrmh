@@ -2,26 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, FileText, StickyNote, History, Settings, Filter } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, FileText, StickyNote, History, Settings } from "lucide-react";
 import { TaskRow } from "@/components/tasks/TaskRow";
 import { TaskDetail } from "@/components/tasks/TaskDetail";
 import { CreateTaskModal } from "@/components/tasks/CreateTaskModal";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { cn } from "@/lib/utils/cn";
 import type { TaskStatus, TaskPriority } from "@/lib/types";
-import { useRouter } from "next/navigation";
 
 interface Project {
   id: string;
   name: string;
   description: string | null;
-  color: string | null;
-  status: string;
-  bucket_id: string | null;
-  due_date: string | null;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
 }
 
 interface Task {
@@ -30,22 +26,26 @@ interface Task {
   description: string | null;
   status: TaskStatus;
   priority: TaskPriority;
-  assignee_id: string | null;
-  due_date: string | null;
-  completed_at: string | null;
+  assigneeId: string | null;
+  dueDate: string | null;
+  completedAt: string | null;
   position: number;
-  project_id: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-  assignee?: { id: string; full_name: string | null; avatar_url: string | null; email: string } | null;
+  projectId: string;
+  createdBy: string;
+  createdAt: string | null;
+  assignee?: {
+    id: string;
+    name: string | null;
+    email: string;
+    avatarUrl: string | null;
+  } | null;
 }
 
 interface Profile {
   id: string;
-  full_name: string | null;
+  name: string | null;
   email: string;
-  avatar_url: string | null;
+  avatarUrl: string | null;
 }
 
 type StatusFilter = "all" | "todo" | "in_progress" | "review" | "done";
@@ -59,12 +59,11 @@ interface ProjectTasksViewProps {
 
 export function ProjectTasksView({
   project,
-  tasks: initialTasks,
+  tasks,
   members,
   canEdit,
 }: ProjectTasksViewProps) {
   const router = useRouter();
-  const [tasks, setTasks] = useState(initialTasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -72,7 +71,8 @@ export function ProjectTasksView({
 
   const filtered = tasks.filter((t) => {
     if (statusFilter !== "all" && t.status !== statusFilter) return false;
-    if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !t.title.toLowerCase().includes(search.toLowerCase()))
+      return false;
     return true;
   });
 
@@ -85,35 +85,31 @@ export function ProjectTasksView({
   ];
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
+    <div className="animate-fade-in p-6 md:p-8">
       <PageHeader
         title={project.name}
         description={project.description ?? undefined}
         actions={
           canEdit ? (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
-            >
+            <Button onClick={() => setShowCreateModal(true)}>
               <Plus className="h-4 w-4" />
               Nueva tarea
-            </button>
+            </Button>
           ) : null
         }
       />
 
-      {/* Tabs */}
       <div className="mb-6 flex items-center gap-1 border-b border-border">
         {tabs.map((tab) => (
           <Link
             key={tab.href}
             href={tab.href}
-            className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition border-b-2 ${
+            className={cn(
+              "flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
               tab.active
                 ? "border-primary text-primary"
                 : "border-transparent text-text-muted hover:text-text"
-            }`}
+            )}
           >
             {tab.icon && <tab.icon className="h-3.5 w-3.5" />}
             {tab.label}
@@ -121,25 +117,28 @@ export function ProjectTasksView({
         ))}
       </div>
 
-      {/* Filters */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <input
+        <Input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar tareas..."
-          className="w-48 rounded-lg border border-border bg-surface-el px-3 py-1.5 text-sm text-text placeholder-text-tertiary focus:border-primary focus:outline-none"
+          placeholder="Buscar tareas…"
+          aria-label="Buscar tareas"
+          className="w-52"
         />
         <div className="flex items-center gap-1">
-          {(["all", "todo", "in_progress", "review", "done"] as StatusFilter[]).map((s) => (
+          {(
+            ["all", "todo", "in_progress", "review", "done"] as StatusFilter[]
+          ).map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium transition-colors duration-200 ease-out",
                 statusFilter === s
-                  ? "bg-primary text-white"
+                  ? "bg-primary text-primary-foreground"
                   : "bg-surface-el text-text-muted hover:text-text"
-              }`}
+              )}
             >
               {s === "all" ? "Todas" : s.replace("_", " ")}
             </button>
@@ -150,7 +149,6 @@ export function ProjectTasksView({
         </span>
       </div>
 
-      {/* Task list */}
       {filtered.length === 0 ? (
         <EmptyState
           title="Sin tareas"
@@ -161,12 +159,9 @@ export function ProjectTasksView({
           }
           action={
             canEdit && !search && statusFilter === "all" ? (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
-              >
+              <Button onClick={() => setShowCreateModal(true)}>
                 Crear tarea
-              </button>
+              </Button>
             ) : undefined
           }
         />
@@ -184,7 +179,6 @@ export function ProjectTasksView({
         </div>
       )}
 
-      {/* Modals */}
       {showCreateModal && (
         <CreateTaskModal
           projectId={project.id}

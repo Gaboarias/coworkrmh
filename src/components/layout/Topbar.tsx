@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { Bell, Search } from "lucide-react";
 import { useUser } from "@/lib/hooks/useUser";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { BaseToggle } from "@/components/shared/BaseToggle";
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -22,7 +24,7 @@ function getTitle(pathname: string): string {
   }
   if (pathname.startsWith("/projects/")) return "Proyecto";
   if (pathname.startsWith("/crm/")) return "CRM";
-  return "Cowork RMH";
+  return "Pistachio";
 }
 
 export function Topbar() {
@@ -36,15 +38,25 @@ export function Topbar() {
       </h2>
 
       <div className="flex items-center gap-3">
-        <button className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition hover:bg-surface-el hover:text-text">
+        <button
+          aria-label="Buscar"
+          title="Buscar (⌘K)"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-200 ease-out hover:bg-surface-el hover:text-text"
+        >
           <Search className="h-4 w-4" />
         </button>
-        <button className="relative flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition hover:bg-surface-el hover:text-text">
+        <button
+          aria-label="Notificaciones"
+          title="Notificaciones"
+          className="relative flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-200 ease-out hover:bg-surface-el hover:text-text"
+        >
           <Bell className="h-4 w-4" />
         </button>
+        <BaseToggle />
+        <ThemeToggle />
         <UserAvatar
-          name={profile?.full_name}
-          avatarUrl={profile?.avatar_url}
+          name={profile?.name}
+          avatarUrl={profile?.image}
           size="sm"
         />
       </div>
