@@ -1,11 +1,30 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const satoshi = localFont({
+  src: [
+    { path: "../fonts/Satoshi-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/Satoshi-500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/Satoshi-700.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const clashDisplay = localFont({
+  src: [
+    { path: "../fonts/ClashDisplay-600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/ClashDisplay-700.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-display",
+  display: "swap",
+});
+
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -23,7 +42,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans`}>
+      <body
+        className={`${satoshi.variable} ${clashDisplay.variable} ${jetbrainsMono.variable} font-sans`}
+      >
         <ThemeProvider>
           <SessionProvider>
             {children}
