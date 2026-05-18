@@ -42,6 +42,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var b=localStorage.getItem('pistachio-base');if(b==='pine')document.documentElement.setAttribute('data-base','pine');}catch(e){}`,
+          }}
+        />
+      </head>
       <body
         className={`${satoshi.variable} ${clashDisplay.variable} ${jetbrainsMono.variable} font-sans`}
       >

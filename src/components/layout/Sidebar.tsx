@@ -42,7 +42,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { profile } = useUser();
-  const { isManager } = usePermissions();
+  const { isManager, isAdmin } = usePermissions();
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
@@ -121,11 +121,23 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="border-t border-sidebar-border p-3">
+        {isAdmin && (
+          <Link
+            href="/settings/team"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200 ease-out",
+              isActive("/settings/team") ? navActive : navIdle
+            )}
+          >
+            <Users className="h-4 w-4" />
+            Equipo y roles
+          </Link>
+        )}
         <Link
           href="/settings"
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200 ease-out",
-            navIdle
+            isActive("/settings", true) ? navActive : navIdle
           )}
         >
           <Settings className="h-4 w-4" />

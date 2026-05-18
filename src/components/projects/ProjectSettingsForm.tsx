@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Trash2, UserPlus, Archive, RotateCcw } from "lucide-react";
+import { Trash2, UserPlus, Archive, RotateCcw, Plus } from "lucide-react";
 import {
   updateProject,
   addProjectMember,
   removeProjectMember,
+  createBucket,
 } from "@/lib/actions/projects";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -74,7 +75,27 @@ export function ProjectSettingsForm({
   const [saving, setSaving] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [addingUser, setAddingUser] = useState("");
+  const [bucketList, setBucketList] = useState(buckets);
+  const [showNewBucket, setShowNewBucket] = useState(false);
+  const [newBucketName, setNewBucketName] = useState("");
   const isArchived = project.status === "archived";
+
+  async function handleCreateBucket() {
+    if (!newBucketName.trim()) return;
+    try {
+      const bucket = await createBucket({
+        name: newBucketName.trim(),
+        color: form.color,
+      });
+      setBucketList((prev) => [...prev, { id: bucket.id, name: bucket.name }]);
+      setForm((p) => ({ ...p, bucketId: bucket.id }));
+      setNewBucketName("");
+      setShowNewBucket(false);
+      toast.success("Categoría creada");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  }
 
   const memberIds = new Set(members.map((m) => m.id));
   const nonMembers = allUsers.filter((u) => !memberIds.has(u.id));
@@ -186,22 +207,54 @@ export function ProjectSettingsForm({
                   htmlFor="ps-bucket"
                   className="mb-1.5 block text-sm font-medium text-text-muted"
                 >
-                  Bucket
+                  Categoría
                 </label>
-                <Select
-                  id="ps-bucket"
-                  value={form.bucketId}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, bucketId: e.target.value }))
-                  }
-                >
-                  <option value="">Sin categoría</option>
-                  {buckets.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </Select>
+                <div className="flex gap-2">
+                  <Select
+                    id="ps-bucket"
+                    value={form.bucketId}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, bucketId: e.target.value }))
+                    }
+                    className="flex-1"
+                  >
+                    <option value="">Sin categoría</option>
+                    {bucketList.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowNewBucket(!showNewBucket)}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Nueva
+                  </Button>
+                </div>
+                {showNewBucket && (
+                  <div className="mt-2 flex gap-2">
+                    <Input
+                      value={newBucketName}
+                      onChange={(e) => setNewBucketName(e.target.value)}
+                      placeholder="Nombre de la categoría"
+                      onKeyDown={(e) =>
+                        e.key === "Enter" &&
+                        (e.preventDefault(), handleCreateBucket())
+                      }
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleCreateBucket}
+                    >
+                      Crear
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <div>

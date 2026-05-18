@@ -9,6 +9,7 @@ import {
   numeric,
   date,
   json,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -113,12 +114,18 @@ export const projects = pgTable("projects", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const projectMembers = pgTable("project_members", {
-  projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  role: userRoleEnum("role").default("member").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const projectMembers = pgTable(
+  "project_members",
+  {
+    projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    role: userRoleEnum("role").default("member").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.projectId, t.userId] }),
+  })
+);
 
 // ─── Tasks ────────────────────────────────────────────────────────────────────
 

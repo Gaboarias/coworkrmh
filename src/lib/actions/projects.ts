@@ -81,6 +81,7 @@ export async function addProjectMember(
   userId: string,
   role: "admin" | "manager" | "member" = "member"
 ) {
+  await requireUser();
   await db
     .insert(projectMembers)
     .values({ projectId, userId, role })
@@ -92,6 +93,7 @@ export async function addProjectMember(
 }
 
 export async function removeProjectMember(projectId: string, userId: string) {
+  await requireUser();
   await db
     .delete(projectMembers)
     .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)));

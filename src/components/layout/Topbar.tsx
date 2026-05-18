@@ -5,6 +5,7 @@ import { Bell, Search } from "lucide-react";
 import { useUser } from "@/lib/hooks/useUser";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { BaseToggle } from "@/components/shared/BaseToggle";
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -51,6 +52,7 @@ export function Topbar() {
         >
           <Bell className="h-4 w-4" />
         </button>
+        <BaseToggle />
         <ThemeToggle />
         <UserAvatar
           name={profile?.name}
