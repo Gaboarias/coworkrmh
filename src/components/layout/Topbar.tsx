@@ -53,8 +53,8 @@ export function Topbar() {
         </button>
         <ThemeToggle />
         <UserAvatar
-          name={profile?.full_name}
-          avatarUrl={profile?.avatar_url}
+          name={profile?.name}
+          avatarUrl={profile?.image}
           size="sm"
         />
       </div>
