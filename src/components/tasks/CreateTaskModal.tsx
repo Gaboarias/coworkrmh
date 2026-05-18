@@ -10,7 +10,7 @@ import { Select } from "@/components/ui/Select";
 
 interface Profile {
   id: string;
-  full_name: string | null;
+  name: string | null;
   email: string;
 }
 
@@ -165,7 +165,7 @@ export function CreateTaskModal({
             <option value="">Sin asignar</option>
             {members.map((m) => (
               <option key={m.id} value={m.id}>
-                {m.full_name ?? m.email}
+                {m.name ?? m.email}
               </option>
             ))}
           </Select>
