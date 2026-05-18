@@ -1,9 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, ChevronDown, Trash2, UserPlus, Building2 } from "lucide-react";
+import {
+  Plus,
+  ChevronDown,
+  Trash2,
+  UserPlus,
+  Building2,
+  SlidersHorizontal,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -209,6 +217,13 @@ export function TeamsManagement({
 
                 {isOpen && (
                   <div className="space-y-3 border-t border-border bg-surface-el/40 px-4 py-4">
+                    <Link
+                      href={`/settings/teams/${b.id}`}
+                      className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-el"
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                      Perfiles, responsabilidades y acuerdos
+                    </Link>
                     <div className="flex flex-wrap items-end gap-2">
                       <div className="min-w-[180px] flex-1">
                         <label className="mb-1.5 block text-xs font-medium text-text-muted">

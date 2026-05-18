@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { buckets, bucketMembers, users } from "@/lib/db/schema";
 import { eq, and, asc } from "drizzle-orm";
+import { seedDefaultProfiles } from "@/lib/actions/profiles";
 
 async function requireAdmin() {
   const session = await auth();
@@ -70,6 +71,9 @@ export async function createBusinessBucket(formData: {
     .insert(bucketMembers)
     .values({ bucketId: bucket.id, userId: user.id, role: "admin" })
     .onConflictDoNothing();
+
+  // Perfiles semilla editables (Fundador/Admin, Diseño+Redes, Constructor…).
+  await seedDefaultProfiles(bucket.id);
 
   revalidatePath("/settings/teams");
   revalidatePath("/operations");

@@ -97,6 +97,7 @@ export const buckets = pgTable("buckets", {
   color: text("color").default("#6B5FE4").notNull(),
   position: integer("position").default(0).notNull(),
   createdBy: uuid("created_by").notNull().references(() => users.id),
+  teamAgreements: text("team_agreements"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -281,6 +282,33 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   project: one(projects, { fields: [payments.projectId], references: [projects.id] }),
 }));
 
+// ─── Perfiles configurables por negocio ──────────────────────────────────────
+// Cada negocio (bucket) define sus perfiles con una matriz de permisos editable.
+// permissions = array de claves de permiso (ver src/lib/utils/permissions.ts).
+
+export const profiles = pgTable(
+  "profiles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bucketId: uuid("bucket_id")
+      .notNull()
+      .references(() => buckets.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 80 }).notNull(),
+    description: text("description"),
+    permissions: json("permissions").$type<string[]>().default([]).notNull(),
+    isSystem: boolean("is_system").default(false).notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    bucketNameUnq: uniqueIndex("profiles_bucket_name_unq").on(
+      t.bucketId,
+      t.name
+    ),
+  })
+);
+
 // ─── Bucket members (acceso por equipo/negocio) ──────────────────────────────
 // Cada bucket = un equipo/negocio. Un usuario solo ve los buckets donde está
 // asignado. Mismo patrón que project_members (PK compuesta).
@@ -295,12 +323,26 @@ export const bucketMembers = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     role: userRoleEnum("role").default("member").notNull(),
+    profileId: uuid("profile_id").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
+    responsibilities: text("responsibilities"),
+    compensation: text("compensation"),
+    memberStatus: text("member_status").default("active").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.bucketId, t.userId] }),
   })
 );
+
+export const profilesRelations = relations(profiles, ({ one, many }) => ({
+  bucket: one(buckets, {
+    fields: [profiles.bucketId],
+    references: [buckets.id],
+  }),
+  members: many(bucketMembers),
+}));
 
 export const bucketMembersRelations = relations(bucketMembers, ({ one }) => ({
   bucket: one(buckets, {
@@ -310,6 +352,10 @@ export const bucketMembersRelations = relations(bucketMembers, ({ one }) => ({
   user: one(users, {
     fields: [bucketMembers.userId],
     references: [users.id],
+  }),
+  profile: one(profiles, {
+    fields: [bucketMembers.profileId],
+    references: [profiles.id],
   }),
 }));
 

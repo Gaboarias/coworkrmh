@@ -1,7 +1,8 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { buckets, bucketMembers } from "@/lib/db/schema";
-import { eq, asc, inArray } from "drizzle-orm";
+import { buckets, bucketMembers, profiles } from "@/lib/db/schema";
+import { eq, and, asc, inArray } from "drizzle-orm";
+import { ALL_PERMISSION_KEYS } from "@/lib/utils/permissions";
 
 export interface AccessibleBucket {
   id: string;
@@ -59,4 +60,50 @@ export async function getAccessibleBuckets(): Promise<{
 export async function canAccessBucket(bucketId: string): Promise<boolean> {
   const { buckets: list } = await getAccessibleBuckets();
   return list.some((b) => b.id === bucketId);
+}
+
+/**
+ * Permisos efectivos del usuario actual dentro de un negocio (bucket).
+ * - super-admin global (users.role==='admin'): todas (bypass).
+ * - resto: las del perfil asignado en bucket_members; sin perfil → [].
+ */
+export async function getBucketPermissions(
+  bucketId: string
+): Promise<{ userId: string; isAdmin: boolean; permissions: string[] }> {
+  const session = await auth();
+  if (!session?.user) {
+    return { userId: "", isAdmin: false, permissions: [] };
+  }
+  const userId = session.user.id;
+  const isAdmin = ((session.user.role as string) ?? "member") === "admin";
+  if (isAdmin) {
+    return { userId, isAdmin, permissions: ALL_PERMISSION_KEYS };
+  }
+
+  const [row] = await db
+    .select({ perms: profiles.permissions })
+    .from(bucketMembers)
+    .leftJoin(profiles, eq(bucketMembers.profileId, profiles.id))
+    .where(
+      and(
+        eq(bucketMembers.bucketId, bucketId),
+        eq(bucketMembers.userId, userId)
+      )
+    )
+    .limit(1);
+
+  return {
+    userId,
+    isAdmin,
+    permissions: (row?.perms as string[] | null) ?? [],
+  };
+}
+
+/** True si el usuario tiene una clave de permiso en el negocio. */
+export async function bucketCan(
+  bucketId: string,
+  key: string
+): Promise<boolean> {
+  const { permissions } = await getBucketPermissions(bucketId);
+  return permissions.includes(key);
 }
