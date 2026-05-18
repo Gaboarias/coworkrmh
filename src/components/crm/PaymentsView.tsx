@@ -3,11 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, CreditCard } from "lucide-react";
+import { Plus, CreditCard, ChevronLeft } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { toast } from "sonner";
 import { createPayment, updatePaymentStatus } from "@/lib/actions/clients";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge, type BadgeProps } from "@/components/ui/Badge";
+import { cn } from "@/lib/utils/cn";
 
 interface Payment {
   id: string;
@@ -15,22 +21,25 @@ interface Payment {
   amount: number;
   currency: string;
   status: "pending" | "paid" | "overdue" | "cancelled";
-  due_date: string | null;
-  paid_at: string | null;
-  project_id: string | null;
+  dueDate: string | null;
+  paidAt: string | null;
+  projectId: string | null;
 }
 
 interface PaymentsViewProps {
-  client: { id: string; company_name: string };
+  client: { id: string; companyName: string };
   payments: Payment[];
   projects: { id: string; name: string }[];
 }
 
-const statusConfig = {
-  pending: { label: "Pendiente", class: "text-warning bg-warning/10" },
-  paid: { label: "Pagado", class: "text-success bg-success/10" },
-  overdue: { label: "Vencido", class: "text-danger bg-danger/10" },
-  cancelled: { label: "Cancelado", class: "text-text-tertiary bg-surface-el" },
+const statusMeta: Record<
+  Payment["status"],
+  { label: string; variant: BadgeProps["variant"] }
+> = {
+  pending: { label: "Pendiente", variant: "warning" },
+  paid: { label: "Pagado", variant: "success" },
+  overdue: { label: "Vencido", variant: "danger" },
+  cancelled: { label: "Cancelado", variant: "neutral" },
 };
 
 const tabs = (clientId: string) => [
@@ -39,21 +48,28 @@ const tabs = (clientId: string) => [
   { href: `/crm/${clientId}/accounts`, label: "Cuentas" },
 ];
 
-export function PaymentsView({ client, payments: initialPayments, projects }: PaymentsViewProps) {
+export function PaymentsView({
+  client,
+  payments,
+  projects,
+}: PaymentsViewProps) {
   const router = useRouter();
-  const [payments, setPayments] = useState(initialPayments);
   const [showForm, setShowForm] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({
     description: "",
     amount: "",
     currency: "USD",
-    due_date: "",
-    project_id: "",
+    dueDate: "",
+    projectId: "",
   });
 
-  const pending = payments.filter((p) => p.status === "pending" || p.status === "overdue");
-  const done = payments.filter((p) => p.status === "paid" || p.status === "cancelled");
+  const pending = payments.filter(
+    (p) => p.status === "pending" || p.status === "overdue"
+  );
+  const done = payments.filter(
+    (p) => p.status === "paid" || p.status === "cancelled"
+  );
   const totalPending = pending.reduce((sum, p) => sum + p.amount, 0);
 
   async function handleCreate(e: React.FormEvent) {
@@ -65,12 +81,18 @@ export function PaymentsView({ client, payments: initialPayments, projects }: Pa
         description: form.description,
         amount: parseFloat(form.amount),
         currency: form.currency,
-        dueDate: form.due_date || undefined,
-        projectId: form.project_id || undefined,
+        dueDate: form.dueDate || undefined,
+        projectId: form.projectId || undefined,
       });
       toast.success("Pago registrado");
       setShowForm(false);
-      setForm({ description: "", amount: "", currency: "USD", due_date: "", project_id: "" });
+      setForm({
+        description: "",
+        amount: "",
+        currency: "USD",
+        dueDate: "",
+        projectId: "",
+      });
       router.refresh();
     } catch (err) {
       toast.error((err as Error).message);
@@ -79,7 +101,10 @@ export function PaymentsView({ client, payments: initialPayments, projects }: Pa
     }
   }
 
-  async function handleStatusChange(paymentId: string, status: Payment["status"]) {
+  async function handleStatusChange(
+    paymentId: string,
+    status: Payment["status"]
+  ) {
     try {
       await updatePaymentStatus(paymentId, client.id, status);
       router.refresh();
@@ -89,132 +114,155 @@ export function PaymentsView({ client, payments: initialPayments, projects }: Pa
     }
   }
 
-  const inputClass =
-    "w-full rounded-lg border border-border bg-surface-el px-3 py-2 text-sm text-text placeholder-text-tertiary focus:border-primary focus:outline-none";
-
   return (
-    <div className="animate-fade-in">
-      <div className="mb-4">
-        <Link href="/crm" className="text-sm text-text-muted hover:text-text">
-          ← Clientes
-        </Link>
-      </div>
-      <div className="mb-6 flex items-center justify-between">
+    <div className="animate-fade-in p-6 md:p-8">
+      <Link
+        href="/crm"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Clientes
+      </Link>
+
+      <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text">{client.company_name}</h1>
-          <p className="text-sm text-text-muted">Pagos y facturación</p>
+          <h1 className="text-2xl font-bold tracking-tight text-text">
+            {client.companyName}
+          </h1>
+          <p className="mt-1 text-sm text-text-muted">Pagos y facturación</p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
-        >
-          <Plus className="h-4 w-4" />
-          Nuevo pago
-        </button>
+        {!showForm && (
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4" />
+            Nuevo pago
+          </Button>
+        )}
       </div>
 
-      {/* Tabs */}
       <div className="mb-6 flex items-center gap-1 border-b border-border">
         {tabs(client.id).map((tab) => (
           <Link
             key={tab.href}
             href={tab.href}
-            className={`px-3 py-2 text-sm font-medium transition border-b-2 ${
+            className={cn(
+              "border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
               tab.active
                 ? "border-primary text-primary"
                 : "border-transparent text-text-muted hover:text-text"
-            }`}
+            )}
           >
             {tab.label}
           </Link>
         ))}
       </div>
 
-      {/* Summary */}
       {pending.length > 0 && (
-        <div className="mb-6 rounded-xl border border-warning/30 bg-warning/5 p-4">
+        <div
+          role="status"
+          className="mb-6 rounded-xl border border-warning/30 bg-[color-mix(in_oklab,var(--warning)_8%,transparent)] px-4 py-3"
+        >
           <p className="text-sm font-medium text-warning">
-            {pending.length} pago{pending.length > 1 ? "s" : ""} pendiente{pending.length > 1 ? "s" : ""} ·{" "}
-            USD {totalPending.toLocaleString()}
+            {pending.length} pago{pending.length > 1 ? "s" : ""} pendiente
+            {pending.length > 1 ? "s" : ""} ·{" "}
+            <span className="font-mono">
+              USD {totalPending.toLocaleString()}
+            </span>
           </p>
         </div>
       )}
 
-      {/* New payment form */}
       {showForm && (
-        <div className="mb-6 rounded-xl border border-border bg-surface p-5">
-          <h3 className="mb-4 font-semibold text-text">Registrar pago</h3>
-          <form onSubmit={handleCreate} className="space-y-3">
-            <input
-              type="text"
-              value={form.description}
-              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              placeholder="Descripción del pago"
-              required
-              className={inputClass}
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="number"
-                value={form.amount}
-                onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
-                placeholder="Monto"
-                required
-                min="0"
-                step="0.01"
-                className={inputClass}
-              />
-              <select
-                value={form.currency}
-                onChange={(e) => setForm((p) => ({ ...p, currency: e.target.value }))}
-                className={inputClass}
-              >
-                <option value="USD">USD</option>
-                <option value="MXN">MXN</option>
-                <option value="EUR">EUR</option>
-              </select>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="date"
-                value={form.due_date}
-                onChange={(e) => setForm((p) => ({ ...p, due_date: e.target.value }))}
-                className={inputClass}
-              />
-              <select
-                value={form.project_id}
-                onChange={(e) => setForm((p) => ({ ...p, project_id: e.target.value }))}
-                className={inputClass}
-              >
-                <option value="">Sin proyecto</option>
-                {projects.map((pr) => (
-                  <option key={pr.id} value={pr.id}>
-                    {pr.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="flex-1 rounded-lg border border-border px-4 py-2 text-sm text-text-muted hover:bg-surface-el"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={creating}
-                className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover disabled:opacity-60"
-              >
-                {creating ? "Guardando..." : "Guardar pago"}
-              </button>
-            </div>
-          </form>
-        </div>
+        <Card className="mb-6">
+          <CardContent className="p-5">
+            <h3 className="mb-4 text-sm font-semibold text-text">
+              Registrar pago
+            </h3>
+            <form onSubmit={handleCreate} className="space-y-3">
+              <div>
+                <label htmlFor="p-desc" className="sr-only">
+                  Descripción
+                </label>
+                <Input
+                  id="p-desc"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, description: e.target.value }))
+                  }
+                  placeholder="Descripción del pago"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  aria-label="Monto"
+                  type="number"
+                  value={form.amount}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, amount: e.target.value }))
+                  }
+                  placeholder="Monto"
+                  required
+                  min="0"
+                  step="0.01"
+                />
+                <Select
+                  aria-label="Moneda"
+                  value={form.currency}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, currency: e.target.value }))
+                  }
+                >
+                  <option value="USD">USD</option>
+                  <option value="MXN">MXN</option>
+                  <option value="EUR">EUR</option>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  aria-label="Fecha de vencimiento"
+                  type="date"
+                  value={form.dueDate}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, dueDate: e.target.value }))
+                  }
+                />
+                <Select
+                  aria-label="Proyecto"
+                  value={form.projectId}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, projectId: e.target.value }))
+                  }
+                >
+                  <option value="">Sin proyecto</option>
+                  {projects.map((pr) => (
+                    <option key={pr.id} value={pr.id}>
+                      {pr.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="flex gap-3 pt-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => setShowForm(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  loading={creating}
+                >
+                  {creating ? "Guardando…" : "Guardar pago"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Payments list */}
       {!payments.length ? (
         <EmptyState
           icon={<CreditCard className="h-12 w-12" />}
@@ -225,45 +273,63 @@ export function PaymentsView({ client, payments: initialPayments, projects }: Pa
         <div className="space-y-6">
           {pending.length > 0 && (
             <section>
-              <h3 className="mb-3 text-sm font-semibold text-text-muted">Pendientes</h3>
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+                Pendientes
+              </h3>
               <div className="space-y-2">
                 {pending.map((payment) => {
                   const overdue =
-                    payment.due_date &&
-                    isPast(new Date(payment.due_date)) &&
+                    payment.dueDate &&
+                    isPast(new Date(payment.dueDate)) &&
                     payment.status === "pending";
                   return (
                     <div
                       key={payment.id}
-                      className={`flex items-center justify-between rounded-xl border p-4 ${
-                        overdue ? "border-danger/40 bg-danger/5" : "border-border bg-surface"
-                      }`}
+                      className={cn(
+                        "flex items-center justify-between rounded-xl border p-4 transition-colors",
+                        overdue
+                          ? "border-danger/40 bg-[color-mix(in_oklab,var(--danger)_7%,transparent)]"
+                          : "border-border bg-surface shadow-elev-1"
+                      )}
                     >
-                      <div>
-                        <p className="font-medium text-text">{payment.description}</p>
-                        {payment.due_date && (
-                          <p className={`text-xs ${overdue ? "text-danger" : "text-text-muted"}`}>
-                            Vence: {format(new Date(payment.due_date), "dd/MM/yyyy")}
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-text">
+                          {payment.description}
+                        </p>
+                        {payment.dueDate && (
+                          <p
+                            className={cn(
+                              "text-xs",
+                              overdue ? "text-danger" : "text-text-muted"
+                            )}
+                          >
+                            Vence:{" "}
+                            {format(new Date(payment.dueDate), "dd/MM/yyyy")}
                             {overdue && " · VENCIDO"}
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-semibold text-text">
-                          {payment.currency} {payment.amount.toLocaleString()}
+                      <div className="flex flex-shrink-0 items-center gap-3">
+                        <span className="font-mono text-sm font-semibold text-text">
+                          {payment.currency}{" "}
+                          {payment.amount.toLocaleString()}
                         </span>
-                        <select
+                        <Select
+                          aria-label={`Cambiar estado del pago ${payment.description}`}
                           value={payment.status}
                           onChange={(e) =>
-                            handleStatusChange(payment.id, e.target.value as Payment["status"])
+                            handleStatusChange(
+                              payment.id,
+                              e.target.value as Payment["status"]
+                            )
                           }
-                          className="rounded-lg border border-border bg-surface-el px-2 py-1 text-xs text-text focus:outline-none"
+                          className="h-8 w-auto pr-8 text-xs"
                         >
                           <option value="pending">Pendiente</option>
                           <option value="paid">Marcar pagado</option>
                           <option value="overdue">Vencido</option>
                           <option value="cancelled">Cancelar</option>
-                        </select>
+                        </Select>
                       </div>
                     </div>
                   );
@@ -274,32 +340,34 @@ export function PaymentsView({ client, payments: initialPayments, projects }: Pa
 
           {done.length > 0 && (
             <section>
-              <h3 className="mb-3 text-sm font-semibold text-text-muted">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
                 Historial ({done.length})
               </h3>
-              <div className="space-y-2 opacity-70">
+              <div className="space-y-2">
                 {done.map((payment) => (
                   <div
                     key={payment.id}
-                    className="flex items-center justify-between rounded-xl border border-border bg-surface p-3"
+                    className="flex items-center justify-between rounded-xl border border-border bg-surface p-3 opacity-80"
                   >
-                    <div>
-                      <p className="text-sm text-text">{payment.description}</p>
-                      {payment.paid_at && (
+                    <div className="min-w-0">
+                      <p className="truncate text-sm text-text">
+                        {payment.description}
+                      </p>
+                      {payment.paidAt && (
                         <p className="text-xs text-text-tertiary">
-                          Pagado: {format(new Date(payment.paid_at), "dd/MM/yyyy")}
+                          Pagado:{" "}
+                          {format(new Date(payment.paidAt), "dd/MM/yyyy")}
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-text">
-                        {payment.currency} {payment.amount.toLocaleString()}
+                    <div className="flex flex-shrink-0 items-center gap-3">
+                      <span className="font-mono text-sm font-medium text-text">
+                        {payment.currency}{" "}
+                        {payment.amount.toLocaleString()}
                       </span>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusConfig[payment.status].class}`}
-                      >
-                        {statusConfig[payment.status].label}
-                      </span>
+                      <Badge variant={statusMeta[payment.status].variant}>
+                        {statusMeta[payment.status].label}
+                      </Badge>
                     </div>
                   </div>
                 ))}

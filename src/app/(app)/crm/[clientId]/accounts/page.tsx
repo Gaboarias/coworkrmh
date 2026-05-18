@@ -12,12 +12,10 @@ interface PageProps {
 export default async function ClientAccountsPage({ params }: PageProps) {
   const session = await auth();
 
-  // Admin only
   if (session?.user?.role !== "admin") {
     redirect(`/crm/${params.clientId}`);
   }
 
-  // Fetch client
   const [client] = await db
     .select({ id: clients.id, companyName: clients.companyName })
     .from(clients)
@@ -26,27 +24,25 @@ export default async function ClientAccountsPage({ params }: PageProps) {
 
   if (!client) notFound();
 
-  // Fetch accounts ordered by isPrimary desc
   const accountRows = await db
     .select()
     .from(clientAccounts)
     .where(eq(clientAccounts.clientId, params.clientId))
     .orderBy(desc(clientAccounts.isPrimary));
 
-  // Shape to match AccountsView interface (snake_case)
-  const shapedClient = {
-    id: client.id,
-    company_name: client.companyName,
-  };
-
-  const shapedAccounts = accountRows.map((a) => ({
+  const accountsData = accountRows.map((a) => ({
     id: a.id,
-    bank_name: a.bankName ?? null,
-    account_number: a.accountNumber,
-    account_type: a.accountType ?? null,
+    bankName: a.bankName ?? null,
+    accountNumber: a.accountNumber,
+    accountType: a.accountType ?? null,
     currency: a.currency ?? "USD",
-    is_primary: a.isPrimary ?? false,
+    isPrimary: a.isPrimary ?? false,
   }));
 
-  return <AccountsView client={shapedClient} accounts={shapedAccounts} />;
+  return (
+    <AccountsView
+      client={{ id: client.id, companyName: client.companyName }}
+      accounts={accountsData}
+    />
+  );
 }

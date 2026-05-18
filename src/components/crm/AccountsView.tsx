@@ -3,21 +3,27 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Eye, EyeOff, Shield } from "lucide-react";
+import { Plus, Eye, EyeOff, Shield, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { addClientAccount } from "@/lib/actions/clients";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { cn } from "@/lib/utils/cn";
 
 interface Account {
   id: string;
-  bank_name: string | null;
-  account_number: string;
-  account_type: string | null;
+  bankName: string | null;
+  accountNumber: string;
+  accountType: string | null;
   currency: string;
-  is_primary: boolean;
+  isPrimary: boolean;
 }
 
 interface AccountsViewProps {
-  client: { id: string; company_name: string };
+  client: { id: string; companyName: string };
   accounts: Account[];
 }
 
@@ -32,8 +38,9 @@ function MaskedNumber({ value }: { value: string }) {
       </code>
       <button
         onClick={() => setShow(!show)}
-        className="text-text-tertiary hover:text-text"
+        aria-label={show ? "Ocultar número" : "Mostrar número"}
         title={show ? "Ocultar" : "Mostrar"}
+        className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-el hover:text-text"
       >
         {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>
@@ -47,17 +54,16 @@ const tabs = (clientId: string) => [
   { href: `/crm/${clientId}/accounts`, label: "Cuentas", active: true },
 ];
 
-export function AccountsView({ client, accounts: initialAccounts }: AccountsViewProps) {
+export function AccountsView({ client, accounts }: AccountsViewProps) {
   const router = useRouter();
-  const [accounts, setAccounts] = useState(initialAccounts);
   const [showForm, setShowForm] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({
-    bank_name: "",
-    account_number: "",
-    account_type: "",
+    bankName: "",
+    accountNumber: "",
+    accountType: "",
     currency: "USD",
-    is_primary: false,
+    isPrimary: false,
   });
 
   async function handleCreate(e: React.FormEvent) {
@@ -66,15 +72,21 @@ export function AccountsView({ client, accounts: initialAccounts }: AccountsView
     try {
       await addClientAccount({
         clientId: client.id,
-        bankName: form.bank_name || undefined,
-        accountNumber: form.account_number,
-        accountType: form.account_type || undefined,
+        bankName: form.bankName || undefined,
+        accountNumber: form.accountNumber,
+        accountType: form.accountType || undefined,
         currency: form.currency,
-        isPrimary: form.is_primary,
+        isPrimary: form.isPrimary,
       });
       toast.success("Cuenta agregada");
       setShowForm(false);
-      setForm({ bank_name: "", account_number: "", account_type: "", currency: "USD", is_primary: false });
+      setForm({
+        bankName: "",
+        accountNumber: "",
+        accountType: "",
+        currency: "USD",
+        isPrimary: false,
+      });
       router.refresh();
     } catch (err) {
       toast.error((err as Error).message);
@@ -83,126 +95,135 @@ export function AccountsView({ client, accounts: initialAccounts }: AccountsView
     }
   }
 
-  const inputClass =
-    "w-full rounded-lg border border-border bg-surface-el px-3 py-2 text-sm text-text placeholder-text-tertiary focus:border-primary focus:outline-none";
-
   return (
-    <div className="animate-fade-in">
-      <div className="mb-4">
-        <Link href="/crm" className="text-sm text-text-muted hover:text-text">
-          ← Clientes
-        </Link>
-      </div>
+    <div className="animate-fade-in p-6 md:p-8">
+      <Link
+        href="/crm"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Clientes
+      </Link>
 
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-text">{client.company_name}</h1>
-            <div className="flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5">
-              <Shield className="h-3 w-3 text-danger" />
-              <span className="text-xs font-medium text-danger">Solo Admin</span>
-            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-text">
+              {client.companyName}
+            </h1>
+            <Badge variant="danger">
+              <Shield className="h-3 w-3" />
+              Solo Admin
+            </Badge>
           </div>
-          <p className="text-sm text-text-muted">Números de cuenta bancaria</p>
+          <p className="mt-1 text-sm text-text-muted">
+            Números de cuenta bancaria
+          </p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
-        >
-          <Plus className="h-4 w-4" />
-          Agregar cuenta
-        </button>
+        {!showForm && (
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4" />
+            Agregar cuenta
+          </Button>
+        )}
       </div>
 
-      {/* Tabs */}
       <div className="mb-6 flex items-center gap-1 border-b border-border">
         {tabs(client.id).map((tab) => (
           <Link
             key={tab.href}
             href={tab.href}
-            className={`px-3 py-2 text-sm font-medium transition border-b-2 ${
+            className={cn(
+              "border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
               tab.active
                 ? "border-primary text-primary"
                 : "border-transparent text-text-muted hover:text-text"
-            }`}
+            )}
           >
             {tab.label}
           </Link>
         ))}
       </div>
 
-      {/* Add form */}
       {showForm && (
-        <div className="mb-6 rounded-xl border border-border bg-surface p-5">
-          <h3 className="mb-4 font-semibold text-text">Nueva cuenta bancaria</h3>
-          <form onSubmit={handleCreate} className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="text"
-                value={form.bank_name}
-                onChange={(e) => setForm((p) => ({ ...p, bank_name: e.target.value }))}
-                placeholder="Banco"
-                className={inputClass}
-              />
-              <input
-                type="text"
-                value={form.account_type}
-                onChange={(e) => setForm((p) => ({ ...p, account_type: e.target.value }))}
-                placeholder="Tipo (cheques, ahorro...)"
-                className={inputClass}
-              />
-            </div>
-            <input
-              type="text"
-              value={form.account_number}
-              onChange={(e) => setForm((p) => ({ ...p, account_number: e.target.value }))}
-              placeholder="Número de cuenta *"
-              required
-              className={inputClass}
-            />
-            <div className="flex items-center gap-3">
-              <select
-                value={form.currency}
-                onChange={(e) => setForm((p) => ({ ...p, currency: e.target.value }))}
-                className="rounded-lg border border-border bg-surface-el px-3 py-2 text-sm text-text focus:outline-none"
-              >
-                <option value="USD">USD</option>
-                <option value="MXN">MXN</option>
-                <option value="EUR">EUR</option>
-              </select>
-              <label className="flex items-center gap-2 text-sm text-text-muted">
-                <input
-                  type="checkbox"
-                  checked={form.is_primary}
-                  onChange={(e) => setForm((p) => ({ ...p, is_primary: e.target.checked }))}
-                  className="accent-primary"
+        <Card className="mb-6">
+          <CardContent className="p-5">
+            <h3 className="mb-4 text-sm font-semibold text-text">
+              Nueva cuenta bancaria
+            </h3>
+            <form onSubmit={handleCreate} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  aria-label="Banco"
+                  value={form.bankName}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, bankName: e.target.value }))
+                  }
+                  placeholder="Banco"
                 />
-                Cuenta principal
-              </label>
-            </div>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="flex-1 rounded-lg border border-border px-4 py-2 text-sm text-text-muted hover:bg-surface-el"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={creating}
-                className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover disabled:opacity-60"
-              >
-                {creating ? "Guardando..." : "Agregar"}
-              </button>
-            </div>
-          </form>
-        </div>
+                <Input
+                  aria-label="Tipo de cuenta"
+                  value={form.accountType}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, accountType: e.target.value }))
+                  }
+                  placeholder="Tipo (cheques, ahorro…)"
+                />
+              </div>
+              <Input
+                aria-label="Número de cuenta"
+                value={form.accountNumber}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, accountNumber: e.target.value }))
+                }
+                placeholder="Número de cuenta *"
+                required
+              />
+              <div className="flex items-center gap-4">
+                <Select
+                  aria-label="Moneda"
+                  value={form.currency}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, currency: e.target.value }))
+                  }
+                  className="w-auto pr-8"
+                >
+                  <option value="USD">USD</option>
+                  <option value="MXN">MXN</option>
+                  <option value="EUR">EUR</option>
+                </Select>
+                <label className="flex items-center gap-2 text-sm text-text-muted">
+                  <input
+                    type="checkbox"
+                    checked={form.isPrimary}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, isPrimary: e.target.checked }))
+                    }
+                    className="h-4 w-4 accent-primary"
+                  />
+                  Cuenta principal
+                </label>
+              </div>
+              <div className="flex gap-3 pt-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => setShowForm(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" className="flex-1" loading={creating}>
+                  {creating ? "Guardando…" : "Agregar"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Accounts list */}
       {!accounts.length ? (
-        <p className="py-8 text-center text-sm text-text-muted">
+        <p className="py-12 text-center text-sm text-text-muted">
           No hay cuentas bancarias registradas
         </p>
       ) : (
@@ -210,32 +231,35 @@ export function AccountsView({ client, accounts: initialAccounts }: AccountsView
           {accounts.map((account) => (
             <div
               key={account.id}
-              className={`rounded-xl border p-4 ${
-                account.is_primary
-                  ? "border-primary/40 bg-primary-muted"
-                  : "border-border bg-surface"
-              }`}
+              className={cn(
+                "rounded-xl border p-4 transition-colors",
+                account.isPrimary
+                  ? "border-primary/40 bg-[color-mix(in_oklab,var(--primary)_8%,transparent)]"
+                  : "border-border bg-surface shadow-elev-1"
+              )}
             >
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-text">
-                      {account.bank_name ?? "Banco"}
+                      {account.bankName ?? "Banco"}
                     </p>
-                    {account.is_primary && (
-                      <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">
-                        Principal
-                      </span>
+                    {account.isPrimary && (
+                      <Badge variant="primary">Principal</Badge>
                     )}
                   </div>
-                  {account.account_type && (
-                    <p className="text-xs text-text-muted">{account.account_type}</p>
+                  {account.accountType && (
+                    <p className="text-xs text-text-muted">
+                      {account.accountType}
+                    </p>
                   )}
                 </div>
-                <span className="text-xs text-text-tertiary">{account.currency}</span>
+                <span className="text-xs text-text-tertiary">
+                  {account.currency}
+                </span>
               </div>
               <div className="mt-3">
-                <MaskedNumber value={account.account_number} />
+                <MaskedNumber value={account.accountNumber} />
               </div>
             </div>
           ))}
