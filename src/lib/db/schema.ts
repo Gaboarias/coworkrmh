@@ -3,6 +3,7 @@ import {
   pgEnum,
   uuid,
   text,
+  varchar,
   timestamp,
   boolean,
   integer,
@@ -10,8 +11,10 @@ import {
   date,
   json,
   primaryKey,
+  index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
@@ -28,6 +31,7 @@ export const projectStatusEnum = pgEnum("project_status", [
 ]);
 export const changelogActionEnum = pgEnum("changelog_action", [
   "created", "updated", "deleted", "status_changed", "assigned", "unassigned", "uploaded", "noted",
+  "product_created", "product_updated", "product_archived",
 ]);
 export const clientStatusEnum = pgEnum("client_status", ["active", "inactive", "prospect"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["pending", "paid", "overdue", "cancelled"]);
@@ -276,3 +280,185 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   client: one(clients, { fields: [payments.clientId], references: [clients.id] }),
   project: one(projects, { fields: [payments.projectId], references: [projects.id] }),
 }));
+
+// ─── Bucket members (acceso por equipo/negocio) ──────────────────────────────
+// Cada bucket = un equipo/negocio. Un usuario solo ve los buckets donde está
+// asignado. Mismo patrón que project_members (PK compuesta).
+
+export const bucketMembers = pgTable(
+  "bucket_members",
+  {
+    bucketId: uuid("bucket_id")
+      .notNull()
+      .references(() => buckets.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: userRoleEnum("role").default("member").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.bucketId, t.userId] }),
+  })
+);
+
+export const bucketMembersRelations = relations(bucketMembers, ({ one }) => ({
+  bucket: one(buckets, {
+    fields: [bucketMembers.bucketId],
+    references: [buckets.id],
+  }),
+  user: one(users, {
+    fields: [bucketMembers.userId],
+    references: [users.id],
+  }),
+}));
+
+// ─── Operations module ────────────────────────────────────────────────────────
+// Multi-negocio: cada negocio = un bucket (top-level ya existente). Las tablas
+// referencian bucketId NOT NULL para aislar catálogos por negocio.
+
+export const productStatusEnum = pgEnum("product_status", [
+  "active",
+  "archived",
+  "out_of_stock",
+]);
+
+export const currencyEnum = pgEnum("currency", ["CRC", "USD"]);
+
+export const productCategories = pgTable(
+  "product_categories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bucketId: uuid("bucket_id")
+      .notNull()
+      .references(() => buckets.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 120 }).notNull(),
+    color: varchar("color", { length: 7 }),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    bucketNameUnq: uniqueIndex("product_categories_bucket_name_unq").on(
+      t.bucketId,
+      t.name
+    ),
+  })
+);
+
+export const products = pgTable(
+  "products",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bucketId: uuid("bucket_id")
+      .notNull()
+      .references(() => buckets.id, { onDelete: "cascade" }),
+    categoryId: uuid("category_id").references(() => productCategories.id, {
+      onDelete: "set null",
+    }),
+    name: varchar("name", { length: 200 }).notNull(),
+    description: text("description"),
+    sku: varchar("sku", { length: 60 }),
+    status: productStatusEnum("status").default("active").notNull(),
+    currency: currencyEnum("currency").default("CRC").notNull(),
+    basePrice: numeric("base_price", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    defaultMaterialsCost: numeric("default_materials_cost", {
+      precision: 12,
+      scale: 2,
+    })
+      .default("0")
+      .notNull(),
+    defaultLaborCost: numeric("default_labor_cost", {
+      precision: 12,
+      scale: 2,
+    })
+      .default("0")
+      .notNull(),
+    imageUrl: text("image_url"),
+    createdById: uuid("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    archivedAt: timestamp("archived_at"),
+  },
+  (t) => ({
+    bucketIdx: index("products_bucket_idx").on(t.bucketId),
+    bucketStatusIdx: index("products_bucket_status_idx").on(
+      t.bucketId,
+      t.status
+    ),
+    bucketSkuUnq: uniqueIndex("products_bucket_sku_unq")
+      .on(t.bucketId, t.sku)
+      .where(sql`${t.sku} IS NOT NULL`),
+  })
+);
+
+export const productCostHistory = pgTable(
+  "product_cost_history",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    materialsCost: numeric("materials_cost", {
+      precision: 12,
+      scale: 2,
+    }).notNull(),
+    laborCost: numeric("labor_cost", { precision: 12, scale: 2 }).notNull(),
+    note: text("note"),
+    changedById: uuid("changed_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    changedAt: timestamp("changed_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    productChangedIdx: index("product_cost_history_product_changed_idx").on(
+      t.productId,
+      t.changedAt.desc()
+    ),
+  })
+);
+
+export const productCategoriesRelations = relations(
+  productCategories,
+  ({ one, many }) => ({
+    bucket: one(buckets, {
+      fields: [productCategories.bucketId],
+      references: [buckets.id],
+    }),
+    products: many(products),
+  })
+);
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+  bucket: one(buckets, {
+    fields: [products.bucketId],
+    references: [buckets.id],
+  }),
+  category: one(productCategories, {
+    fields: [products.categoryId],
+    references: [productCategories.id],
+  }),
+  createdBy: one(users, {
+    fields: [products.createdById],
+    references: [users.id],
+  }),
+  costHistory: many(productCostHistory),
+}));
+
+export const productCostHistoryRelations = relations(
+  productCostHistory,
+  ({ one }) => ({
+    product: one(products, {
+      fields: [productCostHistory.productId],
+      references: [products.id],
+    }),
+    changedBy: one(users, {
+      fields: [productCostHistory.changedById],
+      references: [users.id],
+    }),
+  })
+);

@@ -12,6 +12,7 @@ import {
   LogOut,
   Building2,
   CreditCard,
+  Package,
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -117,6 +118,23 @@ export function Sidebar() {
             </ul>
           </div>
         )}
+
+        <div className="mt-6">
+          <ul className="space-y-0.5">
+            <li>
+              <Link
+                href="/operations"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
+                  isActive("/operations") ? navActive : navIdle
+                )}
+              >
+                <Package className="h-4 w-4" />
+                Operaciones
+              </Link>
+            </li>
+          </ul>
+        </div>
       </nav>
 
       {/* Footer */}
@@ -126,11 +144,23 @@ export function Sidebar() {
             href="/settings/team"
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200 ease-out",
-              isActive("/settings/team") ? navActive : navIdle
+              isActive("/settings/team", true) ? navActive : navIdle
             )}
           >
             <Users className="h-4 w-4" />
             Equipo y roles
+          </Link>
+        )}
+        {isAdmin && (
+          <Link
+            href="/settings/teams"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200 ease-out",
+              isActive("/settings/teams") ? navActive : navIdle
+            )}
+          >
+            <Building2 className="h-4 w-4" />
+            Equipos y negocios
           </Link>
         )}
         <Link

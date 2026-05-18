@@ -32,6 +32,8 @@ de cambios, calendario y la cartera de clientes/pagos en una sola herramienta.
 - **Documentos**: subida a Vercel Blob, export a PDF/DOCX.
 - **Historial (changelog)**: registro de acciones por entidad.
 - **CRM**: clientes, cuentas, pagos (con estados) y vínculo cliente↔proyecto.
+- **Operaciones**: catálogo de productos + categorías + costos por negocio
+  (multi-negocio vía buckets). Ver "Módulo Operaciones".
 - **Dashboard / Mis tareas**: vistas agregadas por usuario.
 
 ## Estructura del proyecto
@@ -40,19 +42,21 @@ de cambios, calendario y la cartera de clientes/pagos en una sola herramienta.
 src/
   app/
     (app)/        Rutas autenticadas: dashboard, projects, my-tasks,
-                  calendar, crm, settings
+                  calendar, crm, operations, settings
     (auth)/       login, signup, reset-password
-    api/          route handlers: auth, documents, export, users
+    api/          route handlers: auth, documents, export, users,
+                  operations
   components/
     ui/           Primitivos (Button, Input, Select, Card, Badge,
                   Modal, Skeleton…) — CVA + cn(), token-driven
     layout/       Sidebar, Topbar, AppShell
     shared/       PageHeader, EmptyState, LoadingSpinner, UserAvatar
-    {projects,tasks,crm,calendar,notes,changelog,documents}/
+    {projects,tasks,crm,calendar,notes,changelog,documents,operations}/
   lib/
     db/           schema.ts (Drizzle) + cliente Neon
+    access.ts     scope de buckets por equipo (getAccessibleBuckets)
     actions/      Server Actions (clients, documents, notes,
-                  projects, tasks) — fuente de verdad de las firmas
+                  projects, tasks, products, teams) — firmas = verdad
     constants/    p.ej. projectStatus.ts (labels + variantes Badge)
     utils/        cn() (clsx + tailwind-merge)
   fonts/          Clash Display + Satoshi (self-hosted)
@@ -63,10 +67,12 @@ src/
 `users`, `accounts`, `sessions`, `verification_tokens`,
 `password_reset_tokens`, `buckets`, `projects`, `project_members`, `tasks`,
 `documents`, `notes`, `changelog`, `clients`, `client_accounts`, `payments`,
-`client_projects`.
+`client_projects`, `bucket_members`, `product_categories`, `products`,
+`product_cost_history`.
 
 Enums: `user_role`, `task_status`, `task_priority`, `project_status`,
-`changelog_action`, `client_status`, `payment_status`.
+`changelog_action`, `client_status`, `payment_status`, `product_status`,
+`currency`.
 
 ## Puesta en marcha (local)
 
@@ -122,6 +128,33 @@ Para cambios de esquema cuando **no** se puede `vercel env pull` (la
   estética Linear (hairline, focus-visible, estados loading/disabled).
 - **Tipografía** homogénea: Clash Display (títulos) + Satoshi (cuerpo),
   self-hosted. Estado/acción = color **+ icono + label**, nunca color solo.
+
+## Módulo Operaciones
+
+Soporte multi-negocio sin tablas de "workspaces": **cada negocio = un `bucket`**
+(top-level ya existente; ej. Azulejos & Colores, RMH). El acceso es por
+**equipo**: `bucket_members` define qué usuario entra a qué negocio. Un admin
+ve todos los buckets; el resto solo aquellos donde está asignado.
+
+- **Acceso/equipos:** página admin `/settings/teams` ("Equipos y negocios") para
+  crear negocios y asignar usuarios (rol por bucket). Helper de scope en
+  `src/lib/access.ts` (`getAccessibleBuckets`, `canAccessBucket`).
+- **Catálogo:** `/operations` (selector de negocio) →
+  `/operations/[bucketId]/products` (lista con filtros estado/categoría/búsqueda),
+  `…/products/new`, `…/products/[id]` (editar, archivar/restaurar),
+  `…/products/[id]/costs` (editor de costo activo + historial),
+  `…/categories` (CRUD de categorías).
+- **Tablas:** `bucket_members`, `product_categories`, `products`,
+  `product_cost_history`. Enums `product_status` (`active`/`archived`/
+  `out_of_stock`), `currency` (`CRC`/`USD`). `changelog_action` extendido con
+  `product_created`/`product_updated`/`product_archived`; el changelog enlaza al
+  producto vía `entityType:"product"` + `entityId` (sin columnas nuevas).
+- **Convención local:** las server actions de Operaciones (`lib/actions/products.ts`)
+  devuelven un envelope `{ success, data } | { success, error }` con validación
+  **Zod** (esquemas `*Schema` exportados). El resto del repo mantiene su patrón
+  (throw + data); `teams.ts` sigue el patrón existente del repo.
+- **Dinero:** `numeric(12,2)` → `string` en DB; helper `toMoney()` en la capa de
+  actions lo convierte a `number` para la app.
 
 ## Convenciones (importante)
 
