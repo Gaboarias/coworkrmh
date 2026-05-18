@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Trash2, UserPlus } from "lucide-react";
+import { Trash2, UserPlus, Archive, RotateCcw } from "lucide-react";
 import {
   updateProject,
   addProjectMember,
@@ -15,6 +15,11 @@ import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils/cn";
+import type { ProjectStatus } from "@/lib/types";
+import {
+  PROJECT_STATUS_ORDER,
+  PROJECT_STATUS_CONFIG,
+} from "@/lib/constants/projectStatus";
 
 interface Profile {
   id: string;
@@ -30,7 +35,9 @@ interface ProjectSettingsFormProps {
     description: string | null;
     bucketId: string | null;
     color: string | null;
-    status: "active" | "archived" | "completed";
+    status: ProjectStatus;
+    startDate: string | null;
+    endDate: string | null;
   };
   members: Profile[];
   allUsers: Profile[];
@@ -61,9 +68,13 @@ export function ProjectSettingsForm({
     bucketId: project.bucketId ?? "",
     color: project.color ?? COLORS[0],
     status: project.status,
+    startDate: project.startDate ?? "",
+    endDate: project.endDate ?? "",
   });
   const [saving, setSaving] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [addingUser, setAddingUser] = useState("");
+  const isArchived = project.status === "archived";
 
   const memberIds = new Set(members.map((m) => m.id));
   const nonMembers = allUsers.filter((u) => !memberIds.has(u.id));
@@ -78,6 +89,8 @@ export function ProjectSettingsForm({
         bucketId: form.bucketId || null,
         color: form.color,
         status: form.status,
+        startDate: form.startDate || null,
+        endDate: form.endDate || null,
       });
       toast.success("Proyecto actualizado");
       router.refresh();
@@ -85,6 +98,20 @@ export function ProjectSettingsForm({
       toast.error((err as Error).message);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleArchiveToggle() {
+    setArchiving(true);
+    try {
+      const next: ProjectStatus = isArchived ? "active" : "archived";
+      await updateProject(project.id, { status: next });
+      toast.success(isArchived ? "Proyecto reactivado" : "Proyecto archivado");
+      router.refresh();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setArchiving(false);
     }
   }
 
@@ -190,14 +217,52 @@ export function ProjectSettingsForm({
                   onChange={(e) =>
                     setForm((p) => ({
                       ...p,
-                      status: e.target.value as typeof form.status,
+                      status: e.target.value as ProjectStatus,
                     }))
                   }
                 >
-                  <option value="active">Activo</option>
-                  <option value="completed">Completado</option>
-                  <option value="archived">Archivado</option>
+                  {PROJECT_STATUS_ORDER.map((s) => (
+                    <option key={s} value={s}>
+                      {PROJECT_STATUS_CONFIG[s].label}
+                    </option>
+                  ))}
+                  {isArchived && <option value="archived">Archivado</option>}
                 </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="ps-start"
+                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                >
+                  Fecha de inicio
+                </label>
+                <Input
+                  id="ps-start"
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, startDate: e.target.value }))
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="ps-end"
+                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                >
+                  Fecha de fin
+                </label>
+                <Input
+                  id="ps-end"
+                  type="date"
+                  value={form.endDate}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, endDate: e.target.value }))
+                  }
+                />
               </div>
             </div>
 
@@ -223,9 +288,29 @@ export function ProjectSettingsForm({
               </div>
             </div>
 
-            <Button type="submit" loading={saving}>
-              {saving ? "Guardando…" : "Guardar cambios"}
-            </Button>
+            <div className="flex items-center gap-3 pt-1">
+              <Button type="submit" loading={saving}>
+                {saving ? "Guardando…" : "Guardar cambios"}
+              </Button>
+              <Button
+                type="button"
+                variant={isArchived ? "outline" : "ghost"}
+                loading={archiving}
+                onClick={handleArchiveToggle}
+              >
+                {isArchived ? (
+                  <>
+                    <RotateCcw className="h-4 w-4" />
+                    Reactivar
+                  </>
+                ) : (
+                  <>
+                    <Archive className="h-4 w-4" />
+                    Archivar
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

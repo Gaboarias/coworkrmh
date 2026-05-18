@@ -3,14 +3,25 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Link from "next/link";
+import { ChevronLeft, Plus } from "lucide-react";
 import { createProject, createBucket } from "@/lib/actions/projects";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { ArrowLeft, Plus } from "lucide-react";
-import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input, Textarea } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { cn } from "@/lib/utils/cn";
 
 const COLORS = [
-  "#6B5FE4", "#E4845F", "#4ADE80", "#FBBF24",
-  "#60A5FA", "#F87171", "#A78BFA", "#34D399",
+  "#FF2E72",
+  "#FFC857",
+  "#9967CA",
+  "#A8D3A8",
+  "#5BBFD2",
+  "#F8395A",
+  "#E4845F",
+  "#6E83FF",
 ];
 
 interface NewProjectClientProps {
@@ -23,6 +34,8 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
   const [description, setDescription] = useState("");
   const [bucketId, setBucketId] = useState("");
   const [color, setColor] = useState(COLORS[0]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [buckets, setBuckets] = useState(initialBuckets);
   const [loading, setLoading] = useState(false);
@@ -37,6 +50,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
       setBucketId(bucket.id);
       setNewBucketName("");
       setShowNewBucket(false);
+      toast.success("Categoría creada");
     } catch (err) {
       toast.error((err as Error).message);
     }
@@ -46,13 +60,14 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
     e.preventDefault();
     if (!name.trim()) return;
     setLoading(true);
-
     try {
       const project = await createProject({
         name: name.trim(),
         description: description || undefined,
         bucketId: bucketId || undefined,
         color,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
         dueDate: dueDate || undefined,
       });
       toast.success("Proyecto creado");
@@ -64,144 +79,194 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
   }
 
   return (
-    <div className="animate-fade-in mx-auto max-w-xl">
-      <div className="mb-6">
-        <Link
-          href="/projects"
-          className="mb-4 flex items-center gap-1 text-sm text-text-muted hover:text-text"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Volver a proyectos
-        </Link>
-        <PageHeader title="Nuevo proyecto" />
-      </div>
+    <div className="animate-fade-in mx-auto max-w-xl p-6 md:p-8">
+      <Link
+        href="/projects"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Volver a proyectos
+      </Link>
+      <PageHeader title="Nuevo proyecto" />
 
-      <div className="rounded-xl border border-border bg-surface p-6">
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Nombre del proyecto *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              autoFocus
-              className="w-full rounded-lg border border-border bg-surface-el px-3 py-2.5 text-sm text-text placeholder-text-tertiary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Nombre del proyecto"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Descripción
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full resize-none rounded-lg border border-border bg-surface-el px-3 py-2.5 text-sm text-text placeholder-text-tertiary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Describe el proyecto..."
-            />
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Bucket / Categoría
-            </label>
-            <div className="flex gap-2">
-              <select
-                value={bucketId}
-                onChange={(e) => setBucketId(e.target.value)}
-                className="flex-1 rounded-lg border border-border bg-surface-el px-3 py-2 text-sm text-text focus:border-primary focus:outline-none"
+      <Card>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label
+                htmlFor="np-name"
+                className="mb-1.5 block text-sm font-medium text-text-muted"
               >
-                <option value="">Sin categoría</option>
-                {buckets.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={() => setShowNewBucket(!showNewBucket)}
-                className="flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-xs text-text-muted hover:bg-surface-el"
-              >
-                <Plus className="h-3 w-3" />
-                Nuevo
-              </button>
+                Nombre del proyecto *
+              </label>
+              <Input
+                id="np-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                autoFocus
+                placeholder="Nombre del proyecto"
+              />
             </div>
 
-            {showNewBucket && (
-              <div className="mt-2 flex gap-2">
-                <input
-                  type="text"
-                  value={newBucketName}
-                  onChange={(e) => setNewBucketName(e.target.value)}
-                  placeholder="Nombre del bucket"
-                  className="flex-1 rounded-lg border border-border bg-surface-el px-3 py-2 text-sm text-text focus:border-primary focus:outline-none"
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleCreateBucket())}
-                />
-                <button
-                  type="button"
-                  onClick={handleCreateBucket}
-                  className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-primary-hover"
+            <div>
+              <label
+                htmlFor="np-desc"
+                className="mb-1.5 block text-sm font-medium text-text-muted"
+              >
+                Descripción
+              </label>
+              <Textarea
+                id="np-desc"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                placeholder="Describe el proyecto…"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="np-bucket"
+                className="mb-1.5 block text-sm font-medium text-text-muted"
+              >
+                Categoría
+              </label>
+              <div className="flex gap-2">
+                <Select
+                  id="np-bucket"
+                  value={bucketId}
+                  onChange={(e) => setBucketId(e.target.value)}
+                  className="flex-1"
                 >
-                  Crear
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Color
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {COLORS.map((c) => (
-                <button
-                  key={c}
+                  <option value="">Sin categoría</option>
+                  {buckets.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </Select>
+                <Button
                   type="button"
-                  onClick={() => setColor(c)}
-                  className={`h-7 w-7 rounded-lg transition ${
-                    color === c ? "ring-2 ring-white ring-offset-1 ring-offset-background" : ""
-                  }`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowNewBucket(!showNewBucket)}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Nueva
+                </Button>
+              </div>
+
+              {showNewBucket && (
+                <div className="mt-2 flex gap-2">
+                  <Input
+                    value={newBucketName}
+                    onChange={(e) => setNewBucketName(e.target.value)}
+                    placeholder="Nombre de la categoría"
+                    onKeyDown={(e) =>
+                      e.key === "Enter" &&
+                      (e.preventDefault(), handleCreateBucket())
+                    }
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleCreateBucket}
+                  >
+                    Crear
+                  </Button>
+                </div>
+              )}
             </div>
-          </div>
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Fecha límite
-            </label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full rounded-lg border border-border bg-surface-el px-3 py-2 text-sm text-text focus:border-primary focus:outline-none"
-            />
-          </div>
+            <div>
+              <span className="mb-2 block text-sm font-medium text-text-muted">
+                Color
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    aria-label={`Color ${c}`}
+                    onClick={() => setColor(c)}
+                    className={cn(
+                      "h-7 w-7 rounded-lg transition-transform hover:scale-110",
+                      color === c &&
+                        "ring-2 ring-text ring-offset-2 ring-offset-surface"
+                    )}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+            </div>
 
-          <div className="flex gap-3 pt-2">
-            <Link
-              href="/projects"
-              className="flex-1 rounded-lg border border-border px-4 py-2 text-center text-sm text-text-muted hover:bg-surface-el"
-            >
-              Cancelar
-            </Link>
-            <button
-              type="submit"
-              disabled={loading || !name.trim()}
-              className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-60"
-            >
-              {loading ? "Creando..." : "Crear proyecto"}
-            </button>
-          </div>
-        </form>
-      </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label
+                  htmlFor="np-start"
+                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                >
+                  Inicio
+                </label>
+                <Input
+                  id="np-start"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="np-end"
+                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                >
+                  Fin
+                </label>
+                <Input
+                  id="np-end"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="np-due"
+                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                >
+                  Límite
+                </label>
+                <Input
+                  id="np-due"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                className="flex-1"
+                onClick={() => router.push("/projects")}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1"
+                loading={loading}
+                disabled={!name.trim()}
+              >
+                {loading ? "Creando…" : "Crear proyecto"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

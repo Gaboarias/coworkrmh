@@ -113,6 +113,8 @@ export default async function ProjectSettingsPage({ params }: PageProps) {
             bucketId: project.bucketId ?? null,
             color: project.color ?? null,
             status: project.status,
+            startDate: project.startDate ?? null,
+            endDate: project.endDate ?? null,
           }}
           members={members}
           allUsers={allUsers}

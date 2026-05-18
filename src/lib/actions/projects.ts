@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { projects, projectMembers, buckets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import type { ProjectStatus } from "@/lib/types";
 
 async function requireUser() {
   const session = await auth();
@@ -17,6 +18,8 @@ export async function createProject(formData: {
   description?: string;
   bucketId?: string;
   color?: string;
+  startDate?: string;
+  endDate?: string;
   dueDate?: string;
 }) {
   const user = await requireUser();
@@ -28,6 +31,8 @@ export async function createProject(formData: {
       description: formData.description ?? null,
       bucketId: formData.bucketId ?? null,
       color: formData.color ?? null,
+      startDate: formData.startDate ?? null,
+      endDate: formData.endDate ?? null,
       dueDate: formData.dueDate ?? null,
       createdBy: user.id,
     })
@@ -50,8 +55,10 @@ export async function updateProject(
     description?: string | null;
     bucketId?: string | null;
     color?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
     dueDate?: string | null;
-    status?: "active" | "archived" | "completed";
+    status?: ProjectStatus;
   }
 ) {
   await db.update(projects).set({ ...updates, updatedAt: new Date() }).where(eq(projects.id, projectId));

@@ -17,7 +17,14 @@ import { relations } from "drizzle-orm";
 export const userRoleEnum = pgEnum("user_role", ["admin", "manager", "member"]);
 export const taskStatusEnum = pgEnum("task_status", ["todo", "in_progress", "review", "done"]);
 export const taskPriorityEnum = pgEnum("task_priority", ["low", "medium", "high", "urgent"]);
-export const projectStatusEnum = pgEnum("project_status", ["active", "archived", "completed"]);
+export const projectStatusEnum = pgEnum("project_status", [
+  "active",
+  "paused",
+  "in_review",
+  "stopped",
+  "completed",
+  "archived",
+]);
 export const changelogActionEnum = pgEnum("changelog_action", [
   "created", "updated", "deleted", "status_changed", "assigned", "unassigned", "uploaded", "noted",
 ]);
@@ -98,6 +105,8 @@ export const projects = pgTable("projects", {
   description: text("description"),
   status: projectStatusEnum("status").default("active").notNull(),
   color: text("color"),
+  startDate: date("start_date"),
+  endDate: date("end_date"),
   dueDate: date("due_date"),
   createdBy: uuid("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),

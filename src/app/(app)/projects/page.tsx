@@ -4,8 +4,23 @@ import { projects, buckets } from "@/lib/db/schema";
 import { eq, ne, asc, desc } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
 import Link from "next/link";
-import { Plus, FolderKanban } from "lucide-react";
+import { Plus, FolderKanban, CalendarDays } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { Badge } from "@/components/ui/Badge";
+import { PROJECT_STATUS_CONFIG } from "@/lib/constants/projectStatus";
+import type { ProjectStatus } from "@/lib/types";
+
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString("es", {
+    day: "2-digit",
+    month: "short",
+  });
+}
+
+function durationDays(start: string, end: string) {
+  const ms = new Date(end).getTime() - new Date(start).getTime();
+  return Math.max(0, Math.round(ms / 86_400_000)) + 1;
+}
 
 export default async function ProjectsPage() {
   const session = await auth();
@@ -46,7 +61,7 @@ export default async function ProjectsPage() {
   ];
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in p-6 md:p-8">
       <PageHeader
         title="Proyectos"
         description="Gestiona los proyectos de tu equipo"
@@ -54,7 +69,7 @@ export default async function ProjectsPage() {
           isManager ? (
             <Link
               href="/projects/new"
-              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color,box-shadow] duration-200 ease-out hover:bg-primary-hover"
             >
               <Plus className="h-4 w-4" />
               Nuevo proyecto
@@ -72,8 +87,9 @@ export default async function ProjectsPage() {
             isManager ? (
               <Link
                 href="/projects/new"
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
+                className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color,box-shadow] duration-200 ease-out hover:bg-primary-hover"
               >
+                <Plus className="h-4 w-4" />
                 Crear proyecto
               </Link>
             ) : undefined
@@ -125,26 +141,31 @@ export default async function ProjectsPage() {
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-xs ${
-                            project.status === "completed"
-                              ? "bg-success/10 text-success"
-                              : "bg-primary-muted text-primary"
-                          }`}
-                        >
-                          {project.status === "completed"
-                            ? "Completado"
-                            : "Activo"}
-                        </span>
-                        {project.dueDate && (
-                          <span className="text-xs text-text-tertiary">
-                            {new Date(project.dueDate).toLocaleDateString(
-                              "es",
-                              { day: "2-digit", month: "short" }
-                            )}
+                      <div className="flex items-center justify-between gap-2">
+                        {(() => {
+                          const cfg =
+                            PROJECT_STATUS_CONFIG[
+                              project.status as ProjectStatus
+                            ] ?? PROJECT_STATUS_CONFIG.active;
+                          return (
+                            <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                          );
+                        })()}
+                        {project.startDate && project.endDate ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
+                            <CalendarDays className="h-3 w-3" />
+                            {durationDays(
+                              project.startDate,
+                              project.endDate
+                            )}{" "}
+                            días
                           </span>
-                        )}
+                        ) : project.dueDate ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
+                            <CalendarDays className="h-3 w-3" />
+                            {formatDate(project.dueDate)}
+                          </span>
+                        ) : null}
                       </div>
                     </Link>
                   ))}
