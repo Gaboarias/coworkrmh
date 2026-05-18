@@ -53,6 +53,7 @@ export async function updateTask(
     dueDate?: string | null;
   }
 ) {
+  await requireUser();
   const completedAt =
     updates.status === "done"
       ? new Date()
@@ -71,6 +72,7 @@ export async function updateTask(
 }
 
 export async function deleteTask(taskId: string, projectId: string) {
+  await requireUser();
   await db.delete(tasks).where(eq(tasks.id, taskId));
   revalidatePath(`/projects/${projectId}`);
   revalidatePath("/my-tasks");
@@ -79,6 +81,7 @@ export async function deleteTask(taskId: string, projectId: string) {
 // ─── Subtareas ────────────────────────────────────────────────────────────────
 
 export async function listSubtasks(parentTaskId: string) {
+  await requireUser();
   return db
     .select({
       id: tasks.id,
@@ -95,6 +98,7 @@ export async function listSubtasks(parentTaskId: string) {
 // ─── Etiquetas ────────────────────────────────────────────────────────────────
 
 export async function listProjectTags(projectId: string) {
+  await requireUser();
   return db
     .select()
     .from(tags)
@@ -127,6 +131,7 @@ export async function deleteTag(tagId: string, projectId: string) {
 }
 
 export async function getTaskTagIds(taskId: string): Promise<string[]> {
+  await requireUser();
   const rows = await db
     .select({ tagId: taskTags.tagId })
     .from(taskTags)
@@ -152,6 +157,7 @@ export async function setTaskTags(
 export async function getTaskTagsForProject(
   projectId: string
 ): Promise<Record<string, string[]>> {
+  await requireUser();
   const rows = await db
     .select({ taskId: taskTags.taskId, tagId: taskTags.tagId })
     .from(taskTags)

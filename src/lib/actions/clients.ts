@@ -73,6 +73,7 @@ export async function updateClientRecord(
     status?: "active" | "inactive" | "prospect";
   }
 ) {
+  await requireUser();
   await db.update(clients).set({ ...updates, updatedAt: new Date() }).where(eq(clients.id, clientId));
   revalidatePath("/crm");
   revalidatePath(`/crm/${clientId}`);
@@ -110,6 +111,7 @@ export async function updatePaymentStatus(
   clientId: string,
   status: "pending" | "paid" | "overdue" | "cancelled"
 ) {
+  await requireUser();
   await db
     .update(payments)
     .set({
@@ -130,6 +132,7 @@ export async function addClientAccount(formData: {
   currency?: string;
   isPrimary?: boolean;
 }) {
+  await requireUser();
   const [account] = await db.insert(clientAccounts).values(formData).returning();
   revalidatePath(`/crm/${formData.clientId}/accounts`);
   return account;

@@ -71,9 +71,9 @@ export function QuoteForm({
     setSaving(true);
     const payload = {
       title: title.trim(),
-      customerName: customerName || undefined,
+      customerName: customerName.trim(),
       ivaRate,
-      notes: notes || undefined,
+      notes: notes.trim(),
       items: clean,
     };
     const res = isEdit

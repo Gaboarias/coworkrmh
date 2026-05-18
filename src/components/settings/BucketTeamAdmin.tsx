@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Trash2, Save } from "lucide-react";
@@ -66,6 +66,16 @@ export function BucketTeamAdmin({
     Object.fromEntries(members.map((m) => [m.id, { ...m }]))
   );
   const [savingMember, setSavingMember] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDraft(Object.fromEntries(profiles.map((p) => [p.id, { ...p }])));
+  }, [profiles]);
+
+  useEffect(() => {
+    setMemberDraft(
+      Object.fromEntries(members.map((m) => [m.id, { ...m }]))
+    );
+  }, [members]);
 
   function togglePerm(list: string[], key: string): string[] {
     return list.includes(key)

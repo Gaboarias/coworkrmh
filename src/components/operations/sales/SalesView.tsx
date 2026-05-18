@@ -122,7 +122,7 @@ export function SalesView({
               step="0.01"
               min="0"
               value={qty}
-              onChange={(e) => setQty(Number(e.target.value))}
+              onChange={(e) => setQty(Number(e.target.value) || 0)}
               aria-label="Cantidad"
               placeholder="Cant."
             />
@@ -131,7 +131,7 @@ export function SalesView({
               step="0.01"
               min="0"
               value={unitCost}
-              onChange={(e) => setUnitCost(Number(e.target.value))}
+              onChange={(e) => setUnitCost(Number(e.target.value) || 0)}
               aria-label="Costo unitario"
               placeholder="Costo unit."
             />
@@ -140,7 +140,7 @@ export function SalesView({
               step="0.01"
               min="0"
               value={unitPrice}
-              onChange={(e) => setUnitPrice(Number(e.target.value))}
+              onChange={(e) => setUnitPrice(Number(e.target.value) || 0)}
               aria-label="Precio unitario"
               placeholder="Precio unit."
             />

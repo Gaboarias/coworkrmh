@@ -509,6 +509,8 @@ export async function listProductCostHistory(
 export async function getBucketName(
   bucketId: string
 ): Promise<string | null> {
+  const user = await getSessionUser();
+  if (!user) return null;
   const [b] = await db
     .select({ name: buckets.name })
     .from(buckets)

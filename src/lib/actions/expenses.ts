@@ -134,9 +134,10 @@ export async function setBreakEvenMargin(
 ): Promise<ActionResult<{ ok: true }>> {
   if (!(await bucketCan(bucketId, "expenses.manage")))
     return fail("Sin permiso");
+  const safeMargin = Math.min(Math.max(margin, 0), 0.9999);
   await db
     .update(buckets)
-    .set({ breakEvenMargin: fromMoney(margin), updatedAt: new Date() })
+    .set({ breakEvenMargin: fromMoney(safeMargin), updatedAt: new Date() })
     .where(eq(buckets.id, bucketId));
   revalidatePath(`/operations/${bucketId}/expenses`);
   return ok({ ok: true });
