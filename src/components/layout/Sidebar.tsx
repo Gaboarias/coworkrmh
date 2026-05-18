@@ -11,9 +11,7 @@ import {
   Settings,
   LogOut,
   Building2,
-  CreditCard,
   Package,
-  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useUser } from "@/lib/hooks/useUser";
@@ -34,16 +32,12 @@ const navItems = [
   { href: "/calendar", label: "Calendario", icon: Calendar },
 ];
 
-const crmItems = [
-  { href: "/crm", label: "Clientes", icon: Building2, exact: true },
-  { href: "/crm/payments", label: "Pagos", icon: CreditCard },
-];
 
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { profile } = useUser();
-  const { isManager, isAdmin } = usePermissions();
+  const { isAdmin } = usePermissions();
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
@@ -93,31 +87,6 @@ export function Sidebar() {
             </li>
           ))}
         </ul>
-
-        {/* CRM section (admin/manager only) */}
-        {isManager && (
-          <div className="mt-6">
-            <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-muted">
-              CRM
-            </p>
-            <ul className="space-y-0.5">
-              {crmItems.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
-                      isActive(item.href, item.exact) ? navActive : navIdle
-                    )}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         <div className="mt-6">
           <ul className="space-y-0.5">

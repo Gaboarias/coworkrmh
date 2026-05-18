@@ -98,6 +98,7 @@ export const buckets = pgTable("buckets", {
   position: integer("position").default(0).notNull(),
   createdBy: uuid("created_by").notNull().references(() => users.id),
   teamAgreements: text("team_agreements"),
+  breakEvenMargin: numeric("break_even_margin", { precision: 5, scale: 4 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -202,6 +203,7 @@ export const changelog = pgTable("changelog", {
 
 export const clients = pgTable("clients", {
   id: uuid("id").primaryKey().defaultRandom(),
+  bucketId: uuid("bucket_id").references(() => buckets.id, { onDelete: "set null" }),
   companyName: text("company_name").notNull(),
   contactName: text("contact_name"),
   email: text("email"),
@@ -508,3 +510,167 @@ export const productCostHistoryRelations = relations(
     }),
   })
 );
+
+// ─── ERP: Cotizador / Ventas / Gastos ─────────────────────────────────────────
+
+export const quoteStatusEnum = pgEnum("quote_status", [
+  "draft",
+  "sent",
+  "accepted",
+  "rejected",
+]);
+
+export const expenseKindEnum = pgEnum("expense_kind", [
+  "investment",
+  "fixed_monthly",
+]);
+
+export const quotes = pgTable(
+  "quotes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bucketId: uuid("bucket_id")
+      .notNull()
+      .references(() => buckets.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").references(() => clients.id, {
+      onDelete: "set null",
+    }),
+    title: varchar("title", { length: 200 }).notNull(),
+    customerName: varchar("customer_name", { length: 200 }),
+    ivaRate: numeric("iva_rate", { precision: 5, scale: 4 })
+      .default("0.13")
+      .notNull(),
+    status: quoteStatusEnum("status").default("draft").notNull(),
+    notes: text("notes"),
+    createdById: uuid("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    bucketIdx: index("quotes_bucket_idx").on(t.bucketId),
+  })
+);
+
+export const quoteItems = pgTable(
+  "quote_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    quoteId: uuid("quote_id")
+      .notNull()
+      .references(() => quotes.id, { onDelete: "cascade" }),
+    description: text("description").notNull(),
+    qty: numeric("qty", { precision: 12, scale: 2 }).default("1").notNull(),
+    unitCost: numeric("unit_cost", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    unitPrice: numeric("unit_price", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    quoteIdx: index("quote_items_quote_idx").on(t.quoteId),
+  })
+);
+
+export const sales = pgTable(
+  "sales",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bucketId: uuid("bucket_id")
+      .notNull()
+      .references(() => buckets.id, { onDelete: "cascade" }),
+    saleDate: date("sale_date").notNull(),
+    description: text("description").notNull(),
+    clientId: uuid("client_id").references(() => clients.id, {
+      onDelete: "set null",
+    }),
+    clientName: varchar("client_name", { length: 200 }),
+    categoryId: uuid("category_id").references(() => productCategories.id, {
+      onDelete: "set null",
+    }),
+    qty: numeric("qty", { precision: 12, scale: 2 }).default("1").notNull(),
+    unitCost: numeric("unit_cost", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    unitPrice: numeric("unit_price", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    createdById: uuid("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    bucketDateIdx: index("sales_bucket_date_idx").on(t.bucketId, t.saleDate),
+  })
+);
+
+export const expenses = pgTable(
+  "expenses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bucketId: uuid("bucket_id")
+      .notNull()
+      .references(() => buckets.id, { onDelete: "cascade" }),
+    kind: expenseKindEnum("kind").notNull(),
+    concept: varchar("concept", { length: 200 }).notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    category: varchar("category", { length: 80 }),
+    priority: text("priority"),
+    createdById: uuid("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    bucketKindIdx: index("expenses_bucket_kind_idx").on(t.bucketId, t.kind),
+  })
+);
+
+export const quotesRelations = relations(quotes, ({ one, many }) => ({
+  bucket: one(buckets, {
+    fields: [quotes.bucketId],
+    references: [buckets.id],
+  }),
+  client: one(clients, {
+    fields: [quotes.clientId],
+    references: [clients.id],
+  }),
+  items: many(quoteItems),
+}));
+
+export const quoteItemsRelations = relations(quoteItems, ({ one }) => ({
+  quote: one(quotes, {
+    fields: [quoteItems.quoteId],
+    references: [quotes.id],
+  }),
+}));
+
+export const salesRelations = relations(sales, ({ one }) => ({
+  bucket: one(buckets, {
+    fields: [sales.bucketId],
+    references: [buckets.id],
+  }),
+  client: one(clients, {
+    fields: [sales.clientId],
+    references: [clients.id],
+  }),
+  category: one(productCategories, {
+    fields: [sales.categoryId],
+    references: [productCategories.id],
+  }),
+}));
+
+export const expensesRelations = relations(expenses, ({ one }) => ({
+  bucket: one(buckets, {
+    fields: [expenses.bucketId],
+    references: [buckets.id],
+  }),
+}));

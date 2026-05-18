@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { clients, clientAccounts, payments } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 
 async function requireUser() {
   const session = await auth();
@@ -20,14 +20,45 @@ export async function createClientRecord(formData: {
   address?: string;
   notes?: string;
   status?: "active" | "inactive" | "prospect";
+  bucketId?: string;
 }) {
   const user = await requireUser();
   const [client] = await db
     .insert(clients)
-    .values({ ...formData, createdBy: user.id })
+    .values({ ...formData, bucketId: formData.bucketId ?? null, createdBy: user.id })
     .returning();
+  if (formData.bucketId) revalidatePath(`/operations/${formData.bucketId}/clients`);
   revalidatePath("/crm");
   return client;
+}
+
+export async function listClientsForBucket(bucketId: string) {
+  await requireUser();
+  return db
+    .select()
+    .from(clients)
+    .where(eq(clients.bucketId, bucketId))
+    .orderBy(asc(clients.companyName));
+}
+
+export async function listPaymentsForBucket(bucketId: string) {
+  await requireUser();
+  return db
+    .select({
+      id: payments.id,
+      clientId: payments.clientId,
+      companyName: clients.companyName,
+      description: payments.description,
+      amount: payments.amount,
+      currency: payments.currency,
+      status: payments.status,
+      dueDate: payments.dueDate,
+      paidAt: payments.paidAt,
+    })
+    .from(payments)
+    .innerJoin(clients, eq(payments.clientId, clients.id))
+    .where(eq(clients.bucketId, bucketId))
+    .orderBy(asc(payments.dueDate));
 }
 
 export async function updateClientRecord(

@@ -9,6 +9,7 @@ import {
 } from "@/lib/actions/products";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProductList } from "@/components/operations/products/ProductList";
+import { OperationsTabs } from "@/components/operations/shared/OperationsTabs";
 
 interface PageProps {
   params: { bucketId: string };
@@ -36,6 +37,7 @@ export default async function ProductsPage({ params }: PageProps) {
         <ChevronLeft className="h-4 w-4" />
         Operaciones
       </Link>
+      <OperationsTabs bucketId={bucketId} />
       <PageHeader
         title={bucketName ?? "Productos"}
         description="Catálogo de productos del negocio"
