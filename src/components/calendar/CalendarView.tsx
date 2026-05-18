@@ -11,11 +11,13 @@ import {
   isSameMonth,
   isSameDay,
   isToday,
+  isWithinInterval,
   addMonths,
   subMonths,
+  parseISO,
 } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, History } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
 import type { TaskPriority } from "@/lib/types";
@@ -31,8 +33,36 @@ interface CalendarTask {
   project: { name: string; color: string | null } | null;
 }
 
+interface CalendarProject {
+  id: string;
+  name: string;
+  color: string | null;
+  startDate: string;
+  endDate: string;
+}
+
+interface CalendarNote {
+  id: string;
+  title: string;
+  projectId: string;
+  projectName: string | null;
+  projectColor: string | null;
+  date: string;
+}
+
+interface CalendarChange {
+  id: string;
+  description: string;
+  projectId: string;
+  projectName: string | null;
+  date: string;
+}
+
 interface CalendarViewProps {
   tasks: CalendarTask[];
+  projects: CalendarProject[];
+  notes: CalendarNote[];
+  changelog: CalendarChange[];
   userId: string;
 }
 
@@ -43,7 +73,15 @@ const priorityDot: Record<TaskPriority, string> = {
   low: "bg-text-tertiary",
 };
 
-export function CalendarView({ tasks, userId }: CalendarViewProps) {
+const DEFAULT_COLOR = "#6E83FF";
+
+export function CalendarView({
+  tasks,
+  projects,
+  notes,
+  changelog,
+  userId,
+}: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showMyTasksOnly, setShowMyTasksOnly] = useState(false);
 
@@ -61,6 +99,23 @@ export function CalendarView({ tasks, userId }: CalendarViewProps) {
     return filteredTasks.filter(
       (t) => t.dueDate && isSameDay(new Date(t.dueDate), day)
     );
+  }
+
+  function projectsForDay(day: Date) {
+    return projects.filter((p) => {
+      const start = parseISO(p.startDate);
+      const end = parseISO(p.endDate);
+      if (end < start) return false;
+      return isWithinInterval(day, { start, end });
+    });
+  }
+
+  function notesForDay(day: Date) {
+    return notes.filter((n) => isSameDay(parseISO(n.date), day));
+  }
+
+  function changesForDay(day: Date) {
+    return changelog.filter((c) => isSameDay(parseISO(c.date), day));
   }
 
   const weekDays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
@@ -115,6 +170,21 @@ export function CalendarView({ tasks, userId }: CalendarViewProps) {
         </div>
       </div>
 
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-tertiary">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-3 rounded-sm bg-primary/60" />
+          Duración de proyecto
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <FileText className="h-3 w-3" />
+          Nota
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <History className="h-3 w-3" />
+          Cambio
+        </span>
+      </div>
+
       <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-elev-1">
         <div className="grid grid-cols-7 border-b border-border">
           {weekDays.map((day) => (
@@ -130,14 +200,18 @@ export function CalendarView({ tasks, userId }: CalendarViewProps) {
         <div className="grid grid-cols-7">
           {days.map((day, idx) => {
             const dayTasks = tasksForDay(day);
+            const dayProjects = projectsForDay(day);
+            const dayNotes = notesForDay(day);
+            const dayChanges = changesForDay(day);
             const isCurrentMonth = isSameMonth(day, currentDate);
             const isCurrentDay = isToday(day);
+            const isMonday = idx % 7 === 0;
 
             return (
               <div
                 key={idx}
                 className={cn(
-                  "min-h-[100px] border-b border-r border-border p-2 last:border-r-0",
+                  "min-h-[128px] border-b border-r border-border p-2 last:border-r-0",
                   !isCurrentMonth && "bg-surface-el/40",
                   idx % 7 === 6 && "border-r-0"
                 )}
@@ -155,8 +229,51 @@ export function CalendarView({ tasks, userId }: CalendarViewProps) {
                   {format(day, "d")}
                 </div>
 
+                {dayProjects.length > 0 && (
+                  <div className="mb-1 space-y-0.5">
+                    {dayProjects.slice(0, 2).map((p) => {
+                      const color = p.color ?? DEFAULT_COLOR;
+                      const isStart = isSameDay(parseISO(p.startDate), day);
+                      const isEnd = isSameDay(parseISO(p.endDate), day);
+                      const showLabel = isStart || isMonday;
+                      return (
+                        <Link
+                          key={p.id}
+                          href={`/projects/${p.id}`}
+                          title={`${p.name} · ${format(
+                            parseISO(p.startDate),
+                            "d MMM",
+                            { locale: es }
+                          )} – ${format(parseISO(p.endDate), "d MMM", {
+                            locale: es,
+                          })}`}
+                          className={cn(
+                            "block h-4 truncate px-1 text-[10px] font-medium leading-4 text-text/90 transition-opacity hover:opacity-80",
+                            isStart ? "rounded-l-sm" : "",
+                            isEnd ? "rounded-r-sm" : "",
+                            !isStart && !isEnd && "rounded-none"
+                          )}
+                          style={{
+                            backgroundColor: `color-mix(in oklab, ${color} 38%, transparent)`,
+                            borderLeft: isStart
+                              ? `2px solid ${color}`
+                              : undefined,
+                          }}
+                        >
+                          {showLabel ? p.name : " "}
+                        </Link>
+                      );
+                    })}
+                    {dayProjects.length > 2 && (
+                      <p className="px-1 text-[10px] text-text-tertiary">
+                        +{dayProjects.length - 2} proyectos
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="space-y-0.5">
-                  {dayTasks.slice(0, 3).map((task) => (
+                  {dayTasks.slice(0, 2).map((task) => (
                     <Link
                       key={task.id}
                       href={`/projects/${task.projectId}`}
@@ -181,12 +298,42 @@ export function CalendarView({ tasks, userId }: CalendarViewProps) {
                       </span>
                     </Link>
                   ))}
-                  {dayTasks.length > 3 && (
+                  {dayTasks.length > 2 && (
                     <p className="px-1 text-xs text-text-tertiary">
-                      +{dayTasks.length - 3} más
+                      +{dayTasks.length - 2} más
                     </p>
                   )}
                 </div>
+
+                {(dayNotes.length > 0 || dayChanges.length > 0) && (
+                  <div className="mt-1 flex flex-wrap items-center gap-1">
+                    {dayNotes.slice(0, 2).map((n) => (
+                      <Link
+                        key={n.id}
+                        href={`/projects/${n.projectId}/notes`}
+                        title={`Nota: ${n.title}`}
+                        className="inline-flex max-w-full items-center gap-0.5 rounded bg-surface-el px-1 py-0.5 text-[10px] text-text-muted transition-colors hover:text-text"
+                      >
+                        <FileText className="h-2.5 w-2.5 flex-shrink-0" />
+                        <span className="truncate">{n.title}</span>
+                      </Link>
+                    ))}
+                    {dayChanges.length > 0 && (
+                      <Link
+                        href={
+                          dayChanges[0]!.projectId
+                            ? `/projects/${dayChanges[0]!.projectId}/changelog`
+                            : "#"
+                        }
+                        title={`${dayChanges.length} cambio(s)`}
+                        className="inline-flex items-center gap-0.5 rounded bg-surface-el px-1 py-0.5 text-[10px] text-text-muted transition-colors hover:text-text"
+                      >
+                        <History className="h-2.5 w-2.5" />
+                        {dayChanges.length}
+                      </Link>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
