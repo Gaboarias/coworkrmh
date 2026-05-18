@@ -674,3 +674,52 @@ export const expensesRelations = relations(expenses, ({ one }) => ({
     references: [buckets.id],
   }),
 }));
+
+// ─── Etiquetas de tareas ──────────────────────────────────────────────────────
+
+export const tags = pgTable(
+  "tags",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 60 }).notNull(),
+    color: varchar("color", { length: 7 }).default("#6E83FF").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    projectNameUnq: uniqueIndex("tags_project_name_unq").on(
+      t.projectId,
+      t.name
+    ),
+  })
+);
+
+export const taskTags = pgTable(
+  "task_tags",
+  {
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => tasks.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.taskId, t.tagId] }),
+  })
+);
+
+export const tagsRelations = relations(tags, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [tags.projectId],
+    references: [projects.id],
+  }),
+  taskTags: many(taskTags),
+}));
+
+export const taskTagsRelations = relations(taskTags, ({ one }) => ({
+  task: one(tasks, { fields: [taskTags.taskId], references: [tasks.id] }),
+  tag: one(tags, { fields: [taskTags.tagId], references: [tags.id] }),
+}));

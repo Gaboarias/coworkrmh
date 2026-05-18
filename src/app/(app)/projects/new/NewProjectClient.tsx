@@ -36,7 +36,6 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
   const [color, setColor] = useState(COLORS[0]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [dueDate, setDueDate] = useState("");
   const [buckets, setBuckets] = useState(initialBuckets);
   const [loading, setLoading] = useState(false);
   const [showNewBucket, setShowNewBucket] = useState(false);
@@ -68,7 +67,6 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
         color,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
-        dueDate: dueDate || undefined,
       });
       toast.success("Proyecto creado");
       router.push(`/projects/${project.id}`);
@@ -201,7 +199,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label
                   htmlFor="np-start"
@@ -228,20 +226,6 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="np-due"
-                  className="mb-1.5 block text-sm font-medium text-text-muted"
-                >
-                  Límite
-                </label>
-                <Input
-                  id="np-due"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
                 />
               </div>
             </div>

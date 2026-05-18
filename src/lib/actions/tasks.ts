@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { tasks } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { tasks, tags, taskTags } from "@/lib/db/schema";
+import { eq, asc } from "drizzle-orm";
 
 async function requireUser() {
   const session = await auth();
@@ -74,4 +74,92 @@ export async function deleteTask(taskId: string, projectId: string) {
   await db.delete(tasks).where(eq(tasks.id, taskId));
   revalidatePath(`/projects/${projectId}`);
   revalidatePath("/my-tasks");
+}
+
+// ─── Subtareas ────────────────────────────────────────────────────────────────
+
+export async function listSubtasks(parentTaskId: string) {
+  return db
+    .select({
+      id: tasks.id,
+      title: tasks.title,
+      status: tasks.status,
+      priority: tasks.priority,
+      assigneeId: tasks.assigneeId,
+    })
+    .from(tasks)
+    .where(eq(tasks.parentTaskId, parentTaskId))
+    .orderBy(asc(tasks.position), asc(tasks.createdAt));
+}
+
+// ─── Etiquetas ────────────────────────────────────────────────────────────────
+
+export async function listProjectTags(projectId: string) {
+  return db
+    .select()
+    .from(tags)
+    .where(eq(tags.projectId, projectId))
+    .orderBy(asc(tags.name));
+}
+
+export async function createTag(formData: {
+  projectId: string;
+  name: string;
+  color?: string;
+}) {
+  await requireUser();
+  const [tag] = await db
+    .insert(tags)
+    .values({
+      projectId: formData.projectId,
+      name: formData.name.trim(),
+      color: formData.color ?? "#6E83FF",
+    })
+    .returning();
+  revalidatePath(`/projects/${formData.projectId}`);
+  return tag;
+}
+
+export async function deleteTag(tagId: string, projectId: string) {
+  await requireUser();
+  await db.delete(tags).where(eq(tags.id, tagId));
+  revalidatePath(`/projects/${projectId}`);
+}
+
+export async function getTaskTagIds(taskId: string): Promise<string[]> {
+  const rows = await db
+    .select({ tagId: taskTags.tagId })
+    .from(taskTags)
+    .where(eq(taskTags.taskId, taskId));
+  return rows.map((r) => r.tagId);
+}
+
+export async function setTaskTags(
+  taskId: string,
+  projectId: string,
+  tagIds: string[]
+) {
+  await requireUser();
+  await db.delete(taskTags).where(eq(taskTags.taskId, taskId));
+  if (tagIds.length > 0) {
+    await db
+      .insert(taskTags)
+      .values(tagIds.map((tagId) => ({ taskId, tagId })));
+  }
+  revalidatePath(`/projects/${projectId}`);
+}
+
+export async function getTaskTagsForProject(
+  projectId: string
+): Promise<Record<string, string[]>> {
+  const rows = await db
+    .select({ taskId: taskTags.taskId, tagId: taskTags.tagId })
+    .from(taskTags)
+    .innerJoin(tasks, eq(taskTags.taskId, tasks.id))
+    .where(eq(tasks.projectId, projectId));
+  const map: Record<string, string[]> = {};
+  for (const r of rows) {
+    (map[r.taskId] ??= []).push(r.tagId);
+  }
+  return map;
 }
