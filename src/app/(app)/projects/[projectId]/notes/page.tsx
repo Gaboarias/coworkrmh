@@ -36,20 +36,16 @@ export default async function ProjectNotesPage({ params }: PageProps) {
     )
     .orderBy(desc(notes.updatedAt));
 
-  // Shape to match NotesListView interface (snake_case)
-  const shapedNotes = noteRows.map((n) => ({
+  const notesData = noteRows.map((n) => ({
     id: n.id,
     title: n.title,
-    content_text: n.contentText ?? null,
-    created_at: n.createdAt ? String(n.createdAt) : "",
-    updated_at: n.updatedAt ? String(n.updatedAt) : "",
+    contentText: n.contentText ?? null,
+    updatedAt: n.updatedAt ? n.updatedAt.toISOString() : "",
     creator: {
-      full_name: n.creatorName ?? null,
-      avatar_url: n.creatorAvatarUrl ?? null,
+      name: n.creatorName ?? null,
+      avatarUrl: n.creatorAvatarUrl ?? null,
     },
   }));
 
-  return (
-    <NotesListView project={project} notes={shapedNotes} />
-  );
+  return <NotesListView project={project} notes={notesData} />;
 }

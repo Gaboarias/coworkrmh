@@ -21,7 +21,6 @@ interface NoteEditorViewProps {
     id: string;
     title: string;
     content: unknown;
-    project_id: string;
   };
   project: { id: string; name: string };
   userId: string;

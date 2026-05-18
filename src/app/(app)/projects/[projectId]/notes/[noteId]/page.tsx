@@ -35,19 +35,11 @@ export default async function NoteEditorPage({ params }: PageProps) {
 
   if (!project) notFound();
 
-  // Shape note to match NoteEditorView interface (snake_case)
-  const shapedNote = {
-    id: note.id,
-    title: note.title,
-    content: note.content,
-    project_id: note.projectId,
-  };
-
   const userName = session?.user?.name ?? session?.user?.email ?? "";
 
   return (
     <NoteEditorView
-      note={shapedNote}
+      note={{ id: note.id, title: note.title, content: note.content }}
       project={project}
       userId={session?.user?.id ?? ""}
       userName={userName}

@@ -26,19 +26,18 @@ export default async function CalendarPage() {
     .where(isNotNull(tasks.dueDate))
     .orderBy(asc(tasks.dueDate));
 
-  // Shape to match CalendarView interface (snake_case with nested projects)
-  const shapedTasks = taskRows.map((t) => ({
+  const tasksData = taskRows.map((t) => ({
     id: t.id,
     title: t.title,
     status: t.status,
-    priority: t.priority as any,
-    due_date: t.dueDate!,
-    project_id: t.projectId ?? "",
-    assignee_id: t.assigneeId ?? null,
-    projects: t.projectName
+    priority: t.priority,
+    dueDate: t.dueDate as string,
+    projectId: t.projectId ?? "",
+    assigneeId: t.assigneeId ?? null,
+    project: t.projectName
       ? { name: t.projectName, color: t.projectColor ?? null }
       : null,
   }));
 
-  return <CalendarView tasks={shapedTasks} userId={session.user.id} />;
+  return <CalendarView tasks={tasksData} userId={session.user.id} />;
 }
