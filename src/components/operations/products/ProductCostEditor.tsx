@@ -7,7 +7,8 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { ProductMarginIndicator } from "./ProductMarginIndicator";
-import { updateProductCosts, type Product } from "@/lib/actions/products";
+import { updateProductCosts } from "@/lib/actions/products";
+import type { Product } from "@/lib/actions/products-shared";
 
 export function ProductCostEditor({ product }: { product: Product }) {
   const router = useRouter();

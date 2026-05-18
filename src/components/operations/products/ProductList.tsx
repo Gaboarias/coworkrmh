@@ -8,7 +8,8 @@ import { Select } from "@/components/ui/Select";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Package } from "lucide-react";
 import { ProductRow } from "./ProductRow";
-import { listProducts, type Product } from "@/lib/actions/products";
+import { listProducts } from "@/lib/actions/products";
+import type { Product } from "@/lib/actions/products-shared";
 
 interface Category {
   id: string;

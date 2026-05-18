@@ -3,7 +3,7 @@ import { Package } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ProductMarginIndicator } from "./ProductMarginIndicator";
-import type { Product } from "@/lib/actions/products";
+import type { Product } from "@/lib/actions/products-shared";
 
 const STATUS: Record<
   Product["status"],

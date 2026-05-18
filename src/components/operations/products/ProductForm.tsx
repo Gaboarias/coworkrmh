@@ -9,11 +9,8 @@ import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { ProductImageUpload } from "./ProductImageUpload";
 import { ProductMarginIndicator } from "./ProductMarginIndicator";
-import {
-  createProduct,
-  updateProduct,
-  type Product,
-} from "@/lib/actions/products";
+import { createProduct, updateProduct } from "@/lib/actions/products";
+import type { Product } from "@/lib/actions/products-shared";
 
 interface Category {
   id: string;

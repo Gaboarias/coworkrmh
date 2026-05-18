@@ -13,8 +13,8 @@ import { CategoryForm } from "./CategoryForm";
 import {
   updateProductCategory,
   deleteProductCategory,
-  type ProductCategory,
 } from "@/lib/actions/products";
+import type { ProductCategory } from "@/lib/actions/products-shared";
 
 export function CategoryList({
   bucketId,

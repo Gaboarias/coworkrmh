@@ -5,11 +5,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Archive, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import {
-  archiveProduct,
-  restoreProduct,
-  type Product,
-} from "@/lib/actions/products";
+import { archiveProduct, restoreProduct } from "@/lib/actions/products";
+import type { Product } from "@/lib/actions/products-shared";
 
 export function ProductArchiveButton({ product }: { product: Product }) {
   const router = useRouter();
