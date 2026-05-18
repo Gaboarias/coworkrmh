@@ -18,20 +18,21 @@ export default async function SettingsPage() {
 
   if (!user) redirect("/login");
 
-  // Shape to match UserSettingsForm's Profile type (snake_case)
-  const profile = {
-    id: user.id,
-    email: user.email ?? "",
-    full_name: user.name ?? null,
-    avatar_url: user.avatarUrl ?? null,
-    role: user.role ?? "member",
-    created_at: user.createdAt ? String(user.createdAt) : "",
-  };
-
   return (
-    <div className="animate-fade-in mx-auto max-w-2xl">
-      <PageHeader title="Configuración" description="Gestiona tu perfil y cuenta" />
-      <UserSettingsForm profile={profile as any} />
+    <div className="animate-fade-in mx-auto max-w-2xl p-6 md:p-8">
+      <PageHeader
+        title="Configuración"
+        description="Gestiona tu perfil y cuenta"
+      />
+      <UserSettingsForm
+        profile={{
+          id: user.id,
+          email: user.email ?? "",
+          name: user.name ?? null,
+          avatarUrl: user.avatarUrl ?? null,
+          role: user.role ?? "member",
+        }}
+      />
     </div>
   );
 }

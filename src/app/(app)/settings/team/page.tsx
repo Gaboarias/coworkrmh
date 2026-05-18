@@ -25,20 +25,21 @@ export default async function TeamSettingsPage() {
     .from(users)
     .orderBy(asc(users.name));
 
-  // Shape to match TeamManagement's Profile type (snake_case)
   const members = userRows.map((u) => ({
     id: u.id,
     email: u.email ?? "",
-    full_name: u.name ?? null,
-    avatar_url: u.avatarUrl ?? null,
+    name: u.name ?? null,
+    avatarUrl: u.avatarUrl ?? null,
     role: u.role ?? "member",
-    created_at: u.createdAt ? String(u.createdAt) : "",
   }));
 
   return (
-    <div className="animate-fade-in mx-auto max-w-2xl">
-      <PageHeader title="Equipo" description="Gestiona los miembros y roles del equipo" />
-      <TeamManagement members={members as any} currentUserId={session.user.id} />
+    <div className="animate-fade-in mx-auto max-w-2xl p-6 md:p-8">
+      <PageHeader
+        title="Equipo"
+        description="Gestiona los miembros y roles del equipo"
+      />
+      <TeamManagement members={members} currentUserId={session.user.id} />
     </div>
   );
 }

@@ -3,17 +3,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { createClientRecord } from "@/lib/actions/clients";
 import { PageHeader } from "@/components/shared/PageHeader";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input, Textarea } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 
 export default function NewClientPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    company_name: "",
-    contact_name: "",
+    companyName: "",
+    contactName: "",
     email: "",
     phone: "",
     address: "",
@@ -26,12 +30,12 @@ export default function NewClientPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.company_name.trim()) return;
+    if (!form.companyName.trim()) return;
     setLoading(true);
     try {
       const client = await createClientRecord({
-        companyName: form.company_name,
-        contactName: form.contact_name || undefined,
+        companyName: form.companyName,
+        contactName: form.contactName || undefined,
         email: form.email || undefined,
         phone: form.phone || undefined,
         address: form.address || undefined,
@@ -46,136 +50,156 @@ export default function NewClientPage() {
     }
   }
 
-  const inputClass =
-    "w-full rounded-lg border border-border bg-surface-el px-3 py-2.5 text-sm text-text placeholder-text-tertiary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
-    <div className="animate-fade-in mx-auto max-w-xl">
+    <div className="animate-fade-in mx-auto max-w-xl p-6 md:p-8">
       <Link
         href="/crm"
-        className="mb-4 flex items-center gap-1 text-sm text-text-muted hover:text-text"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4" />
         Volver a clientes
       </Link>
       <PageHeader title="Nuevo cliente" />
 
-      <div className="rounded-xl border border-border bg-surface p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Empresa / Razón social *
-            </label>
-            <input
-              type="text"
-              value={form.company_name}
-              onChange={(e) => set("company_name", e.target.value)}
-              required
-              autoFocus
-              className={inputClass}
-              placeholder="Nombre de la empresa"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+      <Card>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-text-muted">
-                Contacto principal
-              </label>
-              <input
-                type="text"
-                value={form.contact_name}
-                onChange={(e) => set("contact_name", e.target.value)}
-                className={inputClass}
-                placeholder="Nombre"
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-text-muted">
-                Estado
-              </label>
-              <select
-                value={form.status}
-                onChange={(e) => set("status", e.target.value)}
-                className={inputClass}
+              <label
+                htmlFor="nc-company"
+                className="mb-1.5 block text-sm font-medium text-text-muted"
               >
-                <option value="active">Activo</option>
-                <option value="prospect">Prospecto</option>
-                <option value="inactive">Inactivo</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-text-muted">
-                Correo
+                Empresa / Razón social *
               </label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => set("email", e.target.value)}
-                className={inputClass}
-                placeholder="email@empresa.com"
+              <Input
+                id="nc-company"
+                value={form.companyName}
+                onChange={(e) => set("companyName", e.target.value)}
+                required
+                autoFocus
+                placeholder="Nombre de la empresa"
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="nc-contact"
+                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                >
+                  Contacto principal
+                </label>
+                <Input
+                  id="nc-contact"
+                  value={form.contactName}
+                  onChange={(e) => set("contactName", e.target.value)}
+                  placeholder="Nombre"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="nc-status"
+                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                >
+                  Estado
+                </label>
+                <Select
+                  id="nc-status"
+                  value={form.status}
+                  onChange={(e) => set("status", e.target.value)}
+                >
+                  <option value="active">Activo</option>
+                  <option value="prospect">Prospecto</option>
+                  <option value="inactive">Inactivo</option>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="nc-email"
+                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                >
+                  Correo
+                </label>
+                <Input
+                  id="nc-email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => set("email", e.target.value)}
+                  placeholder="email@empresa.com"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="nc-phone"
+                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                >
+                  Teléfono
+                </label>
+                <Input
+                  id="nc-phone"
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => set("phone", e.target.value)}
+                  placeholder="+52 55 1234 5678"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-text-muted">
-                Teléfono
+              <label
+                htmlFor="nc-address"
+                className="mb-1.5 block text-sm font-medium text-text-muted"
+              >
+                Dirección
               </label>
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => set("phone", e.target.value)}
-                className={inputClass}
-                placeholder="+52 55 1234 5678"
+              <Input
+                id="nc-address"
+                value={form.address}
+                onChange={(e) => set("address", e.target.value)}
+                placeholder="Dirección del cliente"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Dirección
-            </label>
-            <input
-              type="text"
-              value={form.address}
-              onChange={(e) => set("address", e.target.value)}
-              className={inputClass}
-              placeholder="Dirección del cliente"
-            />
-          </div>
+            <div>
+              <label
+                htmlFor="nc-notes"
+                className="mb-1.5 block text-sm font-medium text-text-muted"
+              >
+                Notas internas
+              </label>
+              <Textarea
+                id="nc-notes"
+                value={form.notes}
+                onChange={(e) => set("notes", e.target.value)}
+                rows={3}
+                placeholder="Notas sobre el cliente…"
+              />
+            </div>
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
-              Notas internas
-            </label>
-            <textarea
-              value={form.notes}
-              onChange={(e) => set("notes", e.target.value)}
-              rows={3}
-              className={`${inputClass} resize-none`}
-              placeholder="Notas sobre el cliente..."
-            />
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <Link
-              href="/crm"
-              className="flex-1 rounded-lg border border-border px-4 py-2 text-center text-sm text-text-muted hover:bg-surface-el"
-            >
-              Cancelar
-            </Link>
-            <button
-              type="submit"
-              disabled={loading || !form.company_name.trim()}
-              className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-60"
-            >
-              {loading ? "Creando..." : "Crear cliente"}
-            </button>
-          </div>
-        </form>
-      </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                className="flex-1"
+                onClick={() => router.push("/crm")}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1"
+                loading={loading}
+                disabled={!form.companyName.trim()}
+              >
+                {loading ? "Creando…" : "Crear cliente"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
