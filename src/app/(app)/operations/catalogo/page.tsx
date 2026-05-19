@@ -1,4 +1,4 @@
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
 import { listProducts } from "@/lib/actions/erp";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { OperationsNav } from "@/components/operations/OperationsNav";
@@ -6,7 +6,7 @@ import { NoEntorno } from "@/components/operations/NoEntorno";
 import { CatalogView } from "@/components/operations/CatalogView";
 
 export default async function CatalogoPage() {
-  const ws = await getActiveWorkspace();
+  const { ws, can } = await getActiveWorkspaceWithPermissions();
   if (!ws) return <NoEntorno title="Catálogo" />;
   const products = await listProducts();
 
@@ -17,7 +17,7 @@ export default async function CatalogoPage() {
         title="Catálogo"
         description="Productos, costos y margen"
       />
-      <CatalogView products={products} />
+      <CatalogView products={products} canManage={can("catalog.manage")} />
     </div>
   );
 }

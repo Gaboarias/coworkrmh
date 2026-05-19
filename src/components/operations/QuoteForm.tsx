@@ -22,7 +22,13 @@ const emptyItem: QuoteItemInput = {
   unitPrice: 0,
 };
 
-export const QuoteForm = ({ quote }: { quote?: QuoteRow }) => {
+export const QuoteForm = ({
+  quote,
+  canManage = true,
+}: {
+  quote?: QuoteRow;
+  canManage?: boolean;
+}) => {
   const router = useRouter();
   const isEdit = !!quote;
   const [title, setTitle] = useState(quote?.title ?? "");
@@ -239,11 +245,13 @@ export const QuoteForm = ({ quote }: { quote?: QuoteRow }) => {
               variant="ghost"
               onClick={() => router.push("/operations/cotizador")}
             >
-              Cancelar
+              {canManage ? "Cancelar" : "Volver"}
             </Button>
-            <Button type="button" onClick={submit} loading={saving}>
-              {isEdit ? "Guardar cambios" : "Crear cotización"}
-            </Button>
+            {canManage && (
+              <Button type="button" onClick={submit} loading={saving}>
+                {isEdit ? "Guardar cambios" : "Crear cotización"}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

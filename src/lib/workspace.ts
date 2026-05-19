@@ -4,6 +4,10 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { workspaces, workspaceMembers } from "@/lib/db/schema";
 import { eq, and, asc, inArray } from "drizzle-orm";
+import {
+  ALL_WS_PERMISSIONS,
+  DEFAULT_WS_ROLE_PERMISSIONS,
+} from "@/lib/constants/workspacePermissions";
 
 export const WS_COOKIE = "ws";
 
@@ -148,4 +152,68 @@ export const ensureWorkspaceForResource = async (
       )}`
     );
   }
+};
+
+/**
+ * Permisos efectivos del usuario actual en un entorno (matriz configurable).
+ * - owner / admin global → todas las capacidades (bypass, no leen la matriz).
+ * - admin / member de entorno → `workspaces.role_permissions[role]`.
+ * - no miembro → set vacío.
+ */
+export const getWorkspacePermissions = async (
+  workspaceId: string
+): Promise<{
+  userId: string;
+  role: WorkspaceRole | null;
+  isGlobalAdmin: boolean;
+  permissions: Set<string>;
+}> => {
+  const { userId, role, isGlobalAdmin } = await getWorkspaceRole(workspaceId);
+  if (!userId || role === null) {
+    return { userId, role, isGlobalAdmin, permissions: new Set() };
+  }
+  if (role === "owner") {
+    return {
+      userId,
+      role,
+      isGlobalAdmin,
+      permissions: new Set(ALL_WS_PERMISSIONS),
+    };
+  }
+  const [row] = await db
+    .select({ rp: workspaces.rolePermissions })
+    .from(workspaces)
+    .where(eq(workspaces.id, workspaceId))
+    .limit(1);
+  const rp = row?.rp ?? DEFAULT_WS_ROLE_PERMISSIONS;
+  const keys = role === "admin" ? rp.admin : rp.member;
+  return {
+    userId,
+    role,
+    isGlobalAdmin,
+    permissions: new Set(keys ?? []),
+  };
+};
+
+/** True si el usuario actual tiene una capacidad concreta en el entorno. */
+export const workspaceCan = async (
+  workspaceId: string,
+  key: string
+): Promise<boolean> => {
+  const { permissions } = await getWorkspacePermissions(workspaceId);
+  return permissions.has(key);
+};
+
+/**
+ * Atajo para páginas server: entorno activo + un `can(key)` ya resuelto.
+ * Si no hay entorno activo, `ws` es null y `can` siempre false.
+ */
+export const getActiveWorkspaceWithPermissions = async (): Promise<{
+  ws: Workspace | null;
+  can: (key: string) => boolean;
+}> => {
+  const ws = await getActiveWorkspace();
+  if (!ws) return { ws: null, can: () => false };
+  const { permissions } = await getWorkspacePermissions(ws.id);
+  return { ws, can: (key: string) => permissions.has(key) };
 };

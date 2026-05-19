@@ -80,9 +80,11 @@ const Fields = ({
 export const TeamView = ({
   members,
   agreements,
+  canManage = true,
 }: {
   members: TeamMemberRow[];
   agreements: string;
+  canManage?: boolean;
 }) => {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(empty);
@@ -149,20 +151,25 @@ export const TeamView = ({
 
   return (
     <div className="space-y-5">
-      <Card>
-        <CardContent>
-          <h3 className="mb-3 text-sm font-semibold text-text">
-            Agregar miembro
-          </h3>
-          <form onSubmit={add} className="space-y-3">
-            <Fields d={draft} set={(p) => setDraft((s) => ({ ...s, ...p }))} />
-            <Button type="submit" loading={creating}>
-              <Plus className="h-4 w-4" />
-              Agregar
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {canManage && (
+        <Card>
+          <CardContent>
+            <h3 className="mb-3 text-sm font-semibold text-text">
+              Agregar miembro
+            </h3>
+            <form onSubmit={add} className="space-y-3">
+              <Fields
+                d={draft}
+                set={(p) => setDraft((s) => ({ ...s, ...p }))}
+              />
+              <Button type="submit" loading={creating}>
+                <Plus className="h-4 w-4" />
+                Agregar
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         {members.length === 0 ? (
@@ -224,29 +231,33 @@ export const TeamView = ({
                       </p>
                     )}
                   </div>
-                  <button
-                    onClick={() => {
-                      setEditId(m.id);
-                      setEditDraft({
-                        name: m.name,
-                        role: m.role ?? "",
-                        responsibilities: m.responsibilities ?? "",
-                        compensation: m.compensation ?? "",
-                        status: m.status,
-                      });
-                    }}
-                    aria-label={`Editar ${m.name}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-text"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => remove(m.id)}
-                    aria-label={`Eliminar ${m.name}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {canManage && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setEditId(m.id);
+                          setEditDraft({
+                            name: m.name,
+                            role: m.role ?? "",
+                            responsibilities: m.responsibilities ?? "",
+                            compensation: m.compensation ?? "",
+                            status: m.status,
+                          });
+                        }}
+                        aria-label={`Editar ${m.name}`}
+                        className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-text"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => remove(m.id)}
+                        aria-label={`Eliminar ${m.name}`}
+                        className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               )
             )}
@@ -264,13 +275,16 @@ export const TeamView = ({
             value={ag}
             onChange={(e) => setAg(e.target.value)}
             placeholder="Ej. % de ganancias por rol, pago por pieza vs. utilidades, aprobación de diseños…"
+            disabled={!canManage}
           />
-          <div className="mt-3">
-            <Button onClick={saveAgreements} loading={savingAg}>
-              <Save className="h-4 w-4" />
-              Guardar acuerdos
-            </Button>
-          </div>
+          {canManage && (
+            <div className="mt-3">
+              <Button onClick={saveAgreements} loading={savingAg}>
+                <Save className="h-4 w-4" />
+                Guardar acuerdos
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

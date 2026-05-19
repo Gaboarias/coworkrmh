@@ -15,6 +15,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
+import { DEFAULT_WS_ROLE_PERMISSIONS } from "@/lib/constants/workspacePermissions";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
@@ -109,12 +110,17 @@ export const buckets = pgTable("buckets", {
 
 // ─── Entornos (workspaces, estilo ClickUp) ───────────────────────────────────
 // Contenedor top-level aislado. Una persona puede pertenecer a varios sin que
-// se crucen. Membresía simple (sos miembro o no), sin roles por entorno.
+// se crucen. Membresía con rol (owner/admin/member) y matriz de permisos
+// configurable (role_permissions jsonb): owner ⇒ todo; admin/member ⇒ matriz.
 
 export const workspaces = pgTable("workspaces", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   color: text("color").default("#6B5FE4").notNull(),
+  rolePermissions: json("role_permissions")
+    .$type<{ admin: string[]; member: string[] }>()
+    .default(DEFAULT_WS_ROLE_PERMISSIONS)
+    .notNull(),
   teamAgreements: text("team_agreements"),
   breakEvenMargin: numeric("break_even_margin", { precision: 5, scale: 4 })
     .default("0.45")

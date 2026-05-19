@@ -5,11 +5,26 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { tasks, tags, taskTags } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
+import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
 
 async function requireUser() {
   const session = await auth();
   if (!session?.user) throw new Error("No autenticado");
   return session.user;
+}
+
+/** Usuario autenticado con la capacidad `projects.manage` en el entorno activo. */
+async function requireProjectsManage() {
+  const user = await requireUser();
+  const ws = await getActiveWorkspace();
+  if (!ws) throw new Error("Selecciona un entorno");
+  const { permissions } = await getWorkspacePermissions(ws.id);
+  if (!permissions.has("projects.manage")) {
+    throw new Error(
+      "No tenés permiso para gestionar tareas en este entorno"
+    );
+  }
+  return user;
 }
 
 export async function createTask(formData: {
@@ -21,7 +36,7 @@ export async function createTask(formData: {
   dueDate?: string;
   parentTaskId?: string;
 }) {
-  const user = await requireUser();
+  const user = await requireProjectsManage();
 
   const [task] = await db
     .insert(tasks)
@@ -53,7 +68,7 @@ export async function updateTask(
     dueDate?: string | null;
   }
 ) {
-  await requireUser();
+  await requireProjectsManage();
   const completedAt =
     updates.status === "done"
       ? new Date()
@@ -72,7 +87,7 @@ export async function updateTask(
 }
 
 export async function deleteTask(taskId: string, projectId: string) {
-  await requireUser();
+  await requireProjectsManage();
   await db.delete(tasks).where(eq(tasks.id, taskId));
   revalidatePath(`/projects/${projectId}`);
   revalidatePath("/my-tasks");
@@ -111,7 +126,7 @@ export async function createTag(formData: {
   name: string;
   color?: string;
 }) {
-  await requireUser();
+  await requireProjectsManage();
   const [tag] = await db
     .insert(tags)
     .values({
@@ -125,7 +140,7 @@ export async function createTag(formData: {
 }
 
 export async function deleteTag(tagId: string, projectId: string) {
-  await requireUser();
+  await requireProjectsManage();
   await db.delete(tags).where(eq(tags.id, tagId));
   revalidatePath(`/projects/${projectId}`);
 }
@@ -144,7 +159,7 @@ export async function setTaskTags(
   projectId: string,
   tagIds: string[]
 ) {
-  await requireUser();
+  await requireProjectsManage();
   await db.delete(taskTags).where(eq(taskTags.taskId, taskId));
   if (tagIds.length > 0) {
     await db

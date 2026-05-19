@@ -1,4 +1,4 @@
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
 import { listSales } from "@/lib/actions/erp";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { OperationsNav } from "@/components/operations/OperationsNav";
@@ -6,7 +6,7 @@ import { NoEntorno } from "@/components/operations/NoEntorno";
 import { SalesView } from "@/components/operations/SalesView";
 
 export default async function VentasPage() {
-  const ws = await getActiveWorkspace();
+  const { ws, can } = await getActiveWorkspaceWithPermissions();
   if (!ws) return <NoEntorno title="Ventas" />;
   const data = await listSales();
 
@@ -17,7 +17,7 @@ export default async function VentasPage() {
         title="Ventas"
         description="Registro de ventas y resumen por categoría"
       />
-      <SalesView data={data} />
+      <SalesView data={data} canManage={can("sales.manage")} />
     </div>
   );
 }

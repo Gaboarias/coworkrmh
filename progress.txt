@@ -21,3 +21,21 @@ Design audit (rama design/audit-fases) — 3 fases aplicadas:
 
 Pendiente (no bloqueante): merge design/audit-fases → preview tras tu OK;
 merge preview → main (producción) manual.
+
+Entornos abiertos + permisos (ramas feat/entornos-*) — sobre preview:
+- Fase 1 (feat/entornos, mergeada 1ddf304+98d9bc5): cualquier usuario crea
+  entorno y queda Owner; workspace_members.role (owner/admin/member);
+  editar nombre/color (EntornoSwitcher modal + AdminPanel). Migración
+  guarded aplicada (admin-wsrole-migrate, ya eliminada).
+- Fase 2 (feat/entornos-permisos): matriz de permisos por entorno como
+  jsonb workspaces.role_permissions {admin[],member[]} (única fuente,
+  sin tabla profiles). Claves canónicas en lib/constants/
+  workspacePermissions.ts. Resolución en lib/workspace.ts
+  (getWorkspacePermissions/workspaceCan; owner y admin-global = bypass
+  total). Enforcement server: erp.ts requireWsCan(<area>.manage),
+  projects.ts/tasks.ts projects.manage. UI: AdminPanel editor de matriz
+  (rol×capacidad) + cambio de rol por miembro; operations oculta/
+  inhabilita acciones según can. Migración guarded admin-wsperms-migrate
+  (ADD COLUMN IF NOT EXISTS jsonb + backfill default) — ELIMINAR tras
+  aplicar al alias estable.
+- Pendiente Fase 3: rebrand paleta pistacho (globals.css 4 themes).
