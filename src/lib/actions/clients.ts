@@ -28,7 +28,6 @@ export async function createClientRecord(formData: {
     .values({ ...formData, bucketId: formData.bucketId ?? null, createdBy: user.id })
     .returning();
   if (formData.bucketId) revalidatePath(`/operations/${formData.bucketId}/clients`);
-  revalidatePath("/crm");
   return client;
 }
 
@@ -75,8 +74,7 @@ export async function updateClientRecord(
 ) {
   await requireUser();
   await db.update(clients).set({ ...updates, updatedAt: new Date() }).where(eq(clients.id, clientId));
-  revalidatePath("/crm");
-  revalidatePath(`/crm/${clientId}`);
+  revalidatePath("/operations");
 }
 
 export async function createPayment(formData: {
@@ -102,7 +100,7 @@ export async function createPayment(formData: {
       createdBy: user.id,
     })
     .returning();
-  revalidatePath(`/crm/${formData.clientId}/payments`);
+  revalidatePath("/operations");
   return payment;
 }
 
@@ -120,7 +118,7 @@ export async function updatePaymentStatus(
       updatedAt: new Date(),
     })
     .where(eq(payments.id, paymentId));
-  revalidatePath(`/crm/${clientId}/payments`);
+  revalidatePath("/operations");
   revalidatePath("/dashboard");
 }
 
@@ -134,6 +132,6 @@ export async function addClientAccount(formData: {
 }) {
   await requireUser();
   const [account] = await db.insert(clientAccounts).values(formData).returning();
-  revalidatePath(`/crm/${formData.clientId}/accounts`);
+  revalidatePath("/operations");
   return account;
 }
