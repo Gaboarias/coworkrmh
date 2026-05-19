@@ -14,7 +14,7 @@ export default async function GastosPage() {
     <div className="animate-fade-in p-6 md:p-8">
       <OperationsNav />
       <PageHeader
-        title={`Gastos · ${ws.name}`}
+        title="Gastos"
         description="Inversión inicial, gastos fijos y punto de equilibrio"
       />
       <ExpensesView data={data} />

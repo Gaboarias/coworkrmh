@@ -65,13 +65,18 @@ export const EntornoSwitcher = () => {
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2.5 rounded-lg border border-sidebar-border bg-[color-mix(in_oklab,var(--sidebar-foreground)_6%,transparent)] px-3 py-2 text-left transition-colors hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_12%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-active"
+        className="relative flex w-full items-center gap-2.5 overflow-hidden rounded-lg border border-sidebar-border bg-[color-mix(in_oklab,var(--sidebar-foreground)_6%,transparent)] py-2 pl-4 pr-3 text-left transition-colors duration-200 ease-out hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_12%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-active"
       >
         <span
-          className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md text-white"
+          aria-hidden
+          className="absolute inset-y-0 left-0 w-1"
+          style={{ backgroundColor: active?.color ?? "#6B5FE4" }}
+        />
+        <span
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-white"
           style={{ backgroundColor: active?.color ?? "#6B5FE4" }}
         >
-          <Layers className="h-3.5 w-3.5" />
+          <Layers className="h-4 w-4" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[10px] uppercase tracking-wider text-sidebar-muted">

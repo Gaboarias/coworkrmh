@@ -29,7 +29,7 @@ export default async function CotizadorPage() {
     <div className="animate-fade-in p-6 md:p-8">
       <OperationsNav />
       <PageHeader
-        title={`Cotizador · ${ws.name}`}
+        title="Cotizador"
         description="Cotizaciones de pedidos personalizados"
         actions={
           <Link

@@ -14,7 +14,7 @@ export default async function VentasPage() {
     <div className="animate-fade-in p-6 md:p-8">
       <OperationsNav />
       <PageHeader
-        title={`Ventas · ${ws.name}`}
+        title="Ventas"
         description="Registro de ventas y resumen por categoría"
       />
       <SalesView data={data} />

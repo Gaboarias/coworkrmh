@@ -14,7 +14,7 @@ export default async function CatalogoPage() {
     <div className="animate-fade-in p-6 md:p-8">
       <OperationsNav />
       <PageHeader
-        title={`Catálogo · ${ws.name}`}
+        title="Catálogo"
         description="Productos, costos y margen"
       />
       <CatalogView products={products} />

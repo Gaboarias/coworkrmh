@@ -92,8 +92,8 @@ export default async function OperationsDashboard() {
     <div className="animate-fade-in p-6 md:p-8">
       <OperationsNav />
       <PageHeader
-        title={`Operaciones · ${ws.name}`}
-        description="Resumen del negocio"
+        title="Resumen"
+        description="Vista general del entorno activo"
       />
 
       <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3">

@@ -14,7 +14,7 @@ export default async function EquipoPage() {
     <div className="animate-fade-in p-6 md:p-8">
       <OperationsNav />
       <PageHeader
-        title={`Equipo · ${ws.name}`}
+        title="Equipo"
         description="Roles, responsabilidades, compensación y acuerdos"
       />
       <TeamView members={members} agreements={agreements} />
