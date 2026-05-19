@@ -7,6 +7,10 @@ export const toMoney = (s: string | null | undefined): number => {
 export const fromMoney = (n: number): string =>
   (Number.isFinite(n) ? n : 0).toFixed(2);
 
+// Tasas (IVA, margen) → columnas numeric(5,4): preservar 4 decimales.
+export const fromRate = (n: number): string =>
+  (Number.isFinite(n) ? n : 0).toFixed(4);
+
 // Formato de dinero unificado para todo el módulo Operaciones.
 export function formatMoney(
   n: number,

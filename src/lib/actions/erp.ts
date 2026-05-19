@@ -14,7 +14,7 @@ import {
 } from "@/lib/db/schema";
 import { eq, and, asc, desc } from "drizzle-orm";
 import { getActiveWorkspace } from "@/lib/workspace";
-import { toMoney, fromMoney } from "@/lib/utils/money";
+import { toMoney, fromMoney, fromRate } from "@/lib/utils/money";
 
 const requireWs = async () => {
   const session = await auth();
@@ -255,7 +255,7 @@ export const createQuote = async (input: {
       workspaceId: ws.id,
       title: input.title.trim(),
       customerName: input.customerName?.trim() || null,
-      ivaRate: fromMoney(input.ivaRate),
+      ivaRate: fromRate(input.ivaRate),
       notes: input.notes?.trim() || null,
       createdById: userId,
     })
@@ -290,7 +290,7 @@ export const updateQuote = async (
     .set({
       title: input.title.trim(),
       customerName: input.customerName?.trim() || null,
-      ivaRate: fromMoney(input.ivaRate),
+      ivaRate: fromRate(input.ivaRate),
       status: input.status ?? q.status,
       notes: input.notes?.trim() || null,
       updatedAt: new Date(),
@@ -498,7 +498,7 @@ export const setBreakEvenMargin = async (margin: number) => {
   const safe = Math.min(Math.max(margin, 0), 0.9999);
   await db
     .update(workspaces)
-    .set({ breakEvenMargin: fromMoney(safe), updatedAt: new Date() })
+    .set({ breakEvenMargin: fromRate(safe), updatedAt: new Date() })
     .where(eq(workspaces.id, ws.id));
   revalidatePath(`${ER}/gastos`);
 };
