@@ -38,4 +38,13 @@ Entornos abiertos + permisos (ramas feat/entornos-*) — sobre preview:
   inhabilita acciones según can. Migración guarded admin-wsperms-migrate
   (ADD COLUMN IF NOT EXISTS jsonb + backfill default) — ELIMINAR tras
   aplicar al alias estable.
-- Pendiente Fase 3: rebrand paleta pistacho (globals.css 4 themes).
+- Fase 3 (rebrand pistacho): globals.css retinte verde en los 4 sets
+  de tokens (Navy/Pine día/noche). --primary verde de acción accesible
+  (#356018 día / #a6d957 noche); pistacho claro = primary-muted/acentos;
+  --sidebar bosque #10231A día y noche; --success teal (no choca con el
+  verde de marca). Contraste WCAG AA verificado en todos los pares clave.
+  entornoColors.ts: 8 swatches distintos, ninguno verde, default azul.
+  Solo valores de color; estructura/nombres intactos.
+- Estado: Fases 1–3 de "Entornos abiertos + permisos + rebrand"
+  completas y verificadas en preview (type-check 0, migración aplicada,
+  e2e 12/12, deploy READY). Pendiente: merge preview → main manual.
