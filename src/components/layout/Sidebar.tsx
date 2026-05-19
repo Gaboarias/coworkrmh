@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { useUser } from "@/lib/hooks/useUser";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { EntornoSwitcher } from "@/components/layout/EntornoSwitcher";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
 
@@ -63,6 +64,9 @@ export function Sidebar() {
           <p className="text-xs text-sidebar-muted">Rewind Media House</p>
         </div>
       </div>
+
+      {/* Entorno activo */}
+      <EntornoSwitcher />
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">

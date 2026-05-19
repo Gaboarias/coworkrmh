@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { projects, projectMembers, buckets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import type { ProjectStatus } from "@/lib/types";
+import { getActiveWorkspace } from "@/lib/workspace";
 
 async function requireUser() {
   const session = await auth();
@@ -23,10 +24,13 @@ export async function createProject(formData: {
   dueDate?: string;
 }) {
   const user = await requireUser();
+  const ws = await getActiveWorkspace();
+  if (!ws) throw new Error("Selecciona un entorno antes de crear un proyecto");
 
   const [project] = await db
     .insert(projects)
     .values({
+      workspaceId: ws.id,
       name: formData.name,
       description: formData.description ?? null,
       bucketId: formData.bucketId ?? null,

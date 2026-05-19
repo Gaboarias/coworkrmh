@@ -2,20 +2,35 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { tasks, projects } from "@/lib/db/schema";
-import { eq, asc, desc } from "drizzle-orm";
+import { eq, and, asc, desc } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
 import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
 import Link from "next/link";
 import { format } from "date-fns";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { CheckSquare } from "lucide-react";
+import { CheckSquare, Layers } from "lucide-react";
+import { getActiveWorkspace } from "@/lib/workspace";
 
 export default async function MyTasksPage() {
   const session = await auth();
   if (!session) redirect("/login");
 
   const userId = session.user.id;
+
+  const ws = await getActiveWorkspace();
+  if (!ws) {
+    return (
+      <div className="animate-fade-in p-6 md:p-8">
+        <PageHeader title="Mis tareas" />
+        <EmptyState
+          icon={<Layers className="h-12 w-12" />}
+          title="Sin entorno"
+          description="No perteneces a ningún entorno todavía. Pedile a un administrador que te asigne uno."
+        />
+      </div>
+    );
+  }
 
   const taskRows = await db
     .select({
@@ -29,8 +44,13 @@ export default async function MyTasksPage() {
       projectColor: projects.color,
     })
     .from(tasks)
-    .leftJoin(projects, eq(tasks.projectId, projects.id))
-    .where(eq(tasks.assigneeId, userId))
+    .innerJoin(projects, eq(tasks.projectId, projects.id))
+    .where(
+      and(
+        eq(tasks.assigneeId, userId),
+        eq(projects.workspaceId, ws.id)
+      )
+    )
     .orderBy(asc(tasks.dueDate), desc(tasks.createdBy));
 
   const pending = taskRows.filter((t) => t.status !== "done");

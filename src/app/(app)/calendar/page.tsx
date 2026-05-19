@@ -4,10 +4,28 @@ import { db } from "@/lib/db";
 import { tasks, projects, notes, changelog } from "@/lib/db/schema";
 import { eq, isNotNull, asc, and } from "drizzle-orm";
 import { CalendarView } from "@/components/calendar/CalendarView";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Layers } from "lucide-react";
+import { getActiveWorkspace } from "@/lib/workspace";
 
 export default async function CalendarPage() {
   const session = await auth();
   if (!session) redirect("/login");
+
+  const ws = await getActiveWorkspace();
+  if (!ws) {
+    return (
+      <div className="animate-fade-in p-6 md:p-8">
+        <PageHeader title="Calendario" />
+        <EmptyState
+          icon={<Layers className="h-12 w-12" />}
+          title="Sin entorno"
+          description="No perteneces a ningún entorno todavía. Pedile a un administrador que te asigne uno."
+        />
+      </div>
+    );
+  }
 
   const taskRows = await db
     .select({
@@ -22,8 +40,8 @@ export default async function CalendarPage() {
       projectColor: projects.color,
     })
     .from(tasks)
-    .leftJoin(projects, eq(tasks.projectId, projects.id))
-    .where(isNotNull(tasks.dueDate))
+    .innerJoin(projects, eq(tasks.projectId, projects.id))
+    .where(and(isNotNull(tasks.dueDate), eq(projects.workspaceId, ws.id)))
     .orderBy(asc(tasks.dueDate));
 
   const tasksData = taskRows.map((t) => ({
@@ -48,7 +66,13 @@ export default async function CalendarPage() {
       endDate: projects.endDate,
     })
     .from(projects)
-    .where(and(isNotNull(projects.startDate), isNotNull(projects.endDate)));
+    .where(
+      and(
+        eq(projects.workspaceId, ws.id),
+        isNotNull(projects.startDate),
+        isNotNull(projects.endDate)
+      )
+    );
 
   const projectsData = projectRows.map((p) => ({
     id: p.id,
@@ -68,7 +92,8 @@ export default async function CalendarPage() {
       createdAt: notes.createdAt,
     })
     .from(notes)
-    .leftJoin(projects, eq(notes.projectId, projects.id))
+    .innerJoin(projects, eq(notes.projectId, projects.id))
+    .where(eq(projects.workspaceId, ws.id))
     .orderBy(asc(notes.createdAt));
 
   const notesData = noteRows.map((n) => ({
@@ -89,8 +114,10 @@ export default async function CalendarPage() {
       createdAt: changelog.createdAt,
     })
     .from(changelog)
-    .leftJoin(projects, eq(changelog.projectId, projects.id))
-    .where(isNotNull(changelog.projectId))
+    .innerJoin(projects, eq(changelog.projectId, projects.id))
+    .where(
+      and(isNotNull(changelog.projectId), eq(projects.workspaceId, ws.id))
+    )
     .orderBy(asc(changelog.createdAt));
 
   const changelogData = changelogRows.map((c) => ({

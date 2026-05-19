@@ -102,10 +102,42 @@ export const buckets = pgTable("buckets", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// ─── Entornos (workspaces, estilo ClickUp) ───────────────────────────────────
+// Contenedor top-level aislado. Una persona puede pertenecer a varios sin que
+// se crucen. Membresía simple (sos miembro o no), sin roles por entorno.
+
+export const workspaces = pgTable("workspaces", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  color: text("color").default("#6B5FE4").notNull(),
+  createdBy: uuid("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const workspaceMembers = pgTable(
+  "workspace_members",
+  {
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.workspaceId, t.userId] }),
+  })
+);
+
 // ─── Projects ─────────────────────────────────────────────────────────────────
 
 export const projects = pgTable("projects", {
   id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: uuid("workspace_id")
+    .notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
   bucketId: uuid("bucket_id").references(() => buckets.id, { onDelete: "set null" }),
   name: text("name").notNull(),
   description: text("description"),
@@ -254,6 +286,10 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [projects.workspaceId],
+    references: [workspaces.id],
+  }),
   bucket: one(buckets, { fields: [projects.bucketId], references: [buckets.id] }),
   members: many(projectMembers),
   tasks: many(tasks),
@@ -261,6 +297,25 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   documents: many(documents),
   changelog: many(changelog),
 }));
+
+export const workspacesRelations = relations(workspaces, ({ many }) => ({
+  members: many(workspaceMembers),
+  projects: many(projects),
+}));
+
+export const workspaceMembersRelations = relations(
+  workspaceMembers,
+  ({ one }) => ({
+    workspace: one(workspaces, {
+      fields: [workspaceMembers.workspaceId],
+      references: [workspaces.id],
+    }),
+    user: one(users, {
+      fields: [workspaceMembers.userId],
+      references: [users.id],
+    }),
+  })
+);
 
 export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
   project: one(projects, { fields: [projectMembers.projectId], references: [projects.id] }),

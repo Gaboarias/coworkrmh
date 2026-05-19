@@ -4,6 +4,7 @@ import { projects, tasks, projectMembers, users } from "@/lib/db/schema";
 import { eq, and, isNull, asc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { ProjectTasksView } from "@/components/projects/ProjectTasksView";
+import { ensureWorkspaceForResource } from "@/lib/workspace";
 
 interface PageProps {
   params: { projectId: string };
@@ -21,6 +22,11 @@ export default async function ProjectPage({ params }: PageProps) {
     .limit(1);
 
   if (!project) notFound();
+
+  await ensureWorkspaceForResource(
+    project.workspaceId,
+    `/projects/${params.projectId}`
+  );
 
   const taskRows = await db
     .select({
