@@ -110,6 +110,10 @@ export const workspaces = pgTable("workspaces", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   color: text("color").default("#6B5FE4").notNull(),
+  teamAgreements: text("team_agreements"),
+  breakEvenMargin: numeric("break_even_margin", { precision: 5, scale: 4 })
+    .default("0.45")
+    .notNull(),
   createdBy: uuid("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -384,4 +388,162 @@ export const tagsRelations = relations(tags, ({ one, many }) => ({
 export const taskTagsRelations = relations(taskTags, ({ one }) => ({
   task: one(tasks, { fields: [taskTags.taskId], references: [tasks.id] }),
   tag: one(tags, { fields: [taskTags.tagId], references: [tags.id] }),
+}));
+
+// ─── ERP por entorno (estructura del Excel) ──────────────────────────────────
+// Catálogo · Cotizador · Ventas · Gastos · Equipo. Todo scoped por workspace.
+// numeric(12,2) viaja como string; total/ganancia/%margen se derivan en lectura.
+
+export const erpExpenseKindEnum = pgEnum("erp_expense_kind", [
+  "investment",
+  "fixed",
+]);
+
+export const erpProducts = pgTable(
+  "erp_products",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    category: text("category"),
+    materialsCost: numeric("materials_cost", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    laborCost: numeric("labor_cost", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    price: numeric("price", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({ wsIdx: index("erp_products_ws_idx").on(t.workspaceId) })
+);
+
+export const erpQuotes = pgTable(
+  "erp_quotes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    customerName: text("customer_name"),
+    ivaRate: numeric("iva_rate", { precision: 5, scale: 4 })
+      .default("0.13")
+      .notNull(),
+    status: text("status").default("draft").notNull(),
+    notes: text("notes"),
+    createdById: uuid("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({ wsIdx: index("erp_quotes_ws_idx").on(t.workspaceId) })
+);
+
+export const erpQuoteItems = pgTable(
+  "erp_quote_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    quoteId: uuid("quote_id")
+      .notNull()
+      .references(() => erpQuotes.id, { onDelete: "cascade" }),
+    description: text("description").notNull(),
+    qty: numeric("qty", { precision: 12, scale: 2 }).default("1").notNull(),
+    unitCost: numeric("unit_cost", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    unitPrice: numeric("unit_price", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+  },
+  (t) => ({ quoteIdx: index("erp_quote_items_quote_idx").on(t.quoteId) })
+);
+
+export const erpSales = pgTable(
+  "erp_sales",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    saleDate: date("sale_date").notNull(),
+    description: text("description").notNull(),
+    clientName: text("client_name"),
+    category: text("category"),
+    qty: numeric("qty", { precision: 12, scale: 2 }).default("1").notNull(),
+    unitCost: numeric("unit_cost", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    unitPrice: numeric("unit_price", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    createdById: uuid("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    wsDateIdx: index("erp_sales_ws_date_idx").on(t.workspaceId, t.saleDate),
+  })
+);
+
+export const erpExpenses = pgTable(
+  "erp_expenses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    kind: erpExpenseKindEnum("kind").notNull(),
+    concept: text("concept").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    category: text("category"),
+    priority: text("priority"),
+    createdById: uuid("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    wsKindIdx: index("erp_expenses_ws_kind_idx").on(t.workspaceId, t.kind),
+  })
+);
+
+export const erpTeam = pgTable(
+  "erp_team",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    role: text("role"),
+    responsibilities: text("responsibilities"),
+    compensation: text("compensation"),
+    status: text("status").default("active").notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({ wsIdx: index("erp_team_ws_idx").on(t.workspaceId) })
+);
+
+export const erpQuotesRelations = relations(erpQuotes, ({ many }) => ({
+  items: many(erpQuoteItems),
+}));
+
+export const erpQuoteItemsRelations = relations(erpQuoteItems, ({ one }) => ({
+  quote: one(erpQuotes, {
+    fields: [erpQuoteItems.quoteId],
+    references: [erpQuotes.id],
+  }),
 }));

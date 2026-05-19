@@ -9,6 +9,7 @@ import {
   Calendar,
   Settings,
   LogOut,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useUser } from "@/lib/hooks/useUser";
@@ -27,6 +28,7 @@ const navItems = [
   { href: "/projects", label: "Proyectos", icon: FolderKanban },
   { href: "/my-tasks", label: "Mis tareas", icon: CheckSquare },
   { href: "/calendar", label: "Calendario", icon: Calendar },
+  { href: "/operations", label: "Operaciones", icon: Briefcase },
 ];
 
 
