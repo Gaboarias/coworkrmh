@@ -203,7 +203,7 @@ export const CatalogView = ({ products }: { products: ProductRow[] }) => {
               ) : (
                 <div
                   key={p.id}
-                  className="flex items-center gap-4 px-4 py-3 text-sm"
+                  className="flex items-center gap-4 px-4 py-3 text-sm transition-colors hover:bg-surface-el"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-text">{p.name}</p>

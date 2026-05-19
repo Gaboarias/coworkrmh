@@ -125,7 +125,7 @@ export const EntornoSwitcher = () => {
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 right-0 z-50 mt-1 overflow-hidden rounded-lg border border-border bg-surface shadow-elev-3"
+          className="absolute left-0 right-0 z-50 mt-1 origin-top animate-slide-up overflow-hidden rounded-lg border border-border bg-surface shadow-elev-3"
         >
           <ul ref={listRef} className="max-h-72 overflow-y-auto py-1">
             {data.workspaces.length === 0 && (

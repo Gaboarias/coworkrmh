@@ -1,0 +1,23 @@
+PISTACHIO — PROGRESO
+
+Arquitectura actual (rama preview):
+- Entornos (workspaces) estilo ClickUp: aíslan Project Management + ERP.
+  Membresía simple, admin-gestionada (/admin). Selector en Sidebar.
+- ERP por entorno (del Excel azulejos_colores_negocio.xlsx): Catálogo,
+  Cotizador (IVA), Ventas (+resumen categoría), Gastos (inversión/fijos/
+  punto de equilibrio), Equipo (+acuerdos). Acciones en lib/actions/erp.ts.
+- ERP/CRM/admin viejo eliminado por completo (tablas dropeadas).
+
+Design audit (rama design/audit-fases) — 3 fases aplicadas:
+- Fase 1: acento de color del entorno en el switcher; títulos sin
+  "· entorno"; loading.tsx en todas las rutas /operations/*;
+  OperationsNav + breadcrumb en cotizador/nuevo y /[id].
+- Fase 2: aria-label en inputs inline; targets icon-only 36px + focus
+  ring; guía en dashboard vacío; teclado en EntornoSwitcher (Esc/flechas);
+  readableFg() para contraste del chip; ritmo (OperationsNav mb-4).
+- Fase 3: dropdown del switcher con animate-slide-up; SwatchPicker
+  (paleta acotada accesible) reemplaza color picker nativo en /admin;
+  hover de filas consistente; badges semánticas verificadas.
+
+Pendiente (no bloqueante): merge design/audit-fases → preview tras tu OK;
+merge preview → main (producción) manual.

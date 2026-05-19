@@ -15,8 +15,10 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { SwatchPicker } from "@/components/ui/SwatchPicker";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { cn } from "@/lib/utils/cn";
+import { readableFg } from "@/lib/utils/color";
 import {
   createWorkspace,
   updateWorkspace,
@@ -222,13 +224,13 @@ const WorkspacesTab = ({
               <label className="mb-1.5 block text-xs font-medium text-text-muted">
                 Color
               </label>
-              <input
-                type="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="h-9 w-12 cursor-pointer rounded-lg border border-border bg-surface-el"
-                aria-label="Color del entorno"
-              />
+              <div className="flex h-9 items-center">
+                <SwatchPicker
+                  value={color}
+                  onChange={setColor}
+                  label="Color del entorno"
+                />
+              </div>
             </div>
             <Button type="submit" loading={creating}>
               <Plus className="h-4 w-4" />
@@ -256,8 +258,11 @@ const WorkspacesTab = ({
                   className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-el"
                 >
                   <span
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
-                    style={{ backgroundColor: w.color }}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg"
+                    style={{
+                      backgroundColor: w.color,
+                      color: readableFg(w.color),
+                    }}
                   >
                     <Layers className="h-4 w-4" />
                   </span>
@@ -467,7 +472,7 @@ const UsersTab = ({
       <Card>
         <div className="divide-y divide-border">
           {users.map((u) => (
-            <div key={u.id} className="flex items-center gap-3 p-4">
+            <div key={u.id} className="flex items-center gap-3 p-4 transition-colors hover:bg-surface-el">
               <UserAvatar
                 name={u.name ?? undefined}
                 avatarUrl={u.avatarUrl ?? undefined}

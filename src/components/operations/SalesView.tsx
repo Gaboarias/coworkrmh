@@ -167,7 +167,7 @@ export const SalesView = ({ data }: { data: SalesResult }) => {
         ) : (
           <div className="divide-y divide-border">
             {data.rows.map((r) => (
-              <div key={r.id} className="flex items-center gap-4 px-4 py-3">
+              <div key={r.id} className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-surface-el">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-text">
                     {r.description}
