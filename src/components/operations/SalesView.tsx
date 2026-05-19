@@ -81,16 +81,19 @@ export const SalesView = ({ data }: { data: SalesResult }) => {
               value={f.description}
               onChange={(e) => set({ description: e.target.value })}
               placeholder="Descripción"
+              aria-label="Descripción"
             />
             <Input
               value={f.clientName}
               onChange={(e) => set({ clientName: e.target.value })}
               placeholder="Cliente"
+              aria-label="Cliente"
             />
             <Input
               value={f.category}
               onChange={(e) => set({ category: e.target.value })}
               placeholder="Categoría"
+              aria-label="Categoría"
             />
             <Input
               type="number"
@@ -184,7 +187,7 @@ export const SalesView = ({ data }: { data: SalesResult }) => {
                 <button
                   onClick={() => remove(r.id)}
                   aria-label="Eliminar venta"
-                  className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger"
+                  className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

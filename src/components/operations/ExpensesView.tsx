@@ -110,7 +110,7 @@ export const ExpensesView = ({ data }: { data: ExpensesResult }) => {
                 <button
                   onClick={() => remove(e.id)}
                   aria-label="Eliminar"
-                  className="text-text-tertiary hover:text-danger"
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -144,6 +144,7 @@ export const ExpensesView = ({ data }: { data: ExpensesResult }) => {
               value={concept}
               onChange={(e) => setConcept(e.target.value)}
               placeholder="Concepto"
+              aria-label="Concepto"
             />
             <Input
               type="number"
@@ -158,6 +159,7 @@ export const ExpensesView = ({ data }: { data: ExpensesResult }) => {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder="Categoría (Equipos, Materiales…)"
+              aria-label="Categoría"
             />
             {kind === "investment" && (
               <Select

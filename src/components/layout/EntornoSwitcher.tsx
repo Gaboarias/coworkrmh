@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronsUpDown, Shield, Layers } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { readableFg } from "@/lib/utils/color";
 
 interface Ws {
   id: string;
@@ -19,6 +20,8 @@ export const EntornoSwitcher = () => {
   const [data, setData] = useState<WsData | null>(null);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     fetch("/api/ws")
@@ -36,6 +39,32 @@ export const EntornoSwitcher = () => {
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        btnRef.current?.focus();
+        return;
+      }
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const items = Array.from(
+          listRef.current?.querySelectorAll<HTMLAnchorElement>("a[href]") ?? []
+        );
+        if (items.length === 0) return;
+        const i = items.indexOf(document.activeElement as HTMLAnchorElement);
+        const next =
+          e.key === "ArrowDown"
+            ? items[(i + 1 + items.length) % items.length]
+            : items[(i - 1 + items.length) % items.length];
+        next?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   if (!data) {
     return (
@@ -61,6 +90,7 @@ export const EntornoSwitcher = () => {
   return (
     <div ref={ref} className="relative mx-3 mt-3">
       <button
+        ref={btnRef}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -73,8 +103,11 @@ export const EntornoSwitcher = () => {
           style={{ backgroundColor: active?.color ?? "#6B5FE4" }}
         />
         <span
-          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-white"
-          style={{ backgroundColor: active?.color ?? "#6B5FE4" }}
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
+          style={{
+            backgroundColor: active?.color ?? "#6B5FE4",
+            color: readableFg(active?.color ?? "#6B5FE4"),
+          }}
         >
           <Layers className="h-4 w-4" />
         </span>
@@ -94,7 +127,7 @@ export const EntornoSwitcher = () => {
           role="listbox"
           className="absolute left-0 right-0 z-50 mt-1 overflow-hidden rounded-lg border border-border bg-surface shadow-elev-3"
         >
-          <ul className="max-h-72 overflow-y-auto py-1">
+          <ul ref={listRef} className="max-h-72 overflow-y-auto py-1">
             {data.workspaces.length === 0 && (
               <li className="px-3 py-2 text-xs text-text-muted">
                 No hay entornos todavía.

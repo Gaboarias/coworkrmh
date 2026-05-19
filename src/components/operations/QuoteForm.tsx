@@ -136,6 +136,7 @@ export const QuoteForm = ({ quote }: { quote?: QuoteRow }) => {
                 value={it.description}
                 onChange={(e) => setItem(i, { description: e.target.value })}
                 placeholder="Descripción"
+                aria-label="Descripción del ítem"
               />
               <Input
                 type="number"

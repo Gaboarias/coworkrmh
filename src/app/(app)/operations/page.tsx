@@ -35,6 +35,13 @@ export default async function OperationsDashboard() {
       ? Math.round((sales.totals.profit / sales.totals.sales) * 100)
       : 0;
 
+  const isEmpty =
+    products.length === 0 &&
+    quotes.length === 0 &&
+    sales.rows.length === 0 &&
+    expenses.totalFixed === 0 &&
+    expenses.totalInvestment === 0;
+
   const kpis = [
     { label: "Ventas totales", value: formatMoney(sales.totals.sales) },
     {
@@ -109,6 +116,23 @@ export default async function OperationsDashboard() {
           </Card>
         ))}
       </div>
+
+      {isEmpty && (
+        <Card className="mb-4 border-primary/30">
+          <CardContent className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-text-muted">
+              Este entorno está vacío. Empezá cargando productos en el
+              catálogo para ver costos, márgenes y el resto.
+            </p>
+            <Link
+              href="/operations/catalogo"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color] duration-200 ease-out hover:bg-primary-hover"
+            >
+              Ir al Catálogo
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {modules.map((m) => (

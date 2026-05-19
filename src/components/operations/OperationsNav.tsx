@@ -19,7 +19,7 @@ export const OperationsNav = () => {
     exact ? pathname === href : pathname.startsWith(href);
 
   return (
-    <div className="mb-6 flex flex-wrap items-center gap-1 border-b border-border">
+    <div className="mb-4 flex flex-wrap items-center gap-1 border-b border-border">
       {tabs.map((t) => (
         <Link
           key={t.href}

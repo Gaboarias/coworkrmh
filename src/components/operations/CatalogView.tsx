@@ -229,14 +229,14 @@ export const CatalogView = ({ products }: { products: ProductRow[] }) => {
                   <button
                     onClick={() => startEdit(p)}
                     aria-label={`Editar ${p.name}`}
-                    className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-el hover:text-text"
+                    className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-text"
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => remove(p.id)}
                     aria-label={`Eliminar ${p.name}`}
-                    className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger"
+                    className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
