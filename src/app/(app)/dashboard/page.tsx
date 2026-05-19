@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import Link from "next/link";
 import { CheckSquare, FolderKanban, AlertCircle } from "lucide-react";
+import { formatMoney } from "@/lib/utils/money";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -208,8 +209,10 @@ export default async function DashboardPage() {
                           <p
                             className={`text-sm font-medium ${isOverdue ? "text-danger" : "text-text"}`}
                           >
-                            {payment.currency}{" "}
-                            {Number(payment.amount).toLocaleString()}
+                            {formatMoney(
+                              Number(payment.amount),
+                              payment.currency
+                            )}
                           </p>
                           {payment.dueDate && (
                             <p

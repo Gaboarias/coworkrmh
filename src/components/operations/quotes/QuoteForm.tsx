@@ -66,9 +66,9 @@ export function QuoteForm({
     setSaving(true);
     const payload = {
       title: title.trim(),
-      customerName: customerName.trim(),
+      customerName: customerName.trim() || undefined,
       ivaRate,
-      notes: notes.trim(),
+      notes: notes.trim() || undefined,
       items: clean,
     };
     const res = isEdit

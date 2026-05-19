@@ -1,9 +1,7 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Plus, Calculator } from "lucide-react";
-import { canAccessBucket } from "@/lib/access";
+import { ChevronLeft, Plus, Calculator, Lock } from "lucide-react";
+import { requireBucketAccess } from "@/lib/access";
 import { listQuotes } from "@/lib/actions/quotes";
-import { getBucketName } from "@/lib/actions/products";
 import { computeQuoteTotals } from "@/lib/actions/erp-shared";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { OperationsTabs } from "@/components/operations/shared/OperationsTabs";
@@ -27,11 +25,9 @@ export default async function QuotesPage({
   params: { bucketId: string };
 }) {
   const { bucketId } = params;
-  if (!(await canAccessBucket(bucketId))) redirect("/operations");
-  const [res, bucketName] = await Promise.all([
-    listQuotes(bucketId),
-    getBucketName(bucketId),
-  ]);
+  const { bucketName } = await requireBucketAccess(bucketId);
+  const res = await listQuotes(bucketId);
+  const allowed = res.success;
   const quotes = res.success ? res.data : [];
 
   return (
@@ -45,20 +41,30 @@ export default async function QuotesPage({
       </Link>
       <OperationsTabs bucketId={bucketId} />
       <PageHeader
-        title={`Cotizador · ${bucketName ?? ""}`}
+        title={`Cotizador · ${bucketName}`}
         description="Cotizaciones de pedidos personalizados"
         actions={
-          <Link
-            href={`/operations/${bucketId}/quotes/new`}
-            className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color] duration-200 ease-out hover:bg-primary-hover"
-          >
-            <Plus className="h-4 w-4" />
-            Nueva cotización
-          </Link>
+          allowed ? (
+            <Link
+              href={`/operations/${bucketId}/quotes/new`}
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color] duration-200 ease-out hover:bg-primary-hover"
+            >
+              <Plus className="h-4 w-4" />
+              Nueva cotización
+            </Link>
+          ) : null
         }
       />
       <Card>
-        {quotes.length === 0 ? (
+        {!allowed ? (
+          <EmptyState
+            icon={<Lock className="h-10 w-10" />}
+            title="Sin acceso"
+            description={
+              res.success ? "" : res.error
+            }
+          />
+        ) : quotes.length === 0 ? (
           <EmptyState
             icon={<Calculator className="h-10 w-10" />}
             title="Sin cotizaciones"
