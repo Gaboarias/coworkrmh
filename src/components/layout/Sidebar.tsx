@@ -10,7 +10,6 @@ import {
   Users,
   Settings,
   LogOut,
-  Building2,
   Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -110,26 +109,14 @@ export function Sidebar() {
       <div className="border-t border-sidebar-border p-3">
         {isAdmin && (
           <Link
-            href="/settings/team"
+            href="/admin"
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200 ease-out",
-              isActive("/settings/team", true) ? navActive : navIdle
+              isActive("/admin") ? navActive : navIdle
             )}
           >
             <Users className="h-4 w-4" />
-            Equipo y roles
-          </Link>
-        )}
-        {isAdmin && (
-          <Link
-            href="/settings/teams"
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200 ease-out",
-              isActive("/settings/teams") ? navActive : navIdle
-            )}
-          >
-            <Building2 className="h-4 w-4" />
-            Equipos y negocios
+            Administración
           </Link>
         )}
         <Link

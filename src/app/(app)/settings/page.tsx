@@ -41,16 +41,16 @@ export default async function SettingsPage() {
         <Card className="mt-6">
           <CardContent className="p-0">
             <Link
-              href="/settings/team"
+              href="/admin"
               className="flex items-center gap-4 p-5 transition-colors hover:bg-surface-el"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-muted text-primary">
                 <Users className="h-5 w-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-text">Equipo y roles</p>
+                <p className="font-medium text-text">Administración</p>
                 <p className="text-sm text-text-muted">
-                  Gestiona los miembros del equipo y asigna roles
+                  Usuarios, roles, negocios, perfiles y permisos
                 </p>
               </div>
               <ChevronRight className="h-4 w-4 flex-shrink-0 text-text-tertiary" />

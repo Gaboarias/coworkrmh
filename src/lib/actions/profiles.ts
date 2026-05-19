@@ -67,7 +67,7 @@ export async function createProfile(formData: {
       isSystem: false,
     })
     .returning();
-  revalidatePath("/settings/teams");
+  revalidatePath("/admin/negocios");
   return row;
 }
 
@@ -89,14 +89,14 @@ export async function updateProfile(
       updatedAt: new Date(),
     })
     .where(eq(profiles.id, profileId));
-  revalidatePath("/settings/teams");
+  revalidatePath("/admin/negocios");
   revalidatePath("/operations");
 }
 
 export async function deleteProfile(profileId: string) {
   await requireAdmin();
   await db.delete(profiles).where(eq(profiles.id, profileId));
-  revalidatePath("/settings/teams");
+  revalidatePath("/admin/negocios");
 }
 
 export async function assignMemberProfile(
@@ -130,7 +130,7 @@ export async function assignMemberProfile(
         eq(bucketMembers.userId, userId)
       )
     );
-  revalidatePath("/settings/teams");
+  revalidatePath("/admin/negocios");
   revalidatePath("/operations");
 }
 
@@ -143,7 +143,7 @@ export async function updateTeamAgreements(
     .update(buckets)
     .set({ teamAgreements: agreements, updatedAt: new Date() })
     .where(eq(buckets.id, bucketId));
-  revalidatePath("/settings/teams");
+  revalidatePath("/admin/negocios");
   revalidatePath(`/operations/${bucketId}/team`);
 }
 
@@ -196,4 +196,110 @@ export async function listTeamMembers(
       compensation: r.compensation ?? null,
       memberStatus: r.memberStatus ?? "active",
     }));
+}
+
+export interface UserAssignment {
+  bucketId: string;
+  bucketName: string;
+  profileId: string | null;
+  profileName: string | null;
+  responsibilities: string | null;
+  compensation: string | null;
+  memberStatus: string;
+}
+export interface UserWithAssignments {
+  id: string;
+  name: string | null;
+  email: string;
+  avatarUrl: string | null;
+  role: "admin" | "manager" | "member";
+  assignments: UserAssignment[];
+}
+
+export async function listUsersWithAssignments(): Promise<
+  UserWithAssignments[]
+> {
+  await requireAdmin();
+  const userRows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      avatarUrl: users.avatarUrl,
+      role: users.role,
+    })
+    .from(users)
+    .orderBy(asc(users.name));
+
+  const memRows = await db
+    .select({
+      userId: bucketMembers.userId,
+      bucketId: bucketMembers.bucketId,
+      bucketName: buckets.name,
+      profileId: bucketMembers.profileId,
+      profileName: profiles.name,
+      responsibilities: bucketMembers.responsibilities,
+      compensation: bucketMembers.compensation,
+      memberStatus: bucketMembers.memberStatus,
+    })
+    .from(bucketMembers)
+    .leftJoin(buckets, eq(bucketMembers.bucketId, buckets.id))
+    .leftJoin(profiles, eq(bucketMembers.profileId, profiles.id));
+
+  const byUser = new Map<string, UserAssignment[]>();
+  for (const m of memRows) {
+    const list = byUser.get(m.userId) ?? [];
+    list.push({
+      bucketId: m.bucketId,
+      bucketName: m.bucketName ?? "—",
+      profileId: m.profileId ?? null,
+      profileName: m.profileName ?? null,
+      responsibilities: m.responsibilities ?? null,
+      compensation: m.compensation ?? null,
+      memberStatus: m.memberStatus ?? "active",
+    });
+    byUser.set(m.userId, list);
+  }
+
+  return userRows.map((u) => ({
+    id: u.id,
+    name: u.name ?? null,
+    email: u.email ?? "",
+    avatarUrl: u.avatarUrl ?? null,
+    role: u.role,
+    assignments: byUser.get(u.id) ?? [],
+  }));
+}
+
+export interface BucketProfilesBundle {
+  id: string;
+  name: string;
+  color: string | null;
+  profiles: { id: string; name: string }[];
+}
+
+export async function listBucketsWithProfiles(): Promise<
+  BucketProfilesBundle[]
+> {
+  await requireAdmin();
+  const bRows = await db
+    .select({ id: buckets.id, name: buckets.name, color: buckets.color })
+    .from(buckets)
+    .orderBy(asc(buckets.position));
+  const pRows = await db
+    .select({
+      id: profiles.id,
+      bucketId: profiles.bucketId,
+      name: profiles.name,
+    })
+    .from(profiles)
+    .orderBy(asc(profiles.sortOrder), asc(profiles.name));
+  return bRows.map((b) => ({
+    id: b.id,
+    name: b.name,
+    color: b.color,
+    profiles: pRows
+      .filter((p) => p.bucketId === b.id)
+      .map((p) => ({ id: p.id, name: p.name })),
+  }));
 }

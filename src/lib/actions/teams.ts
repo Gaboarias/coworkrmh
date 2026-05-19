@@ -75,7 +75,7 @@ export async function createBusinessBucket(formData: {
   // Perfiles semilla editables (Fundador/Admin, Diseño+Redes, Constructor…).
   await seedDefaultProfiles(bucket.id);
 
-  revalidatePath("/settings/teams");
+  revalidatePath("/admin/negocios");
   revalidatePath("/operations");
   return bucket;
 }
@@ -89,7 +89,7 @@ export async function updateBusinessBucket(
     .update(buckets)
     .set({ ...updates, updatedAt: new Date() })
     .where(eq(buckets.id, bucketId));
-  revalidatePath("/settings/teams");
+  revalidatePath("/admin/negocios");
 }
 
 export async function addBucketMember(
@@ -105,7 +105,7 @@ export async function addBucketMember(
       target: [bucketMembers.bucketId, bucketMembers.userId],
       set: { role },
     });
-  revalidatePath("/settings/teams");
+  revalidatePath("/admin/negocios");
   revalidatePath("/operations");
 }
 
@@ -119,6 +119,6 @@ export async function removeBucketMember(bucketId: string, userId: string) {
         eq(bucketMembers.userId, userId)
       )
     );
-  revalidatePath("/settings/teams");
+  revalidatePath("/admin/negocios");
   revalidatePath("/operations");
 }

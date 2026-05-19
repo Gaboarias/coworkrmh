@@ -29,11 +29,11 @@ export default async function OperationsPage() {
           action={
             isAdmin ? (
               <Link
-                href="/settings/teams"
+                href="/admin/negocios"
                 className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color] duration-200 ease-out hover:bg-primary-hover"
               >
                 <Package className="h-4 w-4" />
-                Gestionar equipos
+                Gestionar negocios
               </Link>
             ) : undefined
           }
