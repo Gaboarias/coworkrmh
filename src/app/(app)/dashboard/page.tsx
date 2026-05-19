@@ -173,7 +173,7 @@ export default async function DashboardPage() {
                 </h3>
               </div>
               <Link
-                href="/operations"
+                href="/dashboard"
                 className="text-xs text-primary hover:text-primary-hover"
               >
                 Ver Operaciones
@@ -194,7 +194,7 @@ export default async function DashboardPage() {
                   return (
                     <li key={payment.id}>
                       <Link
-                        href="/operations"
+                        href="/dashboard"
                         className="flex items-center justify-between rounded-lg p-2 transition hover:bg-surface-el"
                       >
                         <div className="min-w-0">

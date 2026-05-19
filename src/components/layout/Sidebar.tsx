@@ -7,14 +7,11 @@ import {
   FolderKanban,
   CheckSquare,
   Calendar,
-  Users,
   Settings,
   LogOut,
-  Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useUser } from "@/lib/hooks/useUser";
-import { usePermissions } from "@/lib/hooks/usePermissions";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
@@ -36,7 +33,6 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { profile } = useUser();
-  const { isAdmin } = usePermissions();
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
@@ -86,39 +82,10 @@ export function Sidebar() {
             </li>
           ))}
         </ul>
-
-        <div className="mt-6">
-          <ul className="space-y-0.5">
-            <li>
-              <Link
-                href="/operations"
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
-                  isActive("/operations") ? navActive : navIdle
-                )}
-              >
-                <Package className="h-4 w-4" />
-                Operaciones
-              </Link>
-            </li>
-          </ul>
-        </div>
       </nav>
 
       {/* Footer */}
       <div className="border-t border-sidebar-border p-3">
-        {isAdmin && (
-          <Link
-            href="/admin"
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200 ease-out",
-              isActive("/admin") ? navActive : navIdle
-            )}
-          >
-            <Users className="h-4 w-4" />
-            Administración
-          </Link>
-        )}
         <Link
           href="/settings"
           className={cn(
