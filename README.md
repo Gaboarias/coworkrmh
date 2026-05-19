@@ -1,6 +1,6 @@
 # Pistachio
 
-Aplicación interna de **gestión de proyectos + CRM** para Rewind Media House
+Aplicación interna de **gestión de proyectos + ERP por negocio** para Rewind Media House
 (antes "Cowork RMH"). Centraliza proyectos, tareas, notas, documentos, historial
 de cambios, calendario y la cartera de clientes/pagos en una sola herramienta.
 
@@ -31,9 +31,13 @@ de cambios, calendario y la cartera de clientes/pagos en una sola herramienta.
 - **Notas**: editor enriquecido (TipTap) por proyecto/tarea.
 - **Documentos**: subida a Vercel Blob, export a PDF/DOCX.
 - **Historial (changelog)**: registro de acciones por entidad.
-- **CRM**: clientes, cuentas, pagos (con estados) y vínculo cliente↔proyecto.
-- **Operaciones**: catálogo de productos + categorías + costos por negocio
-  (multi-negocio vía buckets). Ver "Módulo Operaciones".
+- **Operaciones (ERP por negocio)**: dashboard por negocio + Catálogo
+  (productos/categorías/costos), Cotizador (IVA), Ventas, Gastos y Clientes/
+  cobros. Multi-negocio vía buckets. El CRM se consolidó aquí (las rutas
+  `/crm/*` fueron eliminadas). Ver "Módulo Operaciones".
+- **Administración (`/admin`)**: panel único — usuarios + rol global +
+  tarjeta por persona, negocios, y por negocio perfiles/permisos/equipo/
+  acuerdos. Reemplaza las antiguas `/settings/team*`.
 - **Dashboard / Mis tareas**: vistas agregadas por usuario.
 
 ## Estructura del proyecto
@@ -136,17 +140,20 @@ Soporte multi-negocio sin tablas de "workspaces": **cada negocio = un `bucket`**
 **equipo**: `bucket_members` define qué usuario entra a qué negocio. Un admin
 ve todos los buckets; el resto solo aquellos donde está asignado.
 
-- **Acceso/equipos:** página admin `/settings/teams` ("Equipos y negocios") para
-  crear negocios y asignar usuarios (rol por bucket). Helper de scope en
-  `src/lib/access.ts` (`getAccessibleBuckets`, `canAccessBucket`).
-- **Catálogo:** `/operations` (selector de negocio) →
-  `/operations/[bucketId]/products` (lista con filtros estado/categoría/búsqueda),
-  `…/products/new`, `…/products/[id]` (editar, archivar/restaurar),
-  `…/products/[id]/costs` (editor de costo activo + historial),
-  `…/categories` (CRUD de categorías).
-- **Tablas:** `bucket_members`, `product_categories`, `products`,
-  `product_cost_history`. Enums `product_status` (`active`/`archived`/
-  `out_of_stock`), `currency` (`CRC`/`USD`). `changelog_action` extendido con
+- **Acceso/equipos:** panel **`/admin`** (solo admin). `bucket_members` define
+  qué usuario entra a qué negocio; el **perfil** asignado (tabla `profiles`,
+  permisos editables) determina qué puede hacer (`bucketCan`). `users.role`
+  global solo distingue super-admin. Scope en `src/lib/access.ts`
+  (`getAccessibleBuckets`, `canAccessBucket`, `requireBucketAccess`,
+  `getBucketPermissions`).
+- **Navegación:** `/operations` (selector) → `/operations/[bucketId]`
+  (**dashboard** con KPIs) → módulos: Catálogo (productos + Categorías en
+  modal + costos), Cotizador, Ventas, Gastos, Clientes/cobros.
+- **Tablas:** `bucket_members`, `profiles`, `product_categories`, `products`,
+  `product_cost_history`, `quotes`/`quote_items`, `sales`, `expenses`,
+  `clients`/`payments`. Enums `product_status` (`active`/`archived`),
+  `currency` (`CRC`/`USD`), `quote_status`, `expense_kind`.
+  `changelog_action` extendido con
   `product_created`/`product_updated`/`product_archived`; el changelog enlaza al
   producto vía `entityType:"product"` + `entityId` (sin columnas nuevas).
 - **Convención local:** las server actions de Operaciones (`lib/actions/products.ts`)
