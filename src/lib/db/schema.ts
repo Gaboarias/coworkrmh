@@ -19,6 +19,11 @@ import { relations, sql } from "drizzle-orm";
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "manager", "member"]);
+export const workspaceRoleEnum = pgEnum("workspace_role", [
+  "owner",
+  "admin",
+  "member",
+]);
 export const taskStatusEnum = pgEnum("task_status", ["todo", "in_progress", "review", "done"]);
 export const taskPriorityEnum = pgEnum("task_priority", ["low", "medium", "high", "urgent"]);
 export const projectStatusEnum = pgEnum("project_status", [
@@ -128,6 +133,7 @@ export const workspaceMembers = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    role: workspaceRoleEnum("role").default("member").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => ({

@@ -3,9 +3,11 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { workspaces, workspaceMembers } from "@/lib/db/schema";
-import { eq, asc, inArray } from "drizzle-orm";
+import { eq, and, asc, inArray } from "drizzle-orm";
 
 export const WS_COOKIE = "ws";
+
+export type WorkspaceRole = "owner" | "admin" | "member";
 
 export interface Workspace {
   id: string;
@@ -65,6 +67,64 @@ export const canAccessWorkspace = async (
 ): Promise<boolean> => {
   const { workspaces: list } = await getMemberWorkspaces();
   return list.some((w) => w.id === workspaceId);
+};
+
+/**
+ * Rol del usuario actual en un entorno. El admin global se trata como `owner`
+ * (bypass total). `null` si no es miembro.
+ */
+export const getWorkspaceRole = async (
+  workspaceId: string
+): Promise<{
+  userId: string;
+  isGlobalAdmin: boolean;
+  role: WorkspaceRole | null;
+}> => {
+  const session = await auth();
+  if (!session?.user) {
+    return { userId: "", isGlobalAdmin: false, role: null };
+  }
+  const userId = session.user.id;
+  const isGlobalAdmin =
+    ((session.user.role as string) ?? "member") === "admin";
+  if (isGlobalAdmin) {
+    return { userId, isGlobalAdmin, role: "owner" };
+  }
+  const [row] = await db
+    .select({ role: workspaceMembers.role })
+    .from(workspaceMembers)
+    .where(
+      and(
+        eq(workspaceMembers.workspaceId, workspaceId),
+        eq(workspaceMembers.userId, userId)
+      )
+    )
+    .limit(1);
+  return { userId, isGlobalAdmin, role: row?.role ?? null };
+};
+
+/** Lanza si el usuario no puede gestionar el entorno (owner/admin). */
+export const requireWorkspaceManage = async (
+  workspaceId: string
+): Promise<{ userId: string; role: WorkspaceRole }> => {
+  const { userId, role } = await getWorkspaceRole(workspaceId);
+  if (!userId) throw new Error("No autenticado");
+  if (role !== "owner" && role !== "admin") {
+    throw new Error("No autorizado para gestionar este entorno");
+  }
+  return { userId, role };
+};
+
+/** Lanza si el usuario no es owner del entorno (acciones destructivas). */
+export const requireWorkspaceOwner = async (
+  workspaceId: string
+): Promise<{ userId: string }> => {
+  const { userId, role } = await getWorkspaceRole(workspaceId);
+  if (!userId) throw new Error("No autenticado");
+  if (role !== "owner") {
+    throw new Error("Solo el propietario del entorno puede hacer esto");
+  }
+  return { userId };
 };
 
 /**

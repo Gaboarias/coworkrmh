@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, ChevronsUpDown, Shield, Layers } from "lucide-react";
+import { toast } from "sonner";
+import { Check, ChevronsUpDown, Shield, Layers, Plus } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { readableFg } from "@/lib/utils/color";
+import { Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { SwatchPicker } from "@/components/ui/SwatchPicker";
+import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
+import { createOwnedWorkspace } from "@/lib/actions/workspaces";
 
 interface Ws {
   id: string;
@@ -19,6 +26,10 @@ interface WsData {
 export const EntornoSwitcher = () => {
   const [data, setData] = useState<WsData | null>(null);
   const [open, setOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newColor, setNewColor] = useState<string>(DEFAULT_ENTORNO_COLOR);
+  const [saving, setSaving] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -55,16 +66,88 @@ export const EntornoSwitcher = () => {
         );
         if (items.length === 0) return;
         const i = items.indexOf(document.activeElement as HTMLAnchorElement);
-        const next =
+        const nextEl =
           e.key === "ArrowDown"
             ? items[(i + 1 + items.length) % items.length]
             : items[(i - 1 + items.length) % items.length];
-        next?.focus();
+        nextEl?.focus();
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    setSaving(true);
+    try {
+      const ws = await createOwnedWorkspace({
+        name: newName.trim(),
+        color: newColor,
+      });
+      toast.success("Entorno creado");
+      window.location.href = `/api/ws/switch?to=${ws.id}&next=${encodeURIComponent(
+        "/dashboard"
+      )}`;
+    } catch (err) {
+      toast.error((err as Error).message);
+      setSaving(false);
+    }
+  };
+
+  const createModal = (
+    <Modal
+      open={creating}
+      onClose={() => {
+        setSaving(false);
+        setCreating(false);
+      }}
+      title="Nuevo entorno"
+      description="Un espacio aislado con sus propios proyectos y operaciones. Quedás como propietario."
+    >
+      <form onSubmit={handleCreate} className="space-y-4">
+        <div>
+          <label
+            htmlFor="ws-new-name"
+            className="mb-1.5 block text-sm font-medium text-text-muted"
+          >
+            Nombre
+          </label>
+          <Input
+            id="ws-new-name"
+            autoFocus
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Ej. Azulejos & Colores"
+          />
+        </div>
+        <div>
+          <span className="mb-1.5 block text-sm font-medium text-text-muted">
+            Color
+          </span>
+          <SwatchPicker
+            value={newColor}
+            onChange={setNewColor}
+            label="Color del entorno"
+          />
+        </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setCreating(false)}
+          >
+            Cancelar
+          </Button>
+          <Button type="submit" loading={saving} disabled={!newName.trim()}>
+            <Plus className="h-4 w-4" />
+            Crear entorno
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
 
   if (!data) {
     return (
@@ -79,8 +162,19 @@ export const EntornoSwitcher = () => {
 
   if (!active && !data.isAdmin) {
     return (
-      <div className="mx-3 mt-3 rounded-lg border border-sidebar-border px-3 py-2 text-xs text-sidebar-muted">
-        Sin entorno asignado. Pedí acceso a un administrador.
+      <div className="mx-3 mt-3 space-y-2 rounded-lg border border-sidebar-border p-3">
+        <p className="text-xs text-sidebar-muted">
+          No perteneces a ningún entorno todavía.
+        </p>
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="flex w-full items-center justify-center gap-1.5 rounded-md bg-[color-mix(in_oklab,var(--sidebar-foreground)_10%,transparent)] px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_18%,transparent)]"
+        >
+          <Plus className="h-4 w-4" />
+          Crear entorno
+        </button>
+        {createModal}
       </div>
     );
   }
@@ -157,6 +251,17 @@ export const EntornoSwitcher = () => {
               );
             })}
           </ul>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              setCreating(true);
+            }}
+            className="flex w-full items-center gap-2.5 border-t border-border px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+          >
+            <Plus className="h-4 w-4 flex-shrink-0" />
+            Crear entorno
+          </button>
           {data.isAdmin && (
             <a
               href="/admin"
@@ -168,6 +273,7 @@ export const EntornoSwitcher = () => {
           )}
         </div>
       )}
+      {createModal}
     </div>
   );
 };

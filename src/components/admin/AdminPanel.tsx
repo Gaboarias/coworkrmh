@@ -116,6 +116,23 @@ const WorkspacesTab = ({
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [addUserId, setAddUserId] = useState("");
   const [busy, setBusy] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editColor, setEditColor] = useState("#6B5FE4");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const handleUpdate = async (id: string) => {
+    if (!editName.trim()) return;
+    setSavingEdit(true);
+    try {
+      await updateWorkspace(id, { name: editName.trim(), color: editColor });
+      toast.success("Entorno actualizado");
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,13 +150,16 @@ const WorkspacesTab = ({
     }
   };
 
-  const toggle = async (id: string) => {
+  const toggle = async (w: WsRow) => {
+    const id = w.id;
     if (openId === id) {
       setOpenId(null);
       return;
     }
     setOpenId(id);
     setAddUserId("");
+    setEditName(w.name);
+    setEditColor(w.color);
     if (!members[id]) {
       setLoadingMembers(true);
       try {
@@ -254,7 +274,7 @@ const WorkspacesTab = ({
             return (
               <div key={w.id}>
                 <button
-                  onClick={() => toggle(w.id)}
+                  onClick={() => toggle(w)}
                   className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-el"
                 >
                   <span
@@ -285,6 +305,36 @@ const WorkspacesTab = ({
 
                 {isOpen && (
                   <div className="space-y-3 border-t border-border bg-surface-el/40 px-4 py-4">
+                    <div className="flex flex-wrap items-end gap-2 border-b border-border pb-3">
+                      <div className="min-w-[180px] flex-1">
+                        <label className="mb-1.5 block text-xs font-medium text-text-muted">
+                          Nombre del entorno
+                        </label>
+                        <Input
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          aria-label="Nombre del entorno"
+                        />
+                      </div>
+                      <div>
+                        <span className="mb-1.5 block text-xs font-medium text-text-muted">
+                          Color
+                        </span>
+                        <SwatchPicker
+                          value={editColor}
+                          onChange={setEditColor}
+                          label="Color del entorno"
+                        />
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleUpdate(w.id)}
+                        loading={savingEdit}
+                        disabled={!editName.trim()}
+                      >
+                        Guardar
+                      </Button>
+                    </div>
                     <div className="flex flex-wrap items-end gap-2">
                       <div className="min-w-[180px] flex-1">
                         <label className="mb-1.5 block text-xs font-medium text-text-muted">
