@@ -67,7 +67,6 @@ export function ProductList({ bucketId, initialProducts, categories }: Props) {
         >
           <option value="">Todos los estados</option>
           <option value="active">Activo</option>
-          <option value="out_of_stock">Sin stock</option>
           <option value="archived">Archivado</option>
         </Select>
         <Select

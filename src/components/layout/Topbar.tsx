@@ -12,10 +12,9 @@ const pageTitles: Record<string, string> = {
   "/projects": "Proyectos",
   "/my-tasks": "Mis tareas",
   "/calendar": "Calendario",
-  "/crm": "CRM — Clientes",
-  "/crm/payments": "CRM — Pagos",
+  "/operations": "Operaciones",
+  "/admin": "Administración",
   "/settings": "Configuración",
-  "/settings/team": "Equipo",
 };
 
 function getTitle(pathname: string): string {
@@ -23,7 +22,8 @@ function getTitle(pathname: string): string {
     if (pathname === key) return value;
   }
   if (pathname.startsWith("/projects/")) return "Proyecto";
-  if (pathname.startsWith("/crm/")) return "CRM";
+  if (pathname.startsWith("/operations/")) return "Operaciones";
+  if (pathname.startsWith("/admin")) return "Administración";
   return "Pistachio";
 }
 

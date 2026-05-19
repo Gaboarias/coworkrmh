@@ -10,7 +10,6 @@ const STATUS: Record<
   { label: string; variant: "success" | "neutral" | "warning" }
 > = {
   active: { label: "Activo", variant: "success" },
-  out_of_stock: { label: "Sin stock", variant: "warning" },
   archived: { label: "Archivado", variant: "neutral" },
 };
 

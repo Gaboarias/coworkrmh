@@ -23,7 +23,7 @@ interface FormValues {
   description: string;
   categoryId: string;
   currency: "CRC" | "USD";
-  status: "active" | "archived" | "out_of_stock";
+  status: "active" | "archived";
   basePrice: number;
   defaultMaterialsCost: number;
   defaultLaborCost: number;
@@ -185,7 +185,6 @@ export function ProductForm({ bucketId, categories, product }: Props) {
                 </label>
                 <Select id="pf-status" {...register("status")}>
                   <option value="active">Activo</option>
-                  <option value="out_of_stock">Sin stock</option>
                   <option value="archived">Archivado</option>
                 </Select>
               </div>

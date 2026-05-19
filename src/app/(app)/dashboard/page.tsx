@@ -172,10 +172,10 @@ export default async function DashboardPage() {
                 </h3>
               </div>
               <Link
-                href="/crm"
+                href="/operations"
                 className="text-xs text-primary hover:text-primary-hover"
               >
-                Ver CRM
+                Ver Operaciones
               </Link>
             </div>
 
@@ -193,7 +193,7 @@ export default async function DashboardPage() {
                   return (
                     <li key={payment.id}>
                       <Link
-                        href={`/crm/${payment.clientId}/payments`}
+                        href="/operations"
                         className="flex items-center justify-between rounded-lg p-2 transition hover:bg-surface-el"
                       >
                         <div className="min-w-0">

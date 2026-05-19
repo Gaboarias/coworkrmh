@@ -368,7 +368,6 @@ export const bucketMembersRelations = relations(bucketMembers, ({ one }) => ({
 export const productStatusEnum = pgEnum("product_status", [
   "active",
   "archived",
-  "out_of_stock",
 ]);
 
 export const currencyEnum = pgEnum("currency", ["CRC", "USD"]);

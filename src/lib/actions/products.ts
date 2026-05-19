@@ -218,7 +218,7 @@ export async function deleteProductCategory(
 
 export async function listProducts(input: {
   bucketId: string;
-  status?: "active" | "archived" | "out_of_stock";
+  status?: "active" | "archived";
   categoryId?: string;
   search?: string;
 }): Promise<ActionResult<Product[]>> {

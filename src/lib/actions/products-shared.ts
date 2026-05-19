@@ -30,11 +30,7 @@ export function fromMoney(n: number): string {
 // ─── Zod schemas ──────────────────────────────────────────────────────────────
 
 export const currencySchema = z.enum(["CRC", "USD"]);
-export const productStatusSchema = z.enum([
-  "active",
-  "archived",
-  "out_of_stock",
-]);
+export const productStatusSchema = z.enum(["active", "archived"]);
 
 export const createProductCategorySchema = z.object({
   bucketId: z.string().uuid(),
@@ -107,7 +103,7 @@ export interface Product {
   name: string;
   description: string | null;
   sku: string | null;
-  status: "active" | "archived" | "out_of_stock";
+  status: "active" | "archived";
   currency: "CRC" | "USD";
   basePrice: number;
   defaultMaterialsCost: number;
