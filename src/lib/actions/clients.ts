@@ -82,7 +82,7 @@ export async function createPayment(formData: {
   projectId?: string;
   description: string;
   amount: number;
-  currency?: string;
+  currency?: "CRC" | "USD";
   dueDate?: string;
   status?: "pending" | "paid" | "overdue" | "cancelled";
 }) {
@@ -94,7 +94,7 @@ export async function createPayment(formData: {
       projectId: formData.projectId ?? null,
       description: formData.description,
       amount: String(formData.amount),
-      currency: formData.currency ?? "USD",
+      currency: formData.currency ?? "CRC",
       dueDate: formData.dueDate ?? null,
       status: formData.status ?? "pending",
       createdBy: user.id,
@@ -127,7 +127,7 @@ export async function addClientAccount(formData: {
   bankName?: string;
   accountNumber: string;
   accountType?: string;
-  currency?: string;
+  currency?: "CRC" | "USD";
   isPrimary?: boolean;
 }) {
   await requireUser();

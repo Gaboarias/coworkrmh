@@ -35,6 +35,7 @@ export const changelogActionEnum = pgEnum("changelog_action", [
 ]);
 export const clientStatusEnum = pgEnum("client_status", ["active", "inactive", "prospect"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["pending", "paid", "overdue", "cancelled"]);
+export const currencyEnum = pgEnum("currency", ["CRC", "USD"]);
 
 // ─── Users (replaces Supabase auth.users + profiles) ─────────────────────────
 
@@ -222,7 +223,7 @@ export const clientAccounts = pgTable("client_accounts", {
   bankName: text("bank_name"),
   accountNumber: text("account_number").notNull(),
   accountType: text("account_type"),
-  currency: text("currency").default("USD").notNull(),
+  currency: currencyEnum("currency").default("CRC").notNull(),
   isPrimary: boolean("is_primary").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -233,7 +234,7 @@ export const payments = pgTable("payments", {
   projectId: uuid("project_id").references(() => projects.id, { onDelete: "set null" }),
   description: text("description").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
-  currency: text("currency").default("USD").notNull(),
+  currency: currencyEnum("currency").default("CRC").notNull(),
   status: paymentStatusEnum("status").default("pending").notNull(),
   dueDate: date("due_date"),
   paidAt: timestamp("paid_at"),
@@ -369,8 +370,6 @@ export const productStatusEnum = pgEnum("product_status", [
   "active",
   "archived",
 ]);
-
-export const currencyEnum = pgEnum("currency", ["CRC", "USD"]);
 
 export const productCategories = pgTable(
   "product_categories",
