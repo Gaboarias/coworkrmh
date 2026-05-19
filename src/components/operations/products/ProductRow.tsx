@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { ProductMarginIndicator } from "./ProductMarginIndicator";
 import type { Product } from "@/lib/actions/products-shared";
+import { formatMoney as money } from "@/lib/utils/money";
 
 const STATUS: Record<
   Product["status"],
@@ -11,13 +12,6 @@ const STATUS: Record<
   out_of_stock: { label: "Sin stock", variant: "warning" },
   archived: { label: "Archivado", variant: "neutral" },
 };
-
-function money(n: number, currency: string) {
-  return `${currency === "USD" ? "$" : "₡"}${n.toLocaleString("es-CR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
 
 export function ProductRow({
   product,

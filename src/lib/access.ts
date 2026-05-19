@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { buckets, bucketMembers, profiles } from "@/lib/db/schema";
 import { eq, and, asc, inArray } from "drizzle-orm";
@@ -106,4 +107,23 @@ export async function bucketCan(
 ): Promise<boolean> {
   const { permissions } = await getBucketPermissions(bucketId);
   return permissions.includes(key);
+}
+
+/**
+ * Guard de páginas de Operaciones: valida acceso al negocio y devuelve su
+ * nombre. Si no tiene acceso, redirige a /operations. Reemplaza el dúo
+ * repetido canAccessBucket + getBucketName en cada página.
+ */
+export async function requireBucketAccess(
+  bucketId: string
+): Promise<{ bucketName: string }> {
+  if (!(await canAccessBucket(bucketId))) {
+    redirect("/operations");
+  }
+  const [b] = await db
+    .select({ name: buckets.name })
+    .from(buckets)
+    .where(eq(buckets.id, bucketId))
+    .limit(1);
+  return { bucketName: b?.name ?? "" };
 }

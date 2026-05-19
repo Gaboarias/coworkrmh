@@ -14,13 +14,7 @@ import {
   setBreakEvenMargin,
   type ExpenseSummary,
 } from "@/lib/actions/expenses";
-
-function money(n: number) {
-  return `₡${n.toLocaleString("es-CR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
+import { formatMoney as money } from "@/lib/utils/money";
 
 export function ExpensesView({
   bucketId,

@@ -12,13 +12,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { TrendingUp } from "lucide-react";
 import { createSale, deleteSale } from "@/lib/actions/sales";
 import type { SaleListResult } from "@/lib/actions/sales";
-
-function money(n: number) {
-  return `₡${n.toLocaleString("es-CR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
+import { formatMoney as money } from "@/lib/utils/money";
 
 export function SalesView({
   bucketId,

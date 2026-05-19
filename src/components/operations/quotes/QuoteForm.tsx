@@ -13,18 +13,13 @@ import {
   type QuoteRow,
 } from "@/lib/actions/erp-shared";
 
+import { formatMoney as money } from "@/lib/utils/money";
+
 interface Row {
   description: string;
   qty: number;
   unitCost: number;
   unitPrice: number;
-}
-
-function money(n: number) {
-  return `₡${n.toLocaleString("es-CR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
 }
 
 export function QuoteForm({

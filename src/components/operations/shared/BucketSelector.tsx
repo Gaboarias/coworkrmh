@@ -12,7 +12,7 @@ export function BucketSelector({ buckets }: { buckets: BucketOption[] }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {buckets.map((b) => (
-        <Link key={b.id} href={`/operations/${b.id}/products`}>
+        <Link key={b.id} href={`/operations/${b.id}`}>
           <Card className="transition-colors hover:border-primary/50">
             <CardContent className="flex items-center gap-3">
               <span

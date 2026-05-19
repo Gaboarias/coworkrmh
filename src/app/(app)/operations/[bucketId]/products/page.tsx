@@ -1,15 +1,14 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Plus, Tags } from "lucide-react";
-import { canAccessBucket } from "@/lib/access";
+import { ChevronLeft, Plus } from "lucide-react";
+import { requireBucketAccess } from "@/lib/access";
 import {
   listProducts,
   listProductCategories,
-  getBucketName,
 } from "@/lib/actions/products";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProductList } from "@/components/operations/products/ProductList";
 import { OperationsTabs } from "@/components/operations/shared/OperationsTabs";
+import { CategoriesModalButton } from "@/components/operations/categories/CategoriesModalButton";
 
 interface PageProps {
   params: { bucketId: string };
@@ -17,12 +16,11 @@ interface PageProps {
 
 export default async function ProductsPage({ params }: PageProps) {
   const { bucketId } = params;
-  if (!(await canAccessBucket(bucketId))) redirect("/operations");
+  const { bucketName } = await requireBucketAccess(bucketId);
 
-  const [productsRes, categoriesRes, bucketName] = await Promise.all([
+  const [productsRes, categoriesRes] = await Promise.all([
     listProducts({ bucketId }),
     listProductCategories(bucketId),
-    getBucketName(bucketId),
   ]);
 
   const products = productsRes.success ? productsRes.data : [];
@@ -39,17 +37,14 @@ export default async function ProductsPage({ params }: PageProps) {
       </Link>
       <OperationsTabs bucketId={bucketId} />
       <PageHeader
-        title={bucketName ?? "Productos"}
+        title={bucketName || "Productos"}
         description="Catálogo de productos del negocio"
         actions={
           <>
-            <Link
-              href={`/operations/${bucketId}/categories`}
-              className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-transparent px-4 text-sm font-medium text-text transition-colors duration-200 ease-out hover:bg-surface-el"
-            >
-              <Tags className="h-4 w-4" />
-              Categorías
-            </Link>
+            <CategoriesModalButton
+              bucketId={bucketId}
+              categories={categories}
+            />
             <Link
               href={`/operations/${bucketId}/products/new`}
               className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color] duration-200 ease-out hover:bg-primary-hover"

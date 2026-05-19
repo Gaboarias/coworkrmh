@@ -144,7 +144,7 @@ export async function updateTeamAgreements(
     .set({ teamAgreements: agreements, updatedAt: new Date() })
     .where(eq(buckets.id, bucketId));
   revalidatePath("/admin/negocios");
-  revalidatePath(`/operations/${bucketId}/team`);
+  revalidatePath(`/operations/${bucketId}`);
 }
 
 export interface TeamMemberRow {

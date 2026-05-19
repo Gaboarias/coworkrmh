@@ -8,16 +8,18 @@ export function OperationsTabs({ bucketId }: { bucketId: string }) {
   const pathname = usePathname();
   const base = `/operations/${bucketId}`;
   const tabs = [
-    { href: `${base}/products`, label: "Catálogo" },
-    { href: `${base}/quotes`, label: "Cotizador" },
-    { href: `${base}/sales`, label: "Ventas" },
-    { href: `${base}/expenses`, label: "Gastos" },
-    { href: `${base}/clients`, label: "Clientes" },
-    { href: `${base}/team`, label: "Equipo" },
+    { href: base, label: "Resumen", exact: true },
+    { href: `${base}/products`, label: "Catálogo", exact: false },
+    { href: `${base}/quotes`, label: "Cotizador", exact: false },
+    { href: `${base}/sales`, label: "Ventas", exact: false },
+    { href: `${base}/expenses`, label: "Gastos", exact: false },
+    { href: `${base}/clients`, label: "Clientes", exact: false },
   ];
 
-  function active(href: string) {
-    return pathname === href || pathname.startsWith(href + "/");
+  function active(href: string, exact: boolean) {
+    return exact
+      ? pathname === href
+      : pathname === href || pathname.startsWith(href + "/");
   }
 
   return (
@@ -28,7 +30,7 @@ export function OperationsTabs({ bucketId }: { bucketId: string }) {
           href={t.href}
           className={cn(
             "border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
-            active(t.href)
+            active(t.href, t.exact)
               ? "border-primary text-primary"
               : "border-transparent text-text-muted hover:text-text"
           )}

@@ -11,16 +11,10 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { History } from "lucide-react";
 import { ProductCostEditor } from "@/components/operations/products/ProductCostEditor";
+import { formatMoney as money } from "@/lib/utils/money";
 
 interface PageProps {
   params: { bucketId: string; productId: string };
-}
-
-function money(n: number, currency: string) {
-  return `${currency === "USD" ? "$" : "₡"}${n.toLocaleString("es-CR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
 }
 
 export default async function ProductCostsPage({ params }: PageProps) {

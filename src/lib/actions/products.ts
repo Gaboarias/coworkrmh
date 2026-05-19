@@ -137,7 +137,7 @@ export async function createProductCategory(
         sortOrder: parsed.data.sortOrder ?? 0,
       })
       .returning();
-    revalidatePath(`/operations/${parsed.data.bucketId}/categories`);
+    revalidatePath(`/operations/${parsed.data.bucketId}/products`);
     return ok({
       id: row.id,
       bucketId: row.bucketId,
@@ -179,7 +179,7 @@ export async function updateProductCategory(
     .where(eq(productCategories.id, parsed.data.id))
     .returning();
 
-  revalidatePath(`/operations/${existing.bucketId}/categories`);
+  revalidatePath(`/operations/${existing.bucketId}/products`);
   return ok({
     id: row.id,
     bucketId: row.bucketId,
@@ -210,7 +210,7 @@ export async function deleteProductCategory(
     .where(eq(products.categoryId, id));
 
   await db.delete(productCategories).where(eq(productCategories.id, id));
-  revalidatePath(`/operations/${existing.bucketId}/categories`);
+  revalidatePath(`/operations/${existing.bucketId}/products`);
   return ok({ deleted: true, affectedProducts: n });
 }
 

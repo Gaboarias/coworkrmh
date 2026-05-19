@@ -11,7 +11,7 @@ export default async function OperationsPage() {
   if (!userId) redirect("/login");
 
   if (buckets.length === 1) {
-    redirect(`/operations/${buckets[0].id}/products`);
+    redirect(`/operations/${buckets[0].id}`);
   }
 
   return (
