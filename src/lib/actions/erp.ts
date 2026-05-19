@@ -13,7 +13,7 @@ import {
   workspaces,
 } from "@/lib/db/schema";
 import { eq, and, asc, desc } from "drizzle-orm";
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
 import { toMoney, fromMoney, fromRate } from "@/lib/utils/money";
 
 const requireWs = async () => {
@@ -21,7 +21,18 @@ const requireWs = async () => {
   if (!session?.user) throw new Error("No autenticado");
   const ws = await getActiveWorkspace();
   if (!ws) throw new Error("Selecciona un entorno");
-  return { ws, userId: session.user.id };
+  const { permissions } = await getWorkspacePermissions(ws.id);
+  const can = (key: string) => permissions.has(key);
+  return { ws, userId: session.user.id, can };
+};
+
+/** Igual que requireWs pero exige una capacidad concreta del entorno. */
+const requireWsCan = async (key: string) => {
+  const ctx = await requireWs();
+  if (!ctx.can(key)) {
+    throw new Error("No tenés permiso para esta acción en este entorno");
+  }
+  return ctx;
 };
 
 const ER = "/operations";
@@ -74,7 +85,7 @@ export const createProduct = async (input: {
   laborCost: number;
   price: number;
 }) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("catalog.manage");
   if (!input.name.trim()) throw new Error("El nombre es obligatorio");
   await db.insert(erpProducts).values({
     workspaceId: ws.id,
@@ -97,7 +108,7 @@ export const updateProduct = async (
     price: number;
   }
 ) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("catalog.manage");
   await db
     .update(erpProducts)
     .set({
@@ -113,7 +124,7 @@ export const updateProduct = async (
 };
 
 export const deleteProduct = async (id: string) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("catalog.manage");
   await db
     .delete(erpProducts)
     .where(and(eq(erpProducts.id, id), eq(erpProducts.workspaceId, ws.id)));
@@ -245,7 +256,7 @@ export const createQuote = async (input: {
   notes?: string;
   items: QuoteItemInput[];
 }): Promise<{ id: string }> => {
-  const { ws, userId } = await requireWs();
+  const { ws, userId } = await requireWsCan("quotes.manage");
   if (!input.title.trim()) throw new Error("El título es obligatorio");
   const clean = input.items.filter((i) => i.description.trim());
   if (clean.length === 0) throw new Error("Agrega al menos un ítem");
@@ -276,7 +287,7 @@ export const updateQuote = async (
     items: QuoteItemInput[];
   }
 ): Promise<{ id: string }> => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("quotes.manage");
   const [q] = await db
     .select()
     .from(erpQuotes)
@@ -302,7 +313,7 @@ export const updateQuote = async (
 };
 
 export const deleteQuote = async (id: string) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("quotes.manage");
   await db
     .delete(erpQuotes)
     .where(and(eq(erpQuotes.id, id), eq(erpQuotes.workspaceId, ws.id)));
@@ -385,7 +396,7 @@ export const createSale = async (input: {
   unitCost: number;
   unitPrice: number;
 }) => {
-  const { ws, userId } = await requireWs();
+  const { ws, userId } = await requireWsCan("sales.manage");
   if (!input.saleDate || !input.description.trim())
     throw new Error("Fecha y descripción son obligatorias");
   await db.insert(erpSales).values({
@@ -403,7 +414,7 @@ export const createSale = async (input: {
 };
 
 export const deleteSale = async (id: string) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("sales.manage");
   await db
     .delete(erpSales)
     .where(and(eq(erpSales.id, id), eq(erpSales.workspaceId, ws.id)));
@@ -471,7 +482,7 @@ export const createExpense = async (input: {
   category?: string;
   priority?: string;
 }) => {
-  const { ws, userId } = await requireWs();
+  const { ws, userId } = await requireWsCan("expenses.manage");
   if (!input.concept.trim()) throw new Error("El concepto es obligatorio");
   await db.insert(erpExpenses).values({
     workspaceId: ws.id,
@@ -486,7 +497,7 @@ export const createExpense = async (input: {
 };
 
 export const deleteExpense = async (id: string) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("expenses.manage");
   await db
     .delete(erpExpenses)
     .where(and(eq(erpExpenses.id, id), eq(erpExpenses.workspaceId, ws.id)));
@@ -494,7 +505,7 @@ export const deleteExpense = async (id: string) => {
 };
 
 export const setBreakEvenMargin = async (margin: number) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("expenses.manage");
   const safe = Math.min(Math.max(margin, 0), 0.9999);
   await db
     .update(workspaces)
@@ -549,7 +560,7 @@ export const createTeamMember = async (input: {
   compensation?: string;
   status?: string;
 }) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("team.manage");
   if (!input.name.trim()) throw new Error("El nombre es obligatorio");
   await db.insert(erpTeam).values({
     workspaceId: ws.id,
@@ -572,7 +583,7 @@ export const updateTeamMember = async (
     status?: string;
   }
 ) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("team.manage");
   await db
     .update(erpTeam)
     .set({
@@ -587,7 +598,7 @@ export const updateTeamMember = async (
 };
 
 export const deleteTeamMember = async (id: string) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("team.manage");
   await db
     .delete(erpTeam)
     .where(and(eq(erpTeam.id, id), eq(erpTeam.workspaceId, ws.id)));
@@ -595,7 +606,7 @@ export const deleteTeamMember = async (id: string) => {
 };
 
 export const setAgreements = async (text: string) => {
-  const { ws } = await requireWs();
+  const { ws } = await requireWsCan("team.manage");
   await db
     .update(workspaces)
     .set({ teamAgreements: text, updatedAt: new Date() })

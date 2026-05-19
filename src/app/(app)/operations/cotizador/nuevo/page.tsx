@@ -1,14 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { OperationsNav } from "@/components/operations/OperationsNav";
 import { NoEntorno } from "@/components/operations/NoEntorno";
 import { QuoteForm } from "@/components/operations/QuoteForm";
 
 export default async function NuevaCotizacionPage() {
-  const ws = await getActiveWorkspace();
+  const { ws, can } = await getActiveWorkspaceWithPermissions();
   if (!ws) return <NoEntorno title="Nueva cotización" />;
+  if (!can("quotes.manage")) redirect("/operations/cotizador");
   return (
     <div className="animate-fade-in p-6 md:p-8">
       <OperationsNav />

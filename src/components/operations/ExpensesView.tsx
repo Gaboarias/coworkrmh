@@ -16,7 +16,13 @@ import {
   type ExpensesResult,
 } from "@/lib/actions/erp";
 
-export const ExpensesView = ({ data }: { data: ExpensesResult }) => {
+export const ExpensesView = ({
+  data,
+  canManage = true,
+}: {
+  data: ExpensesResult;
+  canManage?: boolean;
+}) => {
   const router = useRouter();
   const [kind, setKind] = useState<"investment" | "fixed">("investment");
   const [concept, setConcept] = useState("");
@@ -107,13 +113,15 @@ export const ExpensesView = ({ data }: { data: ExpensesResult }) => {
                   {e.priority ? ` · ${e.priority}` : ""}
                 </span>
                 <span className="text-text">{formatMoney(e.amount)}</span>
-                <button
-                  onClick={() => remove(e.id)}
-                  aria-label="Eliminar"
-                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                {canManage && (
+                  <button
+                    onClick={() => remove(e.id)}
+                    aria-label="Eliminar"
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -124,6 +132,7 @@ export const ExpensesView = ({ data }: { data: ExpensesResult }) => {
 
   return (
     <div className="space-y-5">
+      {canManage && (
       <Card>
         <CardContent>
           <h3 className="mb-3 text-sm font-semibold text-text">
@@ -179,6 +188,7 @@ export const ExpensesView = ({ data }: { data: ExpensesResult }) => {
           </form>
         </CardContent>
       </Card>
+      )}
 
       <Section
         title="Inversión inicial"
@@ -209,11 +219,14 @@ export const ExpensesView = ({ data }: { data: ExpensesResult }) => {
                 value={margin}
                 onChange={(e) => setMargin(Number(e.target.value) || 0)}
                 className="w-32"
+                disabled={!canManage}
               />
             </div>
-            <Button size="sm" onClick={saveMargin} loading={savingMargin}>
-              Guardar margen
-            </Button>
+            {canManage && (
+              <Button size="sm" onClick={saveMargin} loading={savingMargin}>
+                Guardar margen
+              </Button>
+            )}
             <div className="ml-auto text-right">
               <p className="text-xs text-text-muted">
                 Ventas necesarias para cubrir gastos fijos

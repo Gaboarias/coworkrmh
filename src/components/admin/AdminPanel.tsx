@@ -26,9 +26,17 @@ import {
   addWorkspaceMember,
   removeWorkspaceMember,
   listWorkspaceMembers,
+  setMemberRole,
+  getWorkspacePermissionMatrix,
+  updateWorkspacePermissions,
 } from "@/lib/actions/workspaces";
+import {
+  WS_PERMISSION_GROUPS,
+  type WsRolePermissions,
+} from "@/lib/constants/workspacePermissions";
 
 type Role = "admin" | "manager" | "member";
+type WsRole = "owner" | "admin" | "member";
 interface UserRow {
   id: string;
   name: string | null;
@@ -47,6 +55,7 @@ interface Member {
   name: string | null;
   email: string;
   avatarUrl: string | null;
+  role: WsRole;
 }
 
 export const AdminPanel = ({
@@ -119,6 +128,56 @@ const WorkspacesTab = ({
   const [editName, setEditName] = useState("");
   const [editColor, setEditColor] = useState("#6B5FE4");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [matrix, setMatrix] = useState<Record<string, WsRolePermissions>>({});
+  const [savingMatrix, setSavingMatrix] = useState(false);
+  const [savingRoleFor, setSavingRoleFor] = useState<string | null>(null);
+
+  const togglePerm = (
+    wsId: string,
+    role: "admin" | "member",
+    key: string
+  ) => {
+    setMatrix((p) => {
+      const cur = p[wsId] ?? { admin: [], member: [] };
+      const set = new Set(cur[role]);
+      if (set.has(key)) set.delete(key);
+      else set.add(key);
+      return { ...p, [wsId]: { ...cur, [role]: [...set] } };
+    });
+  };
+
+  const handleSaveMatrix = async (id: string) => {
+    const mx = matrix[id];
+    if (!mx) return;
+    setSavingMatrix(true);
+    try {
+      await updateWorkspacePermissions(id, mx);
+      toast.success("Permisos actualizados");
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSavingMatrix(false);
+    }
+  };
+
+  const handleChangeRole = async (
+    id: string,
+    userId: string,
+    role: "admin" | "member"
+  ) => {
+    setSavingRoleFor(userId);
+    try {
+      await setMemberRole(id, userId, role);
+      toast.success("Rol actualizado");
+      await refreshMembers(id);
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSavingRoleFor(null);
+    }
+  };
 
   const handleUpdate = async (id: string) => {
     if (!editName.trim()) return;
@@ -169,6 +228,14 @@ const WorkspacesTab = ({
         toast.error((err as Error).message);
       } finally {
         setLoadingMembers(false);
+      }
+    }
+    if (!matrix[id]) {
+      try {
+        const mx = await getWorkspacePermissionMatrix(id);
+        setMatrix((p) => ({ ...p, [id]: mx }));
+      } catch {
+        /* sin permiso de gestión: matriz no editable */
       }
     }
   };
@@ -335,6 +402,59 @@ const WorkspacesTab = ({
                         Guardar
                       </Button>
                     </div>
+
+                    {matrix[w.id] && (
+                      <div className="space-y-3 border-b border-border pb-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-xs font-semibold text-text">
+                              Permisos por rol
+                            </h4>
+                            <p className="text-[11px] text-text-muted">
+                              El propietario siempre tiene acceso total.
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveMatrix(w.id)}
+                            loading={savingMatrix}
+                          >
+                            Guardar permisos
+                          </Button>
+                        </div>
+                        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+                          <table className="w-full text-left text-sm">
+                            <thead>
+                              <tr className="border-b border-border text-xs text-text-muted">
+                                <th className="px-3 py-2 font-medium">
+                                  Capacidad
+                                </th>
+                                <th className="w-20 px-2 py-2 text-center font-medium">
+                                  Admin
+                                </th>
+                                <th className="w-20 px-2 py-2 text-center font-medium">
+                                  Miembro
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {WS_PERMISSION_GROUPS.map((g) => (
+                                <GroupRows
+                                  key={g.group}
+                                  group={g.group}
+                                  keys={g.keys}
+                                  matrix={matrix[w.id]}
+                                  onToggle={(role, key) =>
+                                    togglePerm(w.id, role, key)
+                                  }
+                                />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex flex-wrap items-end gap-2">
                       <div className="min-w-[180px] flex-1">
                         <label className="mb-1.5 block text-xs font-medium text-text-muted">
@@ -399,9 +519,31 @@ const WorkspacesTab = ({
                                 {m.email}
                               </p>
                             </div>
+                            {m.role === "owner" ? (
+                              <span className="rounded-md bg-surface-el px-2 py-1 text-xs font-medium text-text-muted">
+                                Propietario
+                              </span>
+                            ) : (
+                              <Select
+                                aria-label={`Rol de ${m.name ?? m.email}`}
+                                value={m.role}
+                                disabled={savingRoleFor === m.id}
+                                onChange={(e) =>
+                                  handleChangeRole(
+                                    w.id,
+                                    m.id,
+                                    e.target.value as "admin" | "member"
+                                  )
+                                }
+                                className="w-28"
+                              >
+                                <option value="member">Miembro</option>
+                                <option value="admin">Admin</option>
+                              </Select>
+                            )}
                             <button
                               onClick={() => handleRemove(w.id, m.id)}
-                              disabled={busy}
+                              disabled={busy || m.role === "owner"}
                               aria-label={`Quitar a ${m.name ?? m.email}`}
                               className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
                             >
@@ -419,6 +561,58 @@ const WorkspacesTab = ({
         </div>
       </Card>
     </div>
+  );
+};
+
+// ─── Filas de la matriz de permisos ───────────────────────────────────────────
+
+const GroupRows = ({
+  group,
+  keys,
+  matrix,
+  onToggle,
+}: {
+  group: string;
+  keys: { key: string; label: string }[];
+  matrix: WsRolePermissions;
+  onToggle: (role: "admin" | "member", key: string) => void;
+}) => {
+  const adminSet = new Set(matrix.admin);
+  const memberSet = new Set(matrix.member);
+  return (
+    <>
+      <tr className="bg-surface-el/60">
+        <td
+          colSpan={3}
+          className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-text-muted"
+        >
+          {group}
+        </td>
+      </tr>
+      {keys.map((k) => (
+        <tr key={k.key} className="border-b border-border last:border-0">
+          <td className="px-3 py-2 text-text">{k.label}</td>
+          <td className="px-2 py-2 text-center">
+            <input
+              type="checkbox"
+              aria-label={`${k.label} — Admin`}
+              checked={adminSet.has(k.key)}
+              onChange={() => onToggle("admin", k.key)}
+              className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
+            />
+          </td>
+          <td className="px-2 py-2 text-center">
+            <input
+              type="checkbox"
+              aria-label={`${k.label} — Miembro`}
+              checked={memberSet.has(k.key)}
+              onChange={() => onToggle("member", k.key)}
+              className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
+            />
+          </td>
+        </tr>
+      ))}
+    </>
   );
 };
 

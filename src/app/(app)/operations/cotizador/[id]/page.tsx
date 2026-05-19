@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
 import { getQuote } from "@/lib/actions/erp";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { OperationsNav } from "@/components/operations/OperationsNav";
@@ -13,7 +13,7 @@ export default async function EditarCotizacionPage({
 }: {
   params: { id: string };
 }) {
-  const ws = await getActiveWorkspace();
+  const { ws, can } = await getActiveWorkspaceWithPermissions();
   if (!ws) return <NoEntorno title="Cotización" />;
 
   let quote;
@@ -35,7 +35,7 @@ export default async function EditarCotizacionPage({
       </Link>
       <PageHeader title={quote.title} />
       <div className="max-w-3xl">
-        <QuoteForm quote={quote} />
+        <QuoteForm quote={quote} canManage={can("quotes.manage")} />
       </div>
     </div>
   );

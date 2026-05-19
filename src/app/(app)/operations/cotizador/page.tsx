@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus, Calculator } from "lucide-react";
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
 import { listQuotes } from "@/lib/actions/erp";
 import { formatMoney } from "@/lib/utils/money";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -21,8 +21,9 @@ const STATUS: Record<
 };
 
 export default async function CotizadorPage() {
-  const ws = await getActiveWorkspace();
+  const { ws, can } = await getActiveWorkspaceWithPermissions();
   if (!ws) return <NoEntorno title="Cotizador" />;
+  const canManage = can("quotes.manage");
   const quotes = await listQuotes();
 
   return (
@@ -32,13 +33,15 @@ export default async function CotizadorPage() {
         title="Cotizador"
         description="Cotizaciones de pedidos personalizados"
         actions={
-          <Link
-            href="/operations/cotizador/nuevo"
-            className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color] duration-200 ease-out hover:bg-primary-hover"
-          >
-            <Plus className="h-4 w-4" />
-            Nueva cotización
-          </Link>
+          canManage ? (
+            <Link
+              href="/operations/cotizador/nuevo"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color] duration-200 ease-out hover:bg-primary-hover"
+            >
+              <Plus className="h-4 w-4" />
+              Nueva cotización
+            </Link>
+          ) : null
         }
       />
       <Card>

@@ -10,6 +10,11 @@ import {
   requireWorkspaceOwner,
   type WorkspaceRole,
 } from "@/lib/workspace";
+import {
+  ALL_WS_PERMISSIONS,
+  DEFAULT_WS_ROLE_PERMISSIONS,
+  type WsRolePermissions,
+} from "@/lib/constants/workspacePermissions";
 
 const requireAdmin = async () => {
   const session = await auth();
@@ -237,6 +242,48 @@ export const setMemberRole = async (
         eq(workspaceMembers.userId, userId)
       )
     );
+  revalidatePath("/admin");
+  revalidatePath("/operations");
+};
+
+// ─── Matriz de permisos por entorno ───────────────────────────────────────────
+
+/** Matriz vigente del entorno (owner/admin-entorno/admin-global). */
+export const getWorkspacePermissionMatrix = async (
+  workspaceId: string
+): Promise<WsRolePermissions> => {
+  await requireWorkspaceManage(workspaceId);
+  const [row] = await db
+    .select({ rp: workspaces.rolePermissions })
+    .from(workspaces)
+    .where(eq(workspaces.id, workspaceId))
+    .limit(1);
+  const rp = row?.rp ?? DEFAULT_WS_ROLE_PERMISSIONS;
+  return {
+    admin: rp.admin ?? DEFAULT_WS_ROLE_PERMISSIONS.admin,
+    member: rp.member ?? DEFAULT_WS_ROLE_PERMISSIONS.member,
+  };
+};
+
+const sanitizeKeys = (keys: string[]): string[] => {
+  const allow = new Set(ALL_WS_PERMISSIONS);
+  return [...new Set(keys)].filter((k) => allow.has(k));
+};
+
+/** Reemplaza la matriz role→permisos del entorno (claves validadas). */
+export const updateWorkspacePermissions = async (
+  workspaceId: string,
+  matrix: WsRolePermissions
+) => {
+  await requireWorkspaceManage(workspaceId);
+  const clean: WsRolePermissions = {
+    admin: sanitizeKeys(matrix.admin ?? []),
+    member: sanitizeKeys(matrix.member ?? []),
+  };
+  await db
+    .update(workspaces)
+    .set({ rolePermissions: clean, updatedAt: new Date() })
+    .where(eq(workspaces.id, workspaceId));
   revalidatePath("/admin");
   revalidatePath("/operations");
 };

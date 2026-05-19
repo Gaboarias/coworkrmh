@@ -6,12 +6,26 @@ import { db } from "@/lib/db";
 import { projects, projectMembers, buckets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import type { ProjectStatus } from "@/lib/types";
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
 
 async function requireUser() {
   const session = await auth();
   if (!session?.user) throw new Error("No autenticado");
   return session.user;
+}
+
+/** Usuario + entorno activo, exigiendo la capacidad `projects.manage`. */
+async function requireProjectsManage() {
+  const user = await requireUser();
+  const ws = await getActiveWorkspace();
+  if (!ws) throw new Error("Selecciona un entorno");
+  const { permissions } = await getWorkspacePermissions(ws.id);
+  if (!permissions.has("projects.manage")) {
+    throw new Error(
+      "No tenés permiso para gestionar proyectos en este entorno"
+    );
+  }
+  return { user, ws };
 }
 
 export async function createProject(formData: {
@@ -23,9 +37,7 @@ export async function createProject(formData: {
   endDate?: string;
   dueDate?: string;
 }) {
-  const user = await requireUser();
-  const ws = await getActiveWorkspace();
-  if (!ws) throw new Error("Selecciona un entorno antes de crear un proyecto");
+  const { user, ws } = await requireProjectsManage();
 
   const [project] = await db
     .insert(projects)
@@ -65,13 +77,14 @@ export async function updateProject(
     status?: ProjectStatus;
   }
 ) {
+  await requireProjectsManage();
   await db.update(projects).set({ ...updates, updatedAt: new Date() }).where(eq(projects.id, projectId));
   revalidatePath("/projects");
   revalidatePath(`/projects/${projectId}`);
 }
 
 export async function createBucket(formData: { name: string; color?: string }) {
-  const user = await requireUser();
+  const { user } = await requireProjectsManage();
   const [bucket] = await db
     .insert(buckets)
     .values({ name: formData.name, color: formData.color ?? "#6B5FE4", createdBy: user.id })
@@ -85,7 +98,7 @@ export async function addProjectMember(
   userId: string,
   role: "admin" | "manager" | "member" = "member"
 ) {
-  await requireUser();
+  await requireProjectsManage();
   await db
     .insert(projectMembers)
     .values({ projectId, userId, role })
@@ -97,7 +110,7 @@ export async function addProjectMember(
 }
 
 export async function removeProjectMember(projectId: string, userId: string) {
-  await requireUser();
+  await requireProjectsManage();
   await db
     .delete(projectMembers)
     .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)));

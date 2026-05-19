@@ -82,7 +82,13 @@ const Fields = ({
   </div>
 );
 
-export const CatalogView = ({ products }: { products: ProductRow[] }) => {
+export const CatalogView = ({
+  products,
+  canManage = true,
+}: {
+  products: ProductRow[];
+  canManage?: boolean;
+}) => {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(empty);
   const [creating, setCreating] = useState(false);
@@ -144,6 +150,7 @@ export const CatalogView = ({ products }: { products: ProductRow[] }) => {
 
   return (
     <div className="space-y-5">
+      {canManage && (
       <Card>
         <CardContent>
           <h3 className="mb-3 text-sm font-semibold text-text">
@@ -164,6 +171,7 @@ export const CatalogView = ({ products }: { products: ProductRow[] }) => {
           </form>
         </CardContent>
       </Card>
+      )}
 
       <Card>
         {products.length === 0 ? (
@@ -226,20 +234,24 @@ export const CatalogView = ({ products }: { products: ProductRow[] }) => {
                   >
                     {Math.round(p.marginPct * 100)}%
                   </span>
-                  <button
-                    onClick={() => startEdit(p)}
-                    aria-label={`Editar ${p.name}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-text"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => remove(p.id)}
-                    aria-label={`Eliminar ${p.name}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {canManage && (
+                    <>
+                      <button
+                        onClick={() => startEdit(p)}
+                        aria-label={`Editar ${p.name}`}
+                        className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-text"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => remove(p.id)}
+                        aria-label={`Eliminar ${p.name}`}
+                        className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               )
             )}

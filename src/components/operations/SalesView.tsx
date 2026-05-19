@@ -11,7 +11,13 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { formatMoney } from "@/lib/utils/money";
 import { createSale, deleteSale, type SalesResult } from "@/lib/actions/erp";
 
-export const SalesView = ({ data }: { data: SalesResult }) => {
+export const SalesView = ({
+  data,
+  canManage = true,
+}: {
+  data: SalesResult;
+  canManage?: boolean;
+}) => {
   const router = useRouter();
   const [f, setF] = useState({
     saleDate: "",
@@ -65,6 +71,7 @@ export const SalesView = ({ data }: { data: SalesResult }) => {
 
   return (
     <div className="space-y-5">
+      {canManage && (
       <Card>
         <CardContent>
           <h3 className="mb-3 text-sm font-semibold text-text">
@@ -129,6 +136,7 @@ export const SalesView = ({ data }: { data: SalesResult }) => {
           </form>
         </CardContent>
       </Card>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Card>
@@ -184,13 +192,15 @@ export const SalesView = ({ data }: { data: SalesResult }) => {
                     +{formatMoney(r.profit)}
                   </p>
                 </div>
-                <button
-                  onClick={() => remove(r.id)}
-                  aria-label="Eliminar venta"
-                  className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                {canManage && (
+                  <button
+                    onClick={() => remove(r.id)}
+                    aria-label="Eliminar venta"
+                    className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             ))}
           </div>
