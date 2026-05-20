@@ -10,10 +10,11 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 // x-height alta, óptima para UI a 14–16px. Expone variable --font-geist-sans,
 // la mapeamos a --font-sans abajo.
 
-// Display: Fraunces variable (opsz + SOFT), serif moderno con calor editorial.
+// Display: Fraunces como variable font (opsz + SOFT axes). next/font/google
+// no admite `weight` array junto a `axes` — omitir weight para usar la
+// variable completa y controlar peso vía font-variation-settings en CSS.
 const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
   axes: ["opsz", "SOFT"],
   variable: "--font-display",
   display: "swap",
