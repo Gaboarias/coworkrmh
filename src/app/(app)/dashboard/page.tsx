@@ -7,7 +7,10 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import Link from "next/link";
-import { CheckSquare, FolderKanban, AlertCircle } from "lucide-react";
+import { CheckSquare, FolderKanban, AlertCircle, Layers } from "lucide-react";
+import { formatMoney } from "@/lib/utils/money";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { getActiveWorkspace } from "@/lib/workspace";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -17,7 +20,21 @@ export default async function DashboardPage() {
   const role = session.user.role as string;
   const isManager = role === "admin" || role === "manager";
 
-  // Fetch my pending tasks with project info
+  const ws = await getActiveWorkspace();
+  if (!ws) {
+    return (
+      <div className="animate-fade-in p-6 md:p-8">
+        <PageHeader title="Dashboard" />
+        <EmptyState
+          icon={<Layers className="h-12 w-12" />}
+          title="Sin entorno"
+          description="No perteneces a ningún entorno todavía. Pedile a un administrador que te asigne uno."
+        />
+      </div>
+    );
+  }
+
+  // Fetch my pending tasks with project info (scoped al entorno activo)
   const myTaskRows = await db
     .select({
       id: tasks.id,
@@ -29,17 +46,25 @@ export default async function DashboardPage() {
       projectName: projects.name,
     })
     .from(tasks)
-    .leftJoin(projects, eq(tasks.projectId, projects.id))
-    .where(and(eq(tasks.assigneeId, userId), ne(tasks.status, "done")))
+    .innerJoin(projects, eq(tasks.projectId, projects.id))
+    .where(
+      and(
+        eq(tasks.assigneeId, userId),
+        ne(tasks.status, "done"),
+        eq(projects.workspaceId, ws.id)
+      )
+    )
     .orderBy(asc(tasks.dueDate))
     .limit(5);
 
-  // Fetch active projects with bucket
+  // Fetch active projects with bucket (scoped al entorno activo)
   const recentProjectRows = await db
     .select({ project: projects, bucket: buckets })
     .from(projects)
     .leftJoin(buckets, eq(projects.bucketId, buckets.id))
-    .where(ne(projects.status, "archived"))
+    .where(
+      and(eq(projects.workspaceId, ws.id), ne(projects.status, "archived"))
+    )
     .orderBy(desc(projects.createdAt))
     .limit(5);
 
@@ -172,10 +197,10 @@ export default async function DashboardPage() {
                 </h3>
               </div>
               <Link
-                href="/crm"
+                href="/dashboard"
                 className="text-xs text-primary hover:text-primary-hover"
               >
-                Ver CRM
+                Ver Operaciones
               </Link>
             </div>
 
@@ -193,7 +218,7 @@ export default async function DashboardPage() {
                   return (
                     <li key={payment.id}>
                       <Link
-                        href={`/crm/${payment.clientId}/payments`}
+                        href="/dashboard"
                         className="flex items-center justify-between rounded-lg p-2 transition hover:bg-surface-el"
                       >
                         <div className="min-w-0">
@@ -208,8 +233,10 @@ export default async function DashboardPage() {
                           <p
                             className={`text-sm font-medium ${isOverdue ? "text-danger" : "text-text"}`}
                           >
-                            {payment.currency}{" "}
-                            {Number(payment.amount).toLocaleString()}
+                            {formatMoney(
+                              Number(payment.amount),
+                              payment.currency
+                            )}
                           </p>
                           {payment.dueDate && (
                             <p

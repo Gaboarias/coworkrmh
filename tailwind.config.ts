@@ -81,8 +81,12 @@ const config: Config = {
         out: "var(--ease-out)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "var(--font-sans)", "sans-serif"],
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        display: [
+          "var(--font-display)",
+          "var(--font-geist-sans)",
+          "serif",
+        ],
         mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
       },
       animation: {

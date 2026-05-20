@@ -3,6 +3,7 @@ import {
   pgEnum,
   uuid,
   text,
+  varchar,
   timestamp,
   boolean,
   integer,
@@ -10,12 +11,19 @@ import {
   date,
   json,
   primaryKey,
+  index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
+import { DEFAULT_WS_ROLE_PERMISSIONS } from "@/lib/constants/workspacePermissions";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "manager", "member"]);
+// workspace_role enum eliminado: workspace_members.role ahora es text para
+// soportar roles custom definidos por entorno en workspaces.role_permissions.
+// Built-in: owner / admin / member. Owner = bypass total, no se almacena en
+// la matriz. La migración guarded convierte el column type y dropea el enum.
 export const taskStatusEnum = pgEnum("task_status", ["todo", "in_progress", "review", "done"]);
 export const taskPriorityEnum = pgEnum("task_priority", ["low", "medium", "high", "urgent"]);
 export const projectStatusEnum = pgEnum("project_status", [
@@ -28,9 +36,11 @@ export const projectStatusEnum = pgEnum("project_status", [
 ]);
 export const changelogActionEnum = pgEnum("changelog_action", [
   "created", "updated", "deleted", "status_changed", "assigned", "unassigned", "uploaded", "noted",
+  "product_created", "product_updated", "product_archived",
 ]);
 export const clientStatusEnum = pgEnum("client_status", ["active", "inactive", "prospect"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["pending", "paid", "overdue", "cancelled"]);
+export const currencyEnum = pgEnum("currency", ["CRC", "USD"]);
 
 // ─── Users (replaces Supabase auth.users + profiles) ─────────────────────────
 
@@ -97,10 +107,54 @@ export const buckets = pgTable("buckets", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// ─── Entornos (workspaces, estilo ClickUp) ───────────────────────────────────
+// Contenedor top-level aislado. Una persona puede pertenecer a varios sin que
+// se crucen. Membresía con rol (owner/admin/member) y matriz de permisos
+// configurable (role_permissions jsonb): owner ⇒ todo; admin/member ⇒ matriz.
+
+export const workspaces = pgTable("workspaces", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  color: text("color").default("#6B5FE4").notNull(),
+  rolePermissions: json("role_permissions")
+    .$type<Record<string, string[]>>()
+    .default(DEFAULT_WS_ROLE_PERMISSIONS)
+    .notNull(),
+  teamAgreements: text("team_agreements"),
+  breakEvenMargin: numeric("break_even_margin", { precision: 5, scale: 4 })
+    .default("0.45")
+    .notNull(),
+  createdBy: uuid("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const workspaceMembers = pgTable(
+  "workspace_members",
+  {
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // role: text para soportar built-in (owner/admin/member) + roles custom
+    // que el admin del entorno define en workspaces.role_permissions.
+    role: text("role").default("member").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.workspaceId, t.userId] }),
+  })
+);
+
 // ─── Projects ─────────────────────────────────────────────────────────────────
 
 export const projects = pgTable("projects", {
   id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: uuid("workspace_id")
+    .notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
   bucketId: uuid("bucket_id").references(() => buckets.id, { onDelete: "set null" }),
   name: text("name").notNull(),
   description: text("description"),
@@ -215,7 +269,7 @@ export const clientAccounts = pgTable("client_accounts", {
   bankName: text("bank_name"),
   accountNumber: text("account_number").notNull(),
   accountType: text("account_type"),
-  currency: text("currency").default("USD").notNull(),
+  currency: currencyEnum("currency").default("CRC").notNull(),
   isPrimary: boolean("is_primary").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -226,7 +280,7 @@ export const payments = pgTable("payments", {
   projectId: uuid("project_id").references(() => projects.id, { onDelete: "set null" }),
   description: text("description").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
-  currency: text("currency").default("USD").notNull(),
+  currency: currencyEnum("currency").default("CRC").notNull(),
   status: paymentStatusEnum("status").default("pending").notNull(),
   dueDate: date("due_date"),
   paidAt: timestamp("paid_at"),
@@ -249,6 +303,10 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [projects.workspaceId],
+    references: [workspaces.id],
+  }),
   bucket: one(buckets, { fields: [projects.bucketId], references: [buckets.id] }),
   members: many(projectMembers),
   tasks: many(tasks),
@@ -256,6 +314,25 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   documents: many(documents),
   changelog: many(changelog),
 }));
+
+export const workspacesRelations = relations(workspaces, ({ many }) => ({
+  members: many(workspaceMembers),
+  projects: many(projects),
+}));
+
+export const workspaceMembersRelations = relations(
+  workspaceMembers,
+  ({ one }) => ({
+    workspace: one(workspaces, {
+      fields: [workspaceMembers.workspaceId],
+      references: [workspaces.id],
+    }),
+    user: one(users, {
+      fields: [workspaceMembers.userId],
+      references: [users.id],
+    }),
+  })
+);
 
 export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
   project: one(projects, { fields: [projectMembers.projectId], references: [projects.id] }),
@@ -275,4 +352,211 @@ export const clientsRelations = relations(clients, ({ many }) => ({
 export const paymentsRelations = relations(payments, ({ one }) => ({
   client: one(clients, { fields: [payments.clientId], references: [clients.id] }),
   project: one(projects, { fields: [payments.projectId], references: [projects.id] }),
+}));
+
+// ─── Etiquetas de tareas (tracker) ────────────────────────────────────────────
+
+export const tags = pgTable(
+  "tags",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 60 }).notNull(),
+    color: varchar("color", { length: 7 }).default("#6E83FF").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    projectNameUnq: uniqueIndex("tags_project_name_unq").on(
+      t.projectId,
+      t.name
+    ),
+  })
+);
+
+export const taskTags = pgTable(
+  "task_tags",
+  {
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => tasks.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.taskId, t.tagId] }),
+  })
+);
+
+export const tagsRelations = relations(tags, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [tags.projectId],
+    references: [projects.id],
+  }),
+  taskTags: many(taskTags),
+}));
+
+export const taskTagsRelations = relations(taskTags, ({ one }) => ({
+  task: one(tasks, { fields: [taskTags.taskId], references: [tasks.id] }),
+  tag: one(tags, { fields: [taskTags.tagId], references: [tags.id] }),
+}));
+
+// ─── ERP por entorno (estructura del Excel) ──────────────────────────────────
+// Catálogo · Cotizador · Ventas · Gastos · Equipo. Todo scoped por workspace.
+// numeric(12,2) viaja como string; total/ganancia/%margen se derivan en lectura.
+
+export const erpExpenseKindEnum = pgEnum("erp_expense_kind", [
+  "investment",
+  "fixed",
+]);
+
+export const erpProducts = pgTable(
+  "erp_products",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    category: text("category"),
+    materialsCost: numeric("materials_cost", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    laborCost: numeric("labor_cost", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    price: numeric("price", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({ wsIdx: index("erp_products_ws_idx").on(t.workspaceId) })
+);
+
+export const erpQuotes = pgTable(
+  "erp_quotes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    customerName: text("customer_name"),
+    ivaRate: numeric("iva_rate", { precision: 5, scale: 4 })
+      .default("0.13")
+      .notNull(),
+    status: text("status").default("draft").notNull(),
+    notes: text("notes"),
+    createdById: uuid("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({ wsIdx: index("erp_quotes_ws_idx").on(t.workspaceId) })
+);
+
+export const erpQuoteItems = pgTable(
+  "erp_quote_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    quoteId: uuid("quote_id")
+      .notNull()
+      .references(() => erpQuotes.id, { onDelete: "cascade" }),
+    description: text("description").notNull(),
+    qty: numeric("qty", { precision: 12, scale: 2 }).default("1").notNull(),
+    unitCost: numeric("unit_cost", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    unitPrice: numeric("unit_price", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+  },
+  (t) => ({ quoteIdx: index("erp_quote_items_quote_idx").on(t.quoteId) })
+);
+
+export const erpSales = pgTable(
+  "erp_sales",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    saleDate: date("sale_date").notNull(),
+    description: text("description").notNull(),
+    clientName: text("client_name"),
+    category: text("category"),
+    qty: numeric("qty", { precision: 12, scale: 2 }).default("1").notNull(),
+    unitCost: numeric("unit_cost", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    unitPrice: numeric("unit_price", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    createdById: uuid("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    wsDateIdx: index("erp_sales_ws_date_idx").on(t.workspaceId, t.saleDate),
+  })
+);
+
+export const erpExpenses = pgTable(
+  "erp_expenses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    kind: erpExpenseKindEnum("kind").notNull(),
+    concept: text("concept").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
+    category: text("category"),
+    priority: text("priority"),
+    createdById: uuid("created_by_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    wsKindIdx: index("erp_expenses_ws_kind_idx").on(t.workspaceId, t.kind),
+  })
+);
+
+export const erpTeam = pgTable(
+  "erp_team",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    role: text("role"),
+    responsibilities: text("responsibilities"),
+    compensation: text("compensation"),
+    status: text("status").default("active").notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({ wsIdx: index("erp_team_ws_idx").on(t.workspaceId) })
+);
+
+export const erpQuotesRelations = relations(erpQuotes, ({ many }) => ({
+  items: many(erpQuoteItems),
+}));
+
+export const erpQuoteItemsRelations = relations(erpQuoteItems, ({ one }) => ({
+  quote: one(erpQuotes, {
+    fields: [erpQuoteItems.quoteId],
+    references: [erpQuotes.id],
+  }),
 }));

@@ -279,7 +279,9 @@ export function ProjectSettingsForm({
                       {PROJECT_STATUS_CONFIG[s].label}
                     </option>
                   ))}
-                  {isArchived && <option value="archived">Archivado</option>}
+                  <option value="archived">
+                    {PROJECT_STATUS_CONFIG.archived.label}
+                  </option>
                 </Select>
               </div>
             </div>

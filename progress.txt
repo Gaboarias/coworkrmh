@@ -1,0 +1,50 @@
+PISTACHIO — PROGRESO
+
+Arquitectura actual (rama preview):
+- Entornos (workspaces) estilo ClickUp: aíslan Project Management + ERP.
+  Membresía simple, admin-gestionada (/admin). Selector en Sidebar.
+- ERP por entorno (del Excel azulejos_colores_negocio.xlsx): Catálogo,
+  Cotizador (IVA), Ventas (+resumen categoría), Gastos (inversión/fijos/
+  punto de equilibrio), Equipo (+acuerdos). Acciones en lib/actions/erp.ts.
+- ERP/CRM/admin viejo eliminado por completo (tablas dropeadas).
+
+Design audit (rama design/audit-fases) — 3 fases aplicadas:
+- Fase 1: acento de color del entorno en el switcher; títulos sin
+  "· entorno"; loading.tsx en todas las rutas /operations/*;
+  OperationsNav + breadcrumb en cotizador/nuevo y /[id].
+- Fase 2: aria-label en inputs inline; targets icon-only 36px + focus
+  ring; guía en dashboard vacío; teclado en EntornoSwitcher (Esc/flechas);
+  readableFg() para contraste del chip; ritmo (OperationsNav mb-4).
+- Fase 3: dropdown del switcher con animate-slide-up; SwatchPicker
+  (paleta acotada accesible) reemplaza color picker nativo en /admin;
+  hover de filas consistente; badges semánticas verificadas.
+
+Pendiente (no bloqueante): merge design/audit-fases → preview tras tu OK;
+merge preview → main (producción) manual.
+
+Entornos abiertos + permisos (ramas feat/entornos-*) — sobre preview:
+- Fase 1 (feat/entornos, mergeada 1ddf304+98d9bc5): cualquier usuario crea
+  entorno y queda Owner; workspace_members.role (owner/admin/member);
+  editar nombre/color (EntornoSwitcher modal + AdminPanel). Migración
+  guarded aplicada (admin-wsrole-migrate, ya eliminada).
+- Fase 2 (feat/entornos-permisos): matriz de permisos por entorno como
+  jsonb workspaces.role_permissions {admin[],member[]} (única fuente,
+  sin tabla profiles). Claves canónicas en lib/constants/
+  workspacePermissions.ts. Resolución en lib/workspace.ts
+  (getWorkspacePermissions/workspaceCan; owner y admin-global = bypass
+  total). Enforcement server: erp.ts requireWsCan(<area>.manage),
+  projects.ts/tasks.ts projects.manage. UI: AdminPanel editor de matriz
+  (rol×capacidad) + cambio de rol por miembro; operations oculta/
+  inhabilita acciones según can. Migración guarded admin-wsperms-migrate
+  (ADD COLUMN IF NOT EXISTS jsonb + backfill default) — ELIMINAR tras
+  aplicar al alias estable.
+- Fase 3 (rebrand pistacho): globals.css retinte verde en los 4 sets
+  de tokens (Navy/Pine día/noche). --primary verde de acción accesible
+  (#356018 día / #a6d957 noche); pistacho claro = primary-muted/acentos;
+  --sidebar bosque #10231A día y noche; --success teal (no choca con el
+  verde de marca). Contraste WCAG AA verificado en todos los pares clave.
+  entornoColors.ts: 8 swatches distintos, ninguno verde, default azul.
+  Solo valores de color; estructura/nombres intactos.
+- Estado: Fases 1–3 de "Entornos abiertos + permisos + rebrand"
+  completas y verificadas en preview (type-check 0, migración aplicada,
+  e2e 12/12, deploy READY). Pendiente: merge preview → main manual.

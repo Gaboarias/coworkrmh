@@ -11,36 +11,36 @@
 
 @layer base {
   :root {
-    /* ---- NAVY · DÍA ---- */
-    --background: #ebedf3;
-    --surface: #ffffff;
-    --surface-el: #f6f7fb;
-    --border: #d6d9e4;
-    --border-strong: #c2c6d6;
+    /* ---- MOCHA · DÍA ---- */
+    --background: #f8f1e4;
+    --surface: #fffdf7;
+    --surface-el: #f1e7d3;
+    --border: #d6c4a8;
+    --border-strong: #bdaa84;
 
-    --primary: #d4004f;            /* frambuesa (AA on light) */
-    --primary-hover: #b0003f;
-    --primary-muted: #f6dce4;      /* subtle active bg */
-    --primary-foreground: #fff6e9;
+    --primary: #177566;            /* menta deep (AA on cream/white) */
+    --primary-hover: #115d51;
+    --primary-muted: #d4eee3;      /* subtle active bg */
+    --primary-foreground: #fefefa;
 
-    --secondary: #a87400;          /* gold (text-safe on light) */
+    --secondary: #a36e1a;          /* mocha gold (text-safe on light) */
     --secondary-foreground: #ffffff;
 
-    --text: #0e0f1f;
-    --text-muted: #434a60;
-    --text-tertiary: #757b92;
+    --text: #2d1f15;
+    --text-muted: #5e4733;
+    --text-tertiary: #756046;        /* AA 5.38:1 (era 4.07) */
 
-    --success: #0e7a4e;
-    --warning: #a87400;
-    --danger: #d81e3c;
-    --info: #6a45a0;
+    --success: #237a4d;
+    --warning: #a36e1a;
+    --danger: #b73e3a;
+    --info: #5046b0;
 
     /* sidebar = brand-dark even in day (Linear/Height pattern) */
-    --sidebar: #0e0f1f;
-    --sidebar-foreground: #faf3e0;
-    --sidebar-muted: #9fa0c0;
-    --sidebar-border: #272948;
-    --sidebar-active: #ff2e72;
+    --sidebar: #3d2a1b;
+    --sidebar-foreground: #f6e9d0;
+    --sidebar-muted: #b89a76;
+    --sidebar-border: #4f3a26;
+    --sidebar-active: #6fd4be;
 
     /* elevation (day: real soft shadows) */
     --elev-1: 0 1px 2px rgba(16, 18, 42, 0.05);
@@ -66,65 +66,65 @@
   }
 
   :root[data-base="pine"] {
-    /* ---- PINE · DÍA ---- */
-    --background: #e9efe9;
-    --surface: #ffffff;
-    --surface-el: #f4f8f3;
-    --border: #d2dcd0;
-    --border-strong: #bdc9bb;
+    /* ---- ESPRESSO · DÍA (base alternativa) ---- */
+    --background: #f5ecdc;
+    --surface: #fffcf3;
+    --surface-el: #ede1c8;
+    --border: #cfbb9b;
+    --border-strong: #b8a079;
 
-    --primary: #c9004d;
-    --primary-hover: #a8003f;
-    --primary-muted: #f3dbe2;
-    --primary-foreground: #fff6e9;
+    --primary: #177566;
+    --primary-hover: #115d51;
+    --primary-muted: #cee9de;
+    --primary-foreground: #fefefa;
 
-    --secondary: #a87400;
-    --text: #06140f;
-    --text-muted: #3b524a;
-    --text-tertiary: #6f837a;
+    --secondary: #9c6915;
+    --text: #25180e;
+    --text-muted: #54402d;
+    --text-tertiary: #6e5a3f;        /* AA */
 
-    --success: #0e7a4e;
-    --warning: #a87400;
-    --danger: #d81e3c;
-    --info: #6a45a0;
+    --success: #237a4d;
+    --warning: #9c6915;
+    --danger: #b73e3a;
+    --info: #5046b0;
 
-    --sidebar: #00382e;
-    --sidebar-foreground: #f2f7ef;
-    --sidebar-muted: #92b7a9;
-    --sidebar-border: #0e4c3e;
-    --sidebar-active: #ffc857;
+    --sidebar: #2e2014;
+    --sidebar-foreground: #f5e6c8;
+    --sidebar-muted: #b09478;
+    --sidebar-border: #41301e;
+    --sidebar-active: #6fd4be;
   }
 
   .dark {
-    /* ---- NAVY · NOCHE (aprobado) ---- */
-    --background: #0e0f1f;
-    --surface: #1f2041;
-    --surface-el: #2a2c52;
-    --border: #3c3e5c;
-    --border-strong: #4b3f72;
+    /* ---- MOCHA · NOCHE ---- */
+    --background: #1d130b;
+    --surface: #2e2014;
+    --surface-el: #3c2c1c;
+    --border: #5b4327;
+    --border-strong: #6f5331;
 
-    --primary: #ff2e72;
-    --primary-hover: #ff5c8c;
-    --primary-muted: #34203a;
-    --primary-foreground: #0e0f1f;
+    --primary: #6fd4be;
+    --primary-hover: #87dcca;
+    --primary-muted: #1c3a32;
+    --primary-foreground: #14241e;
 
-    --secondary: #ffc857;
-    --secondary-foreground: #2a1a00;
+    --secondary: #d9a155;
+    --secondary-foreground: #1f1408;
 
-    --text: #faf3e0;
-    --text-muted: #aeadcb;
-    --text-tertiary: #6e7099;
+    --text: #f6e9d0;
+    --text-muted: #c9b18d;
+    --text-tertiary: #a89070;        /* AA en noche */
 
-    --success: #a8d3a8;
-    --warning: #ffc857;
-    --danger: #f8395a;
-    --info: #9967ca;
+    --success: #5cc890;
+    --warning: #d9a155;
+    --danger: #e07472;
+    --info: #a98fe0;
 
-    --sidebar: #16172e;
-    --sidebar-foreground: #faf3e0;
-    --sidebar-muted: #9a9bbe;
-    --sidebar-border: #2e3056;
-    --sidebar-active: #ff2e72;
+    --sidebar: #160d07;
+    --sidebar-foreground: #f6e9d0;
+    --sidebar-muted: #b0916d;
+    --sidebar-border: #2c1f10;
+    --sidebar-active: #6fd4be;
 
     /* dark: depth via surface lightness; shadows subtle */
     --elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -135,33 +135,33 @@
   }
 
   .dark[data-base="pine"] {
-    /* ---- PINE · NOCHE (aprobado) ---- */
-    --background: #06140f;
-    --surface: #00382e;
-    --surface-el: #0b5142;
-    --border: #1c5c4c;
-    --border-strong: #2a6e5b;
+    /* ---- ESPRESSO · NOCHE (base alternativa) ---- */
+    --background: #150b06;
+    --surface: #29180e;
+    --surface-el: #38241a;
+    --border: #523823;
+    --border-strong: #6a4a30;
 
-    --primary: #ff2e72;
-    --primary-hover: #ff5c8c;
-    --primary-muted: #15302a;
-    --primary-foreground: #06140f;
+    --primary: #6fd4be;
+    --primary-hover: #87dcca;
+    --primary-muted: #1a3328;
+    --primary-foreground: #14241e;
 
-    --secondary: #ffc857;
-    --text: #faf3e0;
-    --text-muted: #9fc3b5;
-    --text-tertiary: #5e8475;
+    --secondary: #d9a155;
+    --text: #f5e6c8;
+    --text-muted: #c5a980;
+    --text-tertiary: #a48864;        /* AA en noche */
 
-    --success: #a8d3a8;
-    --warning: #ffc857;
-    --danger: #f8395a;
-    --info: #c79bea;
+    --success: #5cc890;
+    --warning: #d9a155;
+    --danger: #e07472;
+    --info: #c2a8ec;
 
-    --sidebar: #072019;
-    --sidebar-foreground: #faf3e0;
-    --sidebar-muted: #8fb3a5;
-    --sidebar-border: #11473a;
-    --sidebar-active: #ff2e72;
+    --sidebar: #0e0703;
+    --sidebar-foreground: #f5e6c8;
+    --sidebar-muted: #aa8d68;
+    --sidebar-border: #24160a;
+    --sidebar-active: #6fd4be;
   }
 }
 
@@ -171,19 +171,40 @@
   }
   body {
     @apply bg-background text-text;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    /* Body weight 500: peso aparente para Geist sin sentirse bold (rule:
+       smallest visible increments). Kerning + ligatures + contextual alt
+       siempre on (Butterick: "kerning — always on, no exceptions"). */
+    font-weight: 500;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "ss01" 1;
+    text-rendering: optimizeLegibility;
   }
   html {
+    /* Root 17px: bumpea text-sm 14→14.9 y text-base 16→17 sin tocar
+       componentes (Butterick web body 15–25px). Mantiene ratio Tailwind. */
+    font-size: 17px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  /* Homogeneous typography: Clash Display for all headings, Satoshi body */
+  /* Headings: Fraunces variable serif. opsz alto en displays grandes para
+     contraste editorial; SOFT 50 suaviza los serifs. */
   h1,
   h2,
   h3,
   h4 {
-    font-family: var(--font-display), var(--font-sans), sans-serif;
+    font-family: var(--font-display), var(--font-geist-sans), serif;
+    font-weight: 500;
     letter-spacing: -0.02em;
+    font-variation-settings: "opsz" 36, "SOFT" 50;
+  }
+  h1 { font-variation-settings: "opsz" 96, "SOFT" 50; letter-spacing: -0.03em; }
+  h2 { font-variation-settings: "opsz" 56, "SOFT" 50; letter-spacing: -0.025em; }
+  /* Tabular numerals: para tablas/KPIs/montos (Butterick: tabular figures
+     for numeric tables). Aplicar con la clase utility .tabular. */
+  .tabular,
+  td.numeric,
+  .kpi-value,
+  .money {
+    font-variant-numeric: tabular-nums lining-nums;
   }
 }
 

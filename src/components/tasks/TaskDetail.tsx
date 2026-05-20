@@ -10,6 +10,7 @@ import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { updateTask } from "@/lib/actions/tasks";
+import { TaskExtras } from "./TaskExtras";
 import { cn } from "@/lib/utils/cn";
 import type { TaskStatus, TaskPriority } from "@/lib/types";
 import { TASK_STATUS_ORDER } from "@/lib/constants/taskStatus";
@@ -244,6 +245,10 @@ export function TaskDetail({
               <p className="text-sm text-text">{dueLabel}</p>
             </div>
           )}
+
+          <div className="border-t border-border pt-5">
+            <TaskExtras taskId={task.id} projectId={projectId} />
+          </div>
 
           <div className="border-t border-border pt-4">
             <div className="flex justify-between text-xs text-text-tertiary">

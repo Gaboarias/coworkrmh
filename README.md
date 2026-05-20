@@ -1,6 +1,6 @@
 # Pistachio
 
-Aplicación interna de **gestión de proyectos + CRM** para Rewind Media House
+Aplicación interna de **gestión de proyectos + ERP por negocio** para Rewind Media House
 (antes "Cowork RMH"). Centraliza proyectos, tareas, notas, documentos, historial
 de cambios, calendario y la cartera de clientes/pagos en una sola herramienta.
 
@@ -31,7 +31,13 @@ de cambios, calendario y la cartera de clientes/pagos en una sola herramienta.
 - **Notas**: editor enriquecido (TipTap) por proyecto/tarea.
 - **Documentos**: subida a Vercel Blob, export a PDF/DOCX.
 - **Historial (changelog)**: registro de acciones por entidad.
-- **CRM**: clientes, cuentas, pagos (con estados) y vínculo cliente↔proyecto.
+- **Operaciones (ERP por negocio)**: dashboard por negocio + Catálogo
+  (productos/categorías/costos), Cotizador (IVA), Ventas, Gastos y Clientes/
+  cobros. Multi-negocio vía buckets. El CRM se consolidó aquí (las rutas
+  `/crm/*` fueron eliminadas). Ver "Módulo Operaciones".
+- **Administración (`/admin`)**: panel único — usuarios + rol global +
+  tarjeta por persona, negocios, y por negocio perfiles/permisos/equipo/
+  acuerdos. Reemplaza las antiguas `/settings/team*`.
 - **Dashboard / Mis tareas**: vistas agregadas por usuario.
 
 ## Estructura del proyecto
@@ -40,19 +46,21 @@ de cambios, calendario y la cartera de clientes/pagos en una sola herramienta.
 src/
   app/
     (app)/        Rutas autenticadas: dashboard, projects, my-tasks,
-                  calendar, crm, settings
+                  calendar, crm, operations, settings
     (auth)/       login, signup, reset-password
-    api/          route handlers: auth, documents, export, users
+    api/          route handlers: auth, documents, export, users,
+                  operations
   components/
     ui/           Primitivos (Button, Input, Select, Card, Badge,
                   Modal, Skeleton…) — CVA + cn(), token-driven
     layout/       Sidebar, Topbar, AppShell
     shared/       PageHeader, EmptyState, LoadingSpinner, UserAvatar
-    {projects,tasks,crm,calendar,notes,changelog,documents}/
+    {projects,tasks,crm,calendar,notes,changelog,documents,operations}/
   lib/
     db/           schema.ts (Drizzle) + cliente Neon
+    access.ts     scope de buckets por equipo (getAccessibleBuckets)
     actions/      Server Actions (clients, documents, notes,
-                  projects, tasks) — fuente de verdad de las firmas
+                  projects, tasks, products, teams) — firmas = verdad
     constants/    p.ej. projectStatus.ts (labels + variantes Badge)
     utils/        cn() (clsx + tailwind-merge)
   fonts/          Clash Display + Satoshi (self-hosted)
@@ -63,10 +71,12 @@ src/
 `users`, `accounts`, `sessions`, `verification_tokens`,
 `password_reset_tokens`, `buckets`, `projects`, `project_members`, `tasks`,
 `documents`, `notes`, `changelog`, `clients`, `client_accounts`, `payments`,
-`client_projects`.
+`client_projects`, `bucket_members`, `product_categories`, `products`,
+`product_cost_history`.
 
 Enums: `user_role`, `task_status`, `task_priority`, `project_status`,
-`changelog_action`, `client_status`, `payment_status`.
+`changelog_action`, `client_status`, `payment_status`, `product_status`,
+`currency`.
 
 ## Puesta en marcha (local)
 
@@ -122,6 +132,36 @@ Para cambios de esquema cuando **no** se puede `vercel env pull` (la
   estética Linear (hairline, focus-visible, estados loading/disabled).
 - **Tipografía** homogénea: Clash Display (títulos) + Satoshi (cuerpo),
   self-hosted. Estado/acción = color **+ icono + label**, nunca color solo.
+
+## Módulo Operaciones
+
+Soporte multi-negocio sin tablas de "workspaces": **cada negocio = un `bucket`**
+(top-level ya existente; ej. Azulejos & Colores, RMH). El acceso es por
+**equipo**: `bucket_members` define qué usuario entra a qué negocio. Un admin
+ve todos los buckets; el resto solo aquellos donde está asignado.
+
+- **Acceso/equipos:** panel **`/admin`** (solo admin). `bucket_members` define
+  qué usuario entra a qué negocio; el **perfil** asignado (tabla `profiles`,
+  permisos editables) determina qué puede hacer (`bucketCan`). `users.role`
+  global solo distingue super-admin. Scope en `src/lib/access.ts`
+  (`getAccessibleBuckets`, `canAccessBucket`, `requireBucketAccess`,
+  `getBucketPermissions`).
+- **Navegación:** `/operations` (selector) → `/operations/[bucketId]`
+  (**dashboard** con KPIs) → módulos: Catálogo (productos + Categorías en
+  modal + costos), Cotizador, Ventas, Gastos, Clientes/cobros.
+- **Tablas:** `bucket_members`, `profiles`, `product_categories`, `products`,
+  `product_cost_history`, `quotes`/`quote_items`, `sales`, `expenses`,
+  `clients`/`payments`. Enums `product_status` (`active`/`archived`),
+  `currency` (`CRC`/`USD`), `quote_status`, `expense_kind`.
+  `changelog_action` extendido con
+  `product_created`/`product_updated`/`product_archived`; el changelog enlaza al
+  producto vía `entityType:"product"` + `entityId` (sin columnas nuevas).
+- **Convención local:** las server actions de Operaciones (`lib/actions/products.ts`)
+  devuelven un envelope `{ success, data } | { success, error }` con validación
+  **Zod** (esquemas `*Schema` exportados). El resto del repo mantiene su patrón
+  (throw + data); `teams.ts` sigue el patrón existente del repo.
+- **Dinero:** `numeric(12,2)` → `string` en DB; helper `toMoney()` en la capa de
+  actions lo convierte a `number` para la app.
 
 ## Convenciones (importante)
 

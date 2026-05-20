@@ -32,6 +32,7 @@
     "date-fns": "^4.1.0",
     "docx": "^9.6.1",
     "drizzle-orm": "^0.45.2",
+    "geist": "^1.7.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",

@@ -1,11 +1,12 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { projects, buckets } from "@/lib/db/schema";
-import { eq, ne, asc, desc } from "drizzle-orm";
+import { eq, ne, and, asc, desc } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
 import Link from "next/link";
-import { Plus, FolderKanban, CalendarDays } from "lucide-react";
+import { Plus, FolderKanban, CalendarDays, Layers } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { getActiveWorkspace } from "@/lib/workspace";
 import { Badge } from "@/components/ui/Badge";
 import { PROJECT_STATUS_CONFIG } from "@/lib/constants/projectStatus";
 import type { ProjectStatus } from "@/lib/types";
@@ -27,18 +28,34 @@ export default async function ProjectsPage() {
   const role = (session?.user?.role as string) ?? "";
   const isManager = role === "admin" || role === "manager";
 
+  const ws = await getActiveWorkspace();
+  if (!ws) {
+    return (
+      <div className="animate-fade-in p-6 md:p-8">
+        <PageHeader title="Proyectos" />
+        <EmptyState
+          icon={<Layers className="h-12 w-12" />}
+          title="Sin entorno"
+          description="No perteneces a ningún entorno todavía. Pedile a un administrador que te asigne uno."
+        />
+      </div>
+    );
+  }
+
   // Fetch all buckets
   const bucketRows = await db
     .select()
     .from(buckets)
     .orderBy(asc(buckets.position));
 
-  // Fetch projects with bucket
+  // Fetch projects with bucket (scoped al entorno activo)
   const projectRows = await db
     .select({ project: projects, bucket: buckets })
     .from(projects)
     .leftJoin(buckets, eq(projects.bucketId, buckets.id))
-    .where(ne(projects.status, "archived"))
+    .where(
+      and(eq(projects.workspaceId, ws.id), ne(projects.status, "archived"))
+    )
     .orderBy(desc(projects.createdAt));
 
   // Group projects by bucket
