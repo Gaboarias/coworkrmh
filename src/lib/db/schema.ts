@@ -20,11 +20,10 @@ import { DEFAULT_WS_ROLE_PERMISSIONS } from "@/lib/constants/workspacePermission
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "manager", "member"]);
-export const workspaceRoleEnum = pgEnum("workspace_role", [
-  "owner",
-  "admin",
-  "member",
-]);
+// workspace_role enum eliminado: workspace_members.role ahora es text para
+// soportar roles custom definidos por entorno en workspaces.role_permissions.
+// Built-in: owner / admin / member. Owner = bypass total, no se almacena en
+// la matriz. La migración guarded convierte el column type y dropea el enum.
 export const taskStatusEnum = pgEnum("task_status", ["todo", "in_progress", "review", "done"]);
 export const taskPriorityEnum = pgEnum("task_priority", ["low", "medium", "high", "urgent"]);
 export const projectStatusEnum = pgEnum("project_status", [
@@ -118,7 +117,7 @@ export const workspaces = pgTable("workspaces", {
   name: text("name").notNull(),
   color: text("color").default("#6B5FE4").notNull(),
   rolePermissions: json("role_permissions")
-    .$type<{ admin: string[]; member: string[] }>()
+    .$type<Record<string, string[]>>()
     .default(DEFAULT_WS_ROLE_PERMISSIONS)
     .notNull(),
   teamAgreements: text("team_agreements"),
@@ -139,7 +138,9 @@ export const workspaceMembers = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    role: workspaceRoleEnum("role").default("member").notNull(),
+    // role: text para soportar built-in (owner/admin/member) + roles custom
+    // que el admin del entorno define en workspaces.role_permissions.
+    role: text("role").default("member").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => ({

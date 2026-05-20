@@ -11,7 +11,11 @@ import {
 
 export const WS_COOKIE = "ws";
 
-export type WorkspaceRole = "owner" | "admin" | "member";
+// WorkspaceRole es string para soportar built-in (owner/admin/member) +
+// roles custom definidos en workspaces.role_permissions. Owner es especial
+// (bypass total) y nunca se almacena en la matriz.
+export type WorkspaceRole = string;
+export const OWNER_ROLE: WorkspaceRole = "owner";
 
 export interface Workspace {
   id: string;
@@ -107,13 +111,26 @@ export const getWorkspaceRole = async (
   return { userId, isGlobalAdmin, role: row?.role ?? null };
 };
 
-/** Lanza si el usuario no puede gestionar el entorno (owner/admin). */
+/**
+ * Lanza si el usuario no puede gestionar el entorno.
+ * - owner / admin global → bypass.
+ * - cualquier otro rol → debe tener `members.manage` en su set de permisos.
+ *   Esto cubre el built-in "admin" (default tiene todas) Y roles custom que
+ *   el owner haya autorizado a gestionar miembros/roles.
+ */
 export const requireWorkspaceManage = async (
   workspaceId: string
 ): Promise<{ userId: string; role: WorkspaceRole }> => {
-  const { userId, role } = await getWorkspaceRole(workspaceId);
+  const { userId, role, isGlobalAdmin } = await getWorkspaceRole(workspaceId);
   if (!userId) throw new Error("No autenticado");
-  if (role !== "owner" && role !== "admin") {
+  if (role === "owner" || isGlobalAdmin) {
+    return { userId, role: role ?? "owner" };
+  }
+  if (!role) {
+    throw new Error("No autorizado para gestionar este entorno");
+  }
+  const { permissions } = await getWorkspacePermissions(workspaceId);
+  if (!permissions.has("members.manage")) {
     throw new Error("No autorizado para gestionar este entorno");
   }
   return { userId, role };
@@ -185,13 +202,18 @@ export const getWorkspacePermissions = async (
     .from(workspaces)
     .where(eq(workspaces.id, workspaceId))
     .limit(1);
-  const rp = row?.rp ?? DEFAULT_WS_ROLE_PERMISSIONS;
-  const keys = role === "admin" ? rp.admin : rp.member;
+  const rp = (row?.rp ?? DEFAULT_WS_ROLE_PERMISSIONS) as Record<
+    string,
+    string[]
+  >;
+  // Roles custom + built-in (admin/member) viven en la misma matriz; si el
+  // rol del usuario no existe en ella, set vacío (deny por defecto, seguro).
+  const keys = rp[role] ?? [];
   return {
     userId,
     role,
     isGlobalAdmin,
-    permissions: new Set(keys ?? []),
+    permissions: new Set(keys),
   };
 };
 

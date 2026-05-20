@@ -63,10 +63,24 @@ export const ALL_WS_PERMISSIONS: string[] = WS_PERMISSION_GROUPS.flatMap((g) =>
 
 const VIEW_KEYS = ALL_WS_PERMISSIONS.filter((k) => k.endsWith(".view"));
 
-export type WsRolePermissions = { admin: string[]; member: string[] };
+// Matriz de roles del entorno: clave = nombre del rol, valor = lista de claves
+// de permisos. Admite roles custom (el admin los crea) además de los built-in.
+export type WsRolePermissions = Record<string, string[]>;
 
-// Defaults por rol de entorno (editables luego por owner/admin/admin-global):
-// - admin de entorno: todo (gestiona pero no borra el entorno → owner-only).
+// Roles built-in no eliminables. "owner" NO va en la matriz (es bypass total).
+export const BUILTIN_ROLE_KEYS = ["admin", "member"] as const;
+export type BuiltinRoleKey = (typeof BUILTIN_ROLE_KEYS)[number];
+
+// Etiquetas de display para roles built-in. Roles custom se muestran con su
+// propio key (el admin elige el nombre legible al crearlos).
+export const BUILTIN_ROLE_LABELS: Record<string, string> = {
+  owner: "Propietario",
+  admin: "Admin",
+  member: "Miembro",
+};
+
+// Defaults para los built-in del entorno cuando se crea:
+// - admin: todas las capacidades (gestiona pero no borra → owner-only).
 // - member: solo lectura.
 export const DEFAULT_WS_ROLE_PERMISSIONS: WsRolePermissions = {
   admin: ALL_WS_PERMISSIONS,
@@ -75,3 +89,17 @@ export const DEFAULT_WS_ROLE_PERMISSIONS: WsRolePermissions = {
 
 export const isValidPermission = (k: string): boolean =>
   ALL_WS_PERMISSIONS.includes(k);
+
+// Sanea un nombre de rol custom: no vacío, no "owner" (reservado), trim,
+// max 32 chars. Permite letras (incluido acentos), números, espacio, guion.
+export const sanitizeRoleKey = (raw: string): string => {
+  const trimmed = raw.trim().slice(0, 32);
+  if (!trimmed) throw new Error("El nombre del rol es obligatorio");
+  if (trimmed.toLowerCase() === "owner") {
+    throw new Error("\"owner\" está reservado");
+  }
+  if (!/^[\p{L}\p{N} _-]+$/u.test(trimmed)) {
+    throw new Error("Sólo letras, números, espacio, guion y guion bajo");
+  }
+  return trimmed;
+};

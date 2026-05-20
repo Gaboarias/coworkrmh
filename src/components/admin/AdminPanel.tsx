@@ -29,14 +29,19 @@ import {
   setMemberRole,
   getWorkspacePermissionMatrix,
   updateWorkspacePermissions,
+  createCustomWorkspaceRole,
+  deleteCustomWorkspaceRole,
 } from "@/lib/actions/workspaces";
 import {
   WS_PERMISSION_GROUPS,
+  BUILTIN_ROLE_KEYS,
+  BUILTIN_ROLE_LABELS,
   type WsRolePermissions,
 } from "@/lib/constants/workspacePermissions";
 
 type Role = "admin" | "manager" | "member";
-type WsRole = "owner" | "admin" | "member";
+// Rol de entorno: built-in (owner/admin/member) o key custom definida por el admin.
+type WsRole = string;
 interface UserRow {
   id: string;
   name: string | null;
@@ -132,18 +137,54 @@ const WorkspacesTab = ({
   const [savingMatrix, setSavingMatrix] = useState(false);
   const [savingRoleFor, setSavingRoleFor] = useState<string | null>(null);
 
-  const togglePerm = (
-    wsId: string,
-    role: "admin" | "member",
-    key: string
-  ) => {
+  const togglePerm = (wsId: string, role: string, key: string) => {
     setMatrix((p) => {
       const cur = p[wsId] ?? { admin: [], member: [] };
-      const set = new Set(cur[role]);
+      const set = new Set(cur[role] ?? []);
       if (set.has(key)) set.delete(key);
       else set.add(key);
       return { ...p, [wsId]: { ...cur, [role]: [...set] } };
     });
+  };
+
+  const [newRoleName, setNewRoleName] = useState<Record<string, string>>({});
+  const [creatingRole, setCreatingRole] = useState(false);
+
+  const handleCreateCustomRole = async (id: string) => {
+    const name = (newRoleName[id] ?? "").trim();
+    if (!name) return;
+    setCreatingRole(true);
+    try {
+      const { key } = await createCustomWorkspaceRole(id, name);
+      toast.success(`Rol "${key}" creado`);
+      setNewRoleName((p) => ({ ...p, [id]: "" }));
+      const mx = await getWorkspacePermissionMatrix(id);
+      setMatrix((p) => ({ ...p, [id]: mx }));
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setCreatingRole(false);
+    }
+  };
+
+  const handleDeleteCustomRole = async (id: string, roleKey: string) => {
+    if (
+      !confirm(
+        `¿Eliminar el rol "${roleKey}"? Los miembros con ese rol pasarán a "Miembro".`
+      )
+    )
+      return;
+    try {
+      await deleteCustomWorkspaceRole(id, roleKey);
+      toast.success("Rol eliminado");
+      const mx = await getWorkspacePermissionMatrix(id);
+      setMatrix((p) => ({ ...p, [id]: mx }));
+      await refreshMembers(id);
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
   };
 
   const handleSaveMatrix = async (id: string) => {
@@ -164,7 +205,7 @@ const WorkspacesTab = ({
   const handleChangeRole = async (
     id: string,
     userId: string,
-    role: "admin" | "member"
+    role: string
   ) => {
     setSavingRoleFor(userId);
     try {
@@ -423,34 +464,93 @@ const WorkspacesTab = ({
                           </Button>
                         </div>
                         <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-                          <table className="w-full text-left text-sm">
-                            <thead>
-                              <tr className="border-b border-border text-xs text-text-muted">
-                                <th className="px-3 py-2 font-medium">
-                                  Capacidad
-                                </th>
-                                <th className="w-20 px-2 py-2 text-center font-medium">
-                                  Admin
-                                </th>
-                                <th className="w-20 px-2 py-2 text-center font-medium">
-                                  Miembro
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {WS_PERMISSION_GROUPS.map((g) => (
-                                <GroupRows
-                                  key={g.group}
-                                  group={g.group}
-                                  keys={g.keys}
-                                  matrix={matrix[w.id]}
-                                  onToggle={(role, key) =>
-                                    togglePerm(w.id, role, key)
-                                  }
-                                />
-                              ))}
-                            </tbody>
-                          </table>
+                          {(() => {
+                            const roleKeys = Object.keys(matrix[w.id]).filter(
+                              (k) => k !== "owner"
+                            );
+                            return (
+                              <table className="w-full text-left text-sm">
+                                <thead>
+                                  <tr className="border-b border-border text-xs text-text-muted">
+                                    <th className="px-3 py-2 font-medium">
+                                      Capacidad
+                                    </th>
+                                    {roleKeys.map((rk) => {
+                                      const isBuiltin = BUILTIN_ROLE_KEYS.includes(
+                                        rk as never
+                                      );
+                                      return (
+                                        <th
+                                          key={rk}
+                                          className="w-24 px-2 py-2 text-center font-medium"
+                                        >
+                                          <div className="flex items-center justify-center gap-1">
+                                            <span className="truncate" title={rk}>
+                                              {BUILTIN_ROLE_LABELS[rk] ?? rk}
+                                            </span>
+                                            {!isBuiltin && (
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleDeleteCustomRole(w.id, rk)
+                                                }
+                                                aria-label={`Eliminar rol ${rk}`}
+                                                className="rounded p-0.5 text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger"
+                                              >
+                                                <Trash2 className="h-3 w-3" />
+                                              </button>
+                                            )}
+                                          </div>
+                                        </th>
+                                      );
+                                    })}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {WS_PERMISSION_GROUPS.map((g) => (
+                                    <GroupRows
+                                      key={g.group}
+                                      group={g.group}
+                                      keys={g.keys}
+                                      matrix={matrix[w.id]}
+                                      roleKeys={roleKeys}
+                                      onToggle={(role, key) =>
+                                        togglePerm(w.id, role, key)
+                                      }
+                                    />
+                                  ))}
+                                </tbody>
+                              </table>
+                            );
+                          })()}
+                        </div>
+                        <div className="flex flex-wrap items-end gap-2 pt-1">
+                          <div className="min-w-[160px] flex-1">
+                            <label className="mb-1.5 block text-xs font-medium text-text-muted">
+                              Crear rol custom
+                            </label>
+                            <Input
+                              value={newRoleName[w.id] ?? ""}
+                              onChange={(e) =>
+                                setNewRoleName((p) => ({
+                                  ...p,
+                                  [w.id]: e.target.value,
+                                }))
+                              }
+                              placeholder="Ej. Diseñadora, Cotizador…"
+                            />
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCreateCustomRole(w.id)}
+                            disabled={
+                              !(newRoleName[w.id] ?? "").trim() || creatingRole
+                            }
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            Crear rol
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -529,16 +629,27 @@ const WorkspacesTab = ({
                                 value={m.role}
                                 disabled={savingRoleFor === m.id}
                                 onChange={(e) =>
-                                  handleChangeRole(
-                                    w.id,
-                                    m.id,
-                                    e.target.value as "admin" | "member"
-                                  )
+                                  handleChangeRole(w.id, m.id, e.target.value)
                                 }
-                                className="w-28"
+                                className="w-32"
                               >
-                                <option value="member">Miembro</option>
-                                <option value="admin">Admin</option>
+                                {(() => {
+                                  const matrixKeys = matrix[w.id]
+                                    ? Object.keys(matrix[w.id]).filter(
+                                        (k) => k !== "owner"
+                                      )
+                                    : ["admin", "member"];
+                                  // Asegurar que el rol actual aparezca aunque
+                                  // ya no esté en la matriz (defensivo).
+                                  const opts = matrixKeys.includes(m.role)
+                                    ? matrixKeys
+                                    : [...matrixKeys, m.role];
+                                  return opts.map((rk) => (
+                                    <option key={rk} value={rk}>
+                                      {BUILTIN_ROLE_LABELS[rk] ?? rk}
+                                    </option>
+                                  ));
+                                })()}
                               </Select>
                             )}
                             <button
@@ -570,20 +681,23 @@ const GroupRows = ({
   group,
   keys,
   matrix,
+  roleKeys,
   onToggle,
 }: {
   group: string;
   keys: { key: string; label: string }[];
   matrix: WsRolePermissions;
-  onToggle: (role: "admin" | "member", key: string) => void;
+  roleKeys: string[];
+  onToggle: (role: string, key: string) => void;
 }) => {
-  const adminSet = new Set(matrix.admin);
-  const memberSet = new Set(matrix.member);
+  const setsByRole: Record<string, Set<string>> = Object.fromEntries(
+    roleKeys.map((rk) => [rk, new Set(matrix[rk] ?? [])])
+  );
   return (
     <>
       <tr className="bg-surface-el/60">
         <td
-          colSpan={3}
+          colSpan={roleKeys.length + 1}
           className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-text-muted"
         >
           {group}
@@ -592,24 +706,17 @@ const GroupRows = ({
       {keys.map((k) => (
         <tr key={k.key} className="border-b border-border last:border-0">
           <td className="px-3 py-2 text-text">{k.label}</td>
-          <td className="px-2 py-2 text-center">
-            <input
-              type="checkbox"
-              aria-label={`${k.label} — Admin`}
-              checked={adminSet.has(k.key)}
-              onChange={() => onToggle("admin", k.key)}
-              className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
-            />
-          </td>
-          <td className="px-2 py-2 text-center">
-            <input
-              type="checkbox"
-              aria-label={`${k.label} — Miembro`}
-              checked={memberSet.has(k.key)}
-              onChange={() => onToggle("member", k.key)}
-              className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
-            />
-          </td>
+          {roleKeys.map((rk) => (
+            <td key={rk} className="px-2 py-2 text-center">
+              <input
+                type="checkbox"
+                aria-label={`${k.label} — ${BUILTIN_ROLE_LABELS[rk] ?? rk}`}
+                checked={setsByRole[rk]?.has(k.key) ?? false}
+                onChange={() => onToggle(rk, k.key)}
+                className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
+              />
+            </td>
+          ))}
         </tr>
       ))}
     </>
