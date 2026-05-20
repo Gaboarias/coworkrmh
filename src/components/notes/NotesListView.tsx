@@ -63,8 +63,8 @@ export function NotesListView({
       await deleteNote(noteId, project.id);
       setNotes((prev) => prev.filter((n) => n.id !== noteId));
       toast.success("Nota eliminada");
-    } catch {
-      toast.error("Error al eliminar");
+    } catch (err) {
+      toast.error((err as Error).message || "Error al eliminar");
     }
   }
 
