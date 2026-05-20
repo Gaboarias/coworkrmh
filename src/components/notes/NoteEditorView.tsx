@@ -32,6 +32,10 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref con el save MÁS reciente: evita el stale closure de tiptap.onUpdate
+  // (el editor captura la callback una sola vez; un ref siempre apunta a la
+  // última versión con title/content actualizados).
+  const saveFnRef = useRef<() => Promise<void>>(async () => {});
 
   const editor = useEditor({
     extensions: [
@@ -42,14 +46,18 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
       TaskList,
       TaskItem.configure({ nested: true }),
     ],
-    content: (note.content as object) ?? {},
+    // Pasar undefined si no hay contenido (tiptap usa su doc vacío default).
+    // El `{}` anterior no es un ProseMirror doc válido y podía iniciar mal.
+    content: (note.content as object) ?? undefined,
     editorProps: {
       attributes: {
         class: "tiptap-editor focus:outline-none min-h-[400px] prose prose-invert max-w-none",
       },
     },
     onUpdate: () => {
-      triggerAutoSave();
+      // Lee el ref → siempre la última versión de save.
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => saveFnRef.current(), 2000);
     },
   });
 
@@ -64,8 +72,9 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
           contentText: editorInstance.getText(),
         });
         setLastSaved(new Date());
-      } catch {
-        toast.error("Error al guardar");
+      } catch (err) {
+        // Surface el motivo real (permiso, sesión, conflicto, etc).
+        toast.error((err as Error).message || "Error al guardar");
       } finally {
         setSaving(false);
       }
@@ -73,10 +82,10 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
     [editor, note.id, project.id, title]
   );
 
-  function triggerAutoSave() {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => save(), 2000);
-  }
+  // Mantener el ref apuntando al save más reciente en cada render.
+  useEffect(() => {
+    saveFnRef.current = () => save();
+  }, [save]);
 
   async function handleTitleBlur() {
     if (title !== note.title) {
