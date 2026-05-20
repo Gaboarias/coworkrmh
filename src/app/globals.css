@@ -28,7 +28,7 @@
 
     --text: #2d1f15;
     --text-muted: #5e4733;
-    --text-tertiary: #8a7256;
+    --text-tertiary: #756046;        /* AA 5.38:1 (era 4.07) */
 
     --success: #237a4d;
     --warning: #a36e1a;
@@ -81,7 +81,7 @@
     --secondary: #9c6915;
     --text: #25180e;
     --text-muted: #54402d;
-    --text-tertiary: #836b50;
+    --text-tertiary: #6e5a3f;        /* AA */
 
     --success: #237a4d;
     --warning: #9c6915;
@@ -113,7 +113,7 @@
 
     --text: #f6e9d0;
     --text-muted: #c9b18d;
-    --text-tertiary: #93785a;
+    --text-tertiary: #a89070;        /* AA en noche */
 
     --success: #5cc890;
     --warning: #d9a155;
@@ -150,7 +150,7 @@
     --secondary: #d9a155;
     --text: #f5e6c8;
     --text-muted: #c5a980;
-    --text-tertiary: #8e7250;
+    --text-tertiary: #a48864;        /* AA en noche */
 
     --success: #5cc890;
     --warning: #d9a155;
@@ -171,19 +171,40 @@
   }
   body {
     @apply bg-background text-text;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    /* Body weight 500: peso aparente para Geist sin sentirse bold (rule:
+       smallest visible increments). Kerning + ligatures + contextual alt
+       siempre on (Butterick: "kerning — always on, no exceptions"). */
+    font-weight: 500;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "ss01" 1;
+    text-rendering: optimizeLegibility;
   }
   html {
+    /* Root 17px: bumpea text-sm 14→14.9 y text-base 16→17 sin tocar
+       componentes (Butterick web body 15–25px). Mantiene ratio Tailwind. */
+    font-size: 17px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  /* Homogeneous typography: Clash Display for all headings, Satoshi body */
+  /* Headings: Fraunces variable serif. opsz alto en displays grandes para
+     contraste editorial; SOFT 50 suaviza los serifs. */
   h1,
   h2,
   h3,
   h4 {
-    font-family: var(--font-display), var(--font-sans), sans-serif;
+    font-family: var(--font-display), var(--font-geist-sans), serif;
+    font-weight: 500;
     letter-spacing: -0.02em;
+    font-variation-settings: "opsz" 36, "SOFT" 50;
+  }
+  h1 { font-variation-settings: "opsz" 96, "SOFT" 50; letter-spacing: -0.03em; }
+  h2 { font-variation-settings: "opsz" 56, "SOFT" 50; letter-spacing: -0.025em; }
+  /* Tabular numerals: para tablas/KPIs/montos (Butterick: tabular figures
+     for numeric tables). Aplicar con la clase utility .tabular. */
+  .tabular,
+  td.numeric,
+  .kpi-value,
+  .money {
+    font-variant-numeric: tabular-nums lining-nums;
   }
 }
 

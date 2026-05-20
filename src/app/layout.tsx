@@ -1,26 +1,20 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { JetBrains_Mono } from "next/font/google";
+import { Fraunces, JetBrains_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
-const satoshi = localFont({
-  src: [
-    { path: "../fonts/Satoshi-400.woff2", weight: "400", style: "normal" },
-    { path: "../fonts/Satoshi-500.woff2", weight: "500", style: "normal" },
-    { path: "../fonts/Satoshi-700.woff2", weight: "700", style: "normal" },
-  ],
-  variable: "--font-sans",
-  display: "swap",
-});
+// Body: Geist Sans variable (paquete oficial Vercel), humanista,
+// x-height alta, óptima para UI a 14–16px. Expone variable --font-geist-sans,
+// la mapeamos a --font-sans abajo.
 
-const clashDisplay = localFont({
-  src: [
-    { path: "../fonts/ClashDisplay-600.woff2", weight: "600", style: "normal" },
-    { path: "../fonts/ClashDisplay-700.woff2", weight: "700", style: "normal" },
-  ],
+// Display: Fraunces variable (opsz + SOFT), serif moderno con calor editorial.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  axes: ["opsz", "SOFT"],
   variable: "--font-display",
   display: "swap",
 });
@@ -50,7 +44,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${satoshi.variable} ${clashDisplay.variable} ${jetbrainsMono.variable} font-sans`}
+        className={`${GeistSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} font-sans`}
       >
         <ThemeProvider>
           <SessionProvider>
