@@ -28,7 +28,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         await requireProjectAccess(projectId);
         return {
           allowedContentTypes: ["*/*"],
-          maximumSizeInBytes: 50 * 1024 * 1024, // 50 MB
+          maximumSizeInBytes: 25 * 1024 * 1024, // 25 MB
           // Pasamos el payload al callback de completed (no lo usamos acá
           // porque el insert lo hace el cliente vía server action).
           tokenPayload: clientPayload,
