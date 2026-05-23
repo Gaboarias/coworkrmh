@@ -42,11 +42,11 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
     return NextResponse.json(jsonResponse);
   } catch (err) {
-    // Una sola línea simple — el preview de runtime-logs trunca objetos.
+    // Log SIN prefijo: el preview de runtime-logs trunca a ~30 chars; así
+    // los primeros caracteres son el mensaje real.
     const e = err as Error;
-    console.error(
-      `upload-token-fail | name=${e.name} | msg=${e.message}`
-    );
+    console.error(e.message || "(sin mensaje)");
+    if (e.stack) console.error(e.stack.split("\n")[1] || "");
     return NextResponse.json(
       { error: e.message || "Error procesando upload" },
       { status: 400 }
