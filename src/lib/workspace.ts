@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { workspaces, workspaceMembers } from "@/lib/db/schema";
+import { workspaces, workspaceMembers, projects } from "@/lib/db/schema";
 import { eq, and, asc, inArray } from "drizzle-orm";
 import {
   ALL_WS_PERMISSIONS,
@@ -224,6 +224,28 @@ export const workspaceCan = async (
 ): Promise<boolean> => {
   const { permissions } = await getWorkspacePermissions(workspaceId);
   return permissions.has(key);
+};
+
+/**
+ * Helper compartido para acciones scoped a un proyecto:
+ * resuelve workspaceId del proyecto + verifica que el usuario sea miembro.
+ * Lanza error claro y diagnosticable si no aplica.
+ */
+export const requireProjectAccess = async (
+  projectId: string
+): Promise<{ userId: string; workspaceId: string }> => {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autenticado");
+  const [p] = await db
+    .select({ workspaceId: projects.workspaceId })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+    .limit(1);
+  if (!p) throw new Error("Proyecto no encontrado");
+  if (!(await canAccessWorkspace(p.workspaceId))) {
+    throw new Error("No tenés acceso al entorno de este proyecto");
+  }
+  return { userId: session.user.id, workspaceId: p.workspaceId };
 };
 
 /**
