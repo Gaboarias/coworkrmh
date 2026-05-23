@@ -42,13 +42,21 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
     return NextResponse.json(jsonResponse);
   } catch (err) {
-    // Log SIN prefijo: el preview de runtime-logs trunca a ~30 chars; así
-    // los primeros caracteres son el mensaje real.
+    // Categoriza el paso fallado en los primeros chars para que se vea en
+    // el preview truncado de runtime logs.
     const e = err as Error;
-    console.error(e.message || "(sin mensaje)");
-    if (e.stack) console.error(e.stack.split("\n")[1] || "");
+    const msg = e.message || "(sin mensaje)";
+    const step =
+      msg.startsWith("No autenticado") ? "AUTH"
+      : msg.startsWith("Proyecto no encontrado") ? "PROJECT"
+      : msg.startsWith("No tenés acceso") || msg.startsWith("No tenes acceso") ? "ACCESS"
+      : msg.toLowerCase().includes("blob") ? "BLOB"
+      : msg.startsWith("Falta projectId") ? "PAYLOAD"
+      : "OTHER";
+    // Primero el step, después el mensaje truncado a 80 chars.
+    console.error(`UPL_FAIL ${step}: ${msg.slice(0, 80)}`);
     return NextResponse.json(
-      { error: e.message || "Error procesando upload" },
+      { error: msg, step, name: e.name },
       { status: 400 }
     );
   }
