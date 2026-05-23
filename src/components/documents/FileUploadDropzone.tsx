@@ -20,7 +20,7 @@ interface UploadingFile {
   error?: string;
 }
 
-const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
+const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
 export function FileUploadDropzone({
   projectId,
@@ -124,7 +124,7 @@ export function FileUploadDropzone({
           {isDragActive ? "Suelta aquí" : "Arrastra archivos o haz clic"}
         </p>
         <p className="mt-1 text-xs text-text-muted">
-          Máximo 50MB por archivo
+          Máximo 25MB por archivo
         </p>
       </div>
 
