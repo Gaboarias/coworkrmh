@@ -42,13 +42,11 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
     return NextResponse.json(jsonResponse);
   } catch (err) {
-    // Logueo en runtime de Vercel para diagnosticar.
+    // Una sola línea simple — el preview de runtime-logs trunca objetos.
     const e = err as Error;
-    console.error("upload-token error:", {
-      message: e.message,
-      name: e.name,
-      stack: e.stack?.split("\n").slice(0, 3).join(" | "),
-    });
+    console.error(
+      `upload-token-fail | name=${e.name} | msg=${e.message}`
+    );
     return NextResponse.json(
       { error: e.message || "Error procesando upload" },
       { status: 400 }
