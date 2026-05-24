@@ -10,6 +10,12 @@ import { requireProjectAccess } from "@/lib/workspace";
  * action separada que el cliente llama tras la subida (sincronía simple).
  */
 export async function POST(request: Request): Promise<NextResponse> {
+  // Diagnóstico seguro del env var (no revela el secreto, solo si existe).
+  const tok = process.env.BLOB_READ_WRITE_TOKEN || "";
+  console.error(
+    `UPL_ENV len=${tok.length} prefix=${tok.slice(0, 18) || "(empty)"}`
+  );
+
   const body = (await request.json()) as HandleUploadBody;
 
   try {
