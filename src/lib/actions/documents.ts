@@ -7,37 +7,6 @@ import { documents } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireProjectAccess } from "@/lib/workspace";
 
-/**
- * Registra en DB un documento ya subido a Vercel Blob por el cliente.
- * Verifica de nuevo acceso al proyecto (el token del upload también lo
- * verifica, pero esta action es la fuente de la fila en DB → defensa en
- * profundidad).
- */
-export async function recordUploadedDocument(input: {
-  projectId: string;
-  taskId?: string | null;
-  blobUrl: string;
-  fileName: string;
-  mimeType: string;
-  sizeBytes: number;
-}) {
-  const { userId } = await requireProjectAccess(input.projectId);
-  const [doc] = await db
-    .insert(documents)
-    .values({
-      projectId: input.projectId,
-      taskId: input.taskId ?? null,
-      name: input.fileName,
-      blobUrl: input.blobUrl,
-      mimeType: input.mimeType,
-      sizeBytes: input.sizeBytes,
-      uploadedBy: userId,
-    })
-    .returning();
-  revalidatePath(`/projects/${input.projectId}/documents`);
-  return doc;
-}
-
 export async function deleteDocument(
   documentId: string,
   blobUrl: string,

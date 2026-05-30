@@ -1,88 +1,82 @@
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
+import { put } from "@vercel/blob";
+import { db } from "@/lib/db";
+import { documents } from "@/lib/db/schema";
 import { requireProjectAccess } from "@/lib/workspace";
+import { revalidatePath } from "next/cache";
 
 /**
- * Busca el token de Vercel Blob en cualquier env var que comience con
- * "vercel_blob_rw_". Necesario porque Vercel renombra el env var cuando
- * un store se conecta al proyecto (no siempre queda `BLOB_READ_WRITE_TOKEN`).
- * Sin esto, `handleUpload` falla aunque `put()` (server-side) funcione,
- * porque `put()` hace este fallback internamente pero `handleUpload` no.
+ * Upload server-side via @vercel/blob `put()`. Esta API funciona con el
+ * modelo OIDC nuevo de Vercel Blob (la función obtiene credenciales con
+ * su identidad runtime; no requiere BLOB_READ_WRITE_TOKEN estático).
+ *
+ * Límite: ~4 MB por archivo (cap de body size de Vercel Functions).
+ * Para archivos más grandes habría que usar client uploads, que requieren
+ * un token estático que Vercel ya no genera con stores nuevos OIDC-only.
  */
-function findBlobToken(): string | undefined {
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    return process.env.BLOB_READ_WRITE_TOKEN;
-  }
-  for (const v of Object.values(process.env)) {
-    if (typeof v === "string" && v.startsWith("vercel_blob_rw_")) {
-      return v;
-    }
-  }
-  return undefined;
-}
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
-/**
- * Endpoint para uploads con cliente directo a Vercel Blob.
- * El browser sube DIRECTO a Blob storage saltando el límite ~4.5MB de las
- * Vercel Functions; esta ruta solo emite el token firmado tras verificar
- * acceso del usuario al proyecto. El registro en DB lo hace una server
- * action separada que el cliente llama tras la subida (sincronía simple).
- */
+const MAX_BYTES = 4 * 1024 * 1024; // 4 MB (Vercel Function body cap)
+
 export async function POST(request: Request): Promise<NextResponse> {
-  const token = findBlobToken();
-  // Diagnóstico seguro del env var (no revela el secreto, solo si existe).
-  console.error(
-    `UPL_ENV len=${token?.length ?? 0} hasToken=${!!token}`
-  );
-
-  const body = (await request.json()) as HandleUploadBody;
-
   try {
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      token, // ← explícito: arregla el caso del rename de env var
-      onBeforeGenerateToken: async (_pathname, clientPayload) => {
-        // clientPayload = JSON { projectId, taskId? }
-        if (!clientPayload) {
-          throw new Error("Falta projectId");
-        }
-        const { projectId } = JSON.parse(clientPayload) as {
-          projectId: string;
-        };
-        // Verifica auth + membresía del entorno (lanza si no aplica).
-        await requireProjectAccess(projectId);
-        return {
-          allowedContentTypes: ["*/*"],
-          maximumSizeInBytes: 25 * 1024 * 1024, // 25 MB
-          // Pasamos el payload al callback de completed (no lo usamos acá
-          // porque el insert lo hace el cliente vía server action).
-          tokenPayload: clientPayload,
-        };
-      },
-      onUploadCompleted: async () => {
-        // Sin webhook: el cliente confirma la subida y llama a la server
-        // action `recordUploadedDocument` para registrar en DB. Esto evita
-        // la race entre el webhook y el router.refresh() del cliente.
-      },
+    const formData = await request.formData();
+    const file = formData.get("file") as File | null;
+    const projectId = formData.get("projectId") as string | null;
+    const taskId = (formData.get("taskId") as string) || null;
+
+    if (!file || !projectId) {
+      return NextResponse.json(
+        { error: "Faltan parámetros (file y projectId son obligatorios)" },
+        { status: 400 }
+      );
+    }
+    if (file.size > MAX_BYTES) {
+      return NextResponse.json(
+        {
+          error: `El archivo excede el límite de 4 MB (${Math.round(
+            file.size / 1024 / 1024
+          )} MB).`,
+        },
+        { status: 413 }
+      );
+    }
+
+    // Verifica auth + membresía del entorno del proyecto.
+    const { userId } = await requireProjectAccess(projectId);
+
+    // Path única para evitar colisiones; el nombre original queda en DB.
+    const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
+    const safePath = `${projectId}/${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2)}.${ext}`;
+
+    const blob = await put(safePath, file, {
+      access: "public",
+      contentType: file.type || "application/octet-stream",
     });
-    return NextResponse.json(jsonResponse);
+
+    const [doc] = await db
+      .insert(documents)
+      .values({
+        projectId,
+        taskId,
+        name: file.name,
+        blobUrl: blob.url,
+        mimeType: file.type || "application/octet-stream",
+        sizeBytes: file.size,
+        uploadedBy: userId,
+      })
+      .returning();
+
+    revalidatePath(`/projects/${projectId}/documents`);
+    return NextResponse.json({ document: doc });
   } catch (err) {
-    // Categoriza el paso fallado en los primeros chars para que se vea en
-    // el preview truncado de runtime logs.
     const e = err as Error;
-    const msg = e.message || "(sin mensaje)";
-    const step =
-      msg.startsWith("No autenticado") ? "AUTH"
-      : msg.startsWith("Proyecto no encontrado") ? "PROJECT"
-      : msg.startsWith("No tenés acceso") || msg.startsWith("No tenes acceso") ? "ACCESS"
-      : msg.toLowerCase().includes("blob") ? "BLOB"
-      : msg.startsWith("Falta projectId") ? "PAYLOAD"
-      : "OTHER";
-    // Primero el step, después el mensaje truncado a 80 chars.
-    console.error(`UPL_FAIL ${step}: ${msg.slice(0, 80)}`);
+    console.error(`UPL_FAIL: ${e.message?.slice(0, 100)}`);
     return NextResponse.json(
-      { error: msg, step, name: e.name },
+      { error: e.message || "Error al subir el archivo" },
       { status: 400 }
     );
   }

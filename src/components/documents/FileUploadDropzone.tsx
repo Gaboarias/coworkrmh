@@ -2,10 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
-import { upload } from "@vercel/blob/client";
 import { Upload, File, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import { recordUploadedDocument } from "@/lib/actions/documents";
 
 interface FileUploadDropzoneProps {
   projectId: string;
@@ -20,7 +18,7 @@ interface UploadingFile {
   error?: string;
 }
 
-const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
+const MAX_BYTES = 4 * 1024 * 1024; // 4 MB (Vercel Function body cap)
 
 export function FileUploadDropzone({
   projectId,
@@ -37,34 +35,47 @@ export function FileUploadDropzone({
       ]);
 
       try {
-        // 1) Cliente sube DIRECTO a Vercel Blob (saltea el limite ~4.5MB
-        //    de las Vercel Functions). El route `/api/documents/upload`
-        //    solo firma el token previo verificando acceso al proyecto.
-        const blob = await upload(file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/documents/upload",
-          clientPayload: JSON.stringify({ projectId, taskId }),
-          onUploadProgress: ({ percentage }) => {
-            setUploadingFiles((prev) =>
-              prev.map((f) =>
-                f.file === file
-                  ? { ...f, progress: Math.round(percentage) }
-                  : f
-              )
-            );
-          },
-        });
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("projectId", projectId);
+        if (taskId) formData.append("taskId", taskId);
 
-        // 2) Registrar la fila en DB via server action (verifica acceso
-        //    de nuevo y revalida la pagina de documentos).
-        await recordUploadedDocument({
-          projectId,
-          taskId: taskId ?? null,
-          blobUrl: blob.url,
-          fileName: file.name,
-          mimeType: file.type || "application/octet-stream",
-          sizeBytes: file.size,
-        });
+        // XHR para reportar progreso (fetch no expone upload progress).
+        const result = await new Promise<{ ok: boolean; body: string }>(
+          (resolve) => {
+            const xhr = new XMLHttpRequest();
+            xhr.upload.onprogress = (e) => {
+              if (e.lengthComputable) {
+                const progress = Math.round((e.loaded / e.total) * 100);
+                setUploadingFiles((prev) =>
+                  prev.map((f) =>
+                    f.file === file ? { ...f, progress } : f
+                  )
+                );
+              }
+            };
+            xhr.onload = () =>
+              resolve({
+                ok: xhr.status >= 200 && xhr.status < 300,
+                body: xhr.responseText,
+              });
+            xhr.onerror = () =>
+              resolve({ ok: false, body: '{"error":"Error de red"}' });
+            xhr.open("POST", "/api/documents/upload");
+            xhr.send(formData);
+          }
+        );
+
+        if (!result.ok) {
+          let msg = "Error al subir";
+          try {
+            msg = JSON.parse(result.body).error ?? msg;
+          } catch {
+            // body no es JSON; usar texto plano (truncado)
+            msg = result.body.slice(0, 150) || msg;
+          }
+          throw new Error(msg);
+        }
 
         setUploadingFiles((prev) =>
           prev.map((f) =>
@@ -73,7 +84,6 @@ export function FileUploadDropzone({
         );
         toast.success(`${file.name} subido`);
         onUploaded();
-
         setTimeout(() => {
           setUploadingFiles((prev) => prev.filter((f) => f.file !== file));
         }, 2000);
@@ -82,7 +92,6 @@ export function FileUploadDropzone({
         setUploadingFiles((prev) =>
           prev.map((f) => (f.file === file ? { ...f, error: message } : f))
         );
-        // Toast con el motivo real (permiso, tamano, red, etc).
         toast.error(`${file.name}: ${message}`);
       }
     },
@@ -91,7 +100,6 @@ export function FileUploadDropzone({
 
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: FileRejection[]) => {
-      // Surface rechazos del dropzone (ej. >50MB) con mensaje claro.
       fileRejections.forEach(({ file, errors }) => {
         const msg = errors.map((e) => e.message).join(", ");
         toast.error(`${file.name}: ${msg}`);
@@ -118,14 +126,14 @@ export function FileUploadDropzone({
       >
         <input {...getInputProps()} />
         <Upload
-          className={`mx-auto mb-3 h-8 w-8 ${isDragActive ? "text-primary" : "text-text-tertiary"}`}
+          className={`mx-auto mb-3 h-8 w-8 ${
+            isDragActive ? "text-primary" : "text-text-tertiary"
+          }`}
         />
         <p className="text-sm font-medium text-text">
           {isDragActive ? "Suelta aquí" : "Arrastra archivos o haz clic"}
         </p>
-        <p className="mt-1 text-xs text-text-muted">
-          Máximo 25MB por archivo
-        </p>
+        <p className="mt-1 text-xs text-text-muted">Máximo 4 MB por archivo</p>
       </div>
 
       {uploadingFiles.length > 0 && (
