@@ -3,19 +3,23 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { BarChart3 } from "lucide-react";
 import { getWorkspaceReport } from "@/lib/actions/reports";
 import { ReportsView } from "@/components/reports/ReportsView";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 /**
- * /reports — Sunset Aurora · N5
- * Vista de KPIs + charts agregadas del workspace activo.
- * Sin sub-rutas (overview en una sola página por ahora).
+ * /reports (Edition 04).
+ *
+ * Drop-line title: "Mayo," / "en números."
+ * Eyebrow "/ reports".
+ * Issue numeration con el mes y el workspace.
  */
 export default async function ReportsPage() {
   const report = await getWorkspaceReport();
 
   if (!report) {
     return (
-      <div className="animate-fade-in p-6 md:p-8">
-        <PageHeader title="Reportes" />
+      <div className="animate-fade-in px-8 py-10 md:px-12">
+        <PageHeader eyebrow="/ reports" title="Reportes." />
         <EmptyState
           icon={<BarChart3 className="h-12 w-12" />}
           title="Sin entorno activo"
@@ -25,11 +29,21 @@ export default async function ReportsPage() {
     );
   }
 
+  const now = new Date();
+  const monthName = format(now, "MMMM", { locale: es });
+  const monthShort = format(now, "MMM yyyy", { locale: es }).toUpperCase();
+  const monthCap = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
   return (
-    <div className="animate-fade-in p-6 md:p-8">
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <PageHeader
-        title="Reportes"
-        description={`Resumen de los últimos 30 días — ${report.workspaceName}`}
+        eyebrow="/ reports"
+        title={`${monthCap},`}
+        subtitle="en números."
+        issueLines={[
+          `Ed. 04 · ${monthShort}`,
+          `${report.workspaceName.toUpperCase()}`,
+        ]}
       />
       <ReportsView report={report} />
     </div>

@@ -3,11 +3,11 @@ import { db } from "@/lib/db";
 import { projects, buckets } from "@/lib/db/schema";
 import { eq, ne, and, asc, desc } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { HairlineRule } from "@/components/shared/HairlineRule";
 import Link from "next/link";
-import { Plus, FolderKanban, CalendarDays, Layers } from "lucide-react";
+import { Plus, FolderKanban, Layers } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { getActiveWorkspace } from "@/lib/workspace";
-import { Badge } from "@/components/ui/Badge";
 import { PROJECT_STATUS_CONFIG } from "@/lib/constants/projectStatus";
 import type { ProjectStatus } from "@/lib/types";
 
@@ -23,6 +23,15 @@ function durationDays(start: string, end: string) {
   return Math.max(0, Math.round(ms / 86_400_000)) + 1;
 }
 
+/**
+ * /projects (Edition 04).
+ *
+ * Estructura:
+ *   - PageHeader drop-line "Proyectos," "del estudio"
+ *   - Por bucket: HairlineRule + lista de proyectos como hanging-list
+ *     con color dots de cada proyecto.
+ *   - Sin card grid genérico.
+ */
 export default async function ProjectsPage() {
   const session = await auth();
   const role = (session?.user?.role as string) ?? "";
@@ -31,8 +40,8 @@ export default async function ProjectsPage() {
   const ws = await getActiveWorkspace();
   if (!ws) {
     return (
-      <div className="animate-fade-in p-6 md:p-8">
-        <PageHeader title="Proyectos" />
+      <div className="animate-fade-in px-8 py-10 md:px-12">
+        <PageHeader eyebrow="/ proyectos" title="Proyectos." />
         <EmptyState
           icon={<Layers className="h-12 w-12" />}
           title="Sin entorno"
@@ -42,13 +51,11 @@ export default async function ProjectsPage() {
     );
   }
 
-  // Fetch all buckets
   const bucketRows = await db
     .select()
     .from(buckets)
     .orderBy(asc(buckets.position));
 
-  // Fetch projects with bucket (scoped al entorno activo)
   const projectRows = await db
     .select({ project: projects, bucket: buckets })
     .from(projects)
@@ -58,7 +65,6 @@ export default async function ProjectsPage() {
     )
     .orderBy(desc(projects.createdAt));
 
-  // Group projects by bucket
   type ProjectRow = (typeof projectRows)[number];
   const projectsByBucket: Record<string, ProjectRow[]> = {
     uncategorized: [],
@@ -74,25 +80,35 @@ export default async function ProjectsPage() {
 
   const bucketList = [
     ...bucketRows,
-    { id: "uncategorized", name: "Sin categoría", color: "#505065", position: 9999 },
+    {
+      id: "uncategorized",
+      name: "Sin categoría",
+      color: "#8a8378",
+      position: 9999,
+    },
   ];
 
+  const newProjectButton = (
+    <Link
+      href="/projects/new"
+      className="inline-flex items-center gap-2 rounded-md bg-ink px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft"
+    >
+      <Plus className="h-3 w-3" />
+      Nuevo proyecto
+    </Link>
+  );
+
   return (
-    <div className="animate-fade-in p-6 md:p-8">
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <PageHeader
-        title="Proyectos"
-        description="Gestiona los proyectos de tu equipo"
-        actions={
-          isManager ? (
-            <Link
-              href="/projects/new"
-              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color,box-shadow] duration-200 ease-out hover:bg-primary-hover"
-            >
-              <Plus className="h-4 w-4" />
-              Nuevo proyecto
-            </Link>
-          ) : null
-        }
+        eyebrow="/ proyectos"
+        title="Proyectos,"
+        subtitle="del estudio."
+        issueLines={[
+          `${projectRows.length} ACTIVOS`,
+          `${bucketRows.length} CATEGORÍAS`,
+        ]}
+        actions={isManager ? newProjectButton : undefined}
       />
 
       {!projectRows.length ? (
@@ -100,94 +116,87 @@ export default async function ProjectsPage() {
           icon={<FolderKanban className="h-12 w-12" />}
           title="Sin proyectos aún"
           description="Crea tu primer proyecto para comenzar a organizar el trabajo"
-          action={
-            isManager ? (
-              <Link
-                href="/projects/new"
-                className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color,box-shadow] duration-200 ease-out hover:bg-primary-hover"
-              >
-                <Plus className="h-4 w-4" />
-                Crear proyecto
-              </Link>
-            ) : undefined
-          }
+          action={isManager ? newProjectButton : undefined}
         />
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-12 mt-2">
           {bucketList.map((bucket) => {
             const bucketProjects = projectsByBucket[bucket.id] ?? [];
             if (!bucketProjects.length) return null;
 
             return (
-              <div key={bucket.id}>
-                <div className="mb-3 flex items-center gap-2">
-                  <span
-                    className="h-3 w-3 rounded-sm"
-                    style={{ backgroundColor: bucket.color ?? "#6B5FE4" }}
-                  />
-                  <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider">
-                    {bucket.name}
-                  </h3>
-                  <span className="rounded-full bg-surface-el px-1.5 py-0.5 text-xs text-text-tertiary">
-                    {bucketProjects.length}
-                  </span>
-                </div>
+              <section key={bucket.id}>
+                <HairlineRule
+                  label={bucket.name}
+                  count={`${bucketProjects.length}`}
+                  labelColor={bucket.color ?? "var(--ink-soft)"}
+                />
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {bucketProjects.map(({ project }) => (
-                    <Link
-                      key={project.id}
-                      href={`/projects/${project.id}`}
-                      className="group rounded-xl border border-border bg-surface p-4 transition hover:border-primary/50 hover:bg-surface-el"
-                    >
-                      <div className="mb-3 flex items-center gap-2">
-                        <span
-                          className="h-3 w-3 rounded-sm flex-shrink-0"
-                          style={{
-                            backgroundColor: project.color ?? "#6B5FE4",
-                          }}
-                        />
-                        <h4 className="flex-1 truncate font-medium text-text group-hover:text-primary">
-                          {project.name}
-                        </h4>
-                      </div>
-
-                      {project.description && (
-                        <p className="mb-3 line-clamp-2 text-xs text-text-muted">
-                          {project.description}
-                        </p>
-                      )}
-
-                      <div className="flex items-center justify-between gap-2">
-                        {(() => {
-                          const cfg =
-                            PROJECT_STATUS_CONFIG[
-                              project.status as ProjectStatus
-                            ] ?? PROJECT_STATUS_CONFIG.active;
-                          return (
-                            <Badge variant={cfg.variant}>{cfg.label}</Badge>
-                          );
-                        })()}
-                        {project.startDate && project.endDate ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
-                            <CalendarDays className="h-3 w-3" />
-                            {durationDays(
-                              project.startDate,
-                              project.endDate
-                            )}{" "}
-                            días
+                <ul className="h-list mt-3">
+                  {bucketProjects.map(({ project }, i) => {
+                    const cfg =
+                      PROJECT_STATUS_CONFIG[
+                        project.status as ProjectStatus
+                      ] ?? PROJECT_STATUS_CONFIG.active;
+                    return (
+                      <li key={project.id} className="h-list-item">
+                        <span className="h-list-item-n">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <Link
+                          href={`/projects/${project.id}`}
+                          className="flex min-w-0 flex-1 items-baseline gap-3"
+                        >
+                          <span
+                            className="h-2 w-2 flex-shrink-0 self-center rounded-full"
+                            style={{
+                              backgroundColor: project.color ?? "#161412",
+                            }}
+                          />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[14px] font-bold text-ink">
+                              {project.name}
+                            </span>
+                            {project.description && (
+                              <span className="block truncate text-[12px] text-ink-soft">
+                                {project.description}
+                              </span>
+                            )}
                           </span>
-                        ) : project.dueDate ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
-                            <CalendarDays className="h-3 w-3" />
-                            {formatDate(project.dueDate)}
+                        </Link>
+                        <div className="flex flex-shrink-0 items-baseline gap-3">
+                          <span
+                            className="font-mono text-[9px] uppercase tracking-[0.16em]"
+                            style={{
+                              color:
+                                cfg.variant === "danger"
+                                  ? "var(--urgent)"
+                                  : cfg.variant === "success"
+                                    ? "var(--done)"
+                                    : "var(--ink-soft)",
+                            }}
+                          >
+                            {cfg.label}
                           </span>
-                        ) : null}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+                          {project.startDate && project.endDate ? (
+                            <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-faint">
+                              {durationDays(
+                                project.startDate,
+                                project.endDate
+                              )}{" "}
+                              días
+                            </span>
+                          ) : project.dueDate ? (
+                            <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-faint">
+                              {formatDate(project.dueDate)}
+                            </span>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
             );
           })}
         </div>

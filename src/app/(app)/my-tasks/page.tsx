@@ -4,10 +4,10 @@ import { db } from "@/lib/db";
 import { tasks, projects } from "@/lib/db/schema";
 import { eq, and, asc, desc } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { TaskStatusBadge } from "@/components/tasks/TaskStatusBadge";
-import { TaskPriorityBadge } from "@/components/tasks/TaskPriorityBadge";
+import { HairlineRule } from "@/components/shared/HairlineRule";
 import Link from "next/link";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { CheckSquare, Layers } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/workspace";
@@ -21,8 +21,8 @@ export default async function MyTasksPage() {
   const ws = await getActiveWorkspace();
   if (!ws) {
     return (
-      <div className="animate-fade-in p-6 md:p-8">
-        <PageHeader title="Mis tareas" />
+      <div className="animate-fade-in px-8 py-10 md:px-12">
+        <PageHeader eyebrow="/ mis tareas" title="Mis tareas." />
         <EmptyState
           icon={<Layers className="h-12 w-12" />}
           title="Sin entorno"
@@ -57,10 +57,15 @@ export default async function MyTasksPage() {
   const done = taskRows.filter((t) => t.status === "done");
 
   return (
-    <div className="animate-fade-in p-6 md:p-8">
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <PageHeader
-        title="Mis tareas"
-        description={`${pending.length} tarea${pending.length !== 1 ? "s" : ""} pendiente${pending.length !== 1 ? "s" : ""}`}
+        eyebrow="/ mis tareas"
+        title="Mis tareas,"
+        subtitle={`${pending.length} pendiente${pending.length !== 1 ? "s" : ""}.`}
+        issueLines={[
+          `${taskRows.length} TOTAL`,
+          `${done.length} COMPLETADAS`,
+        ]}
       />
 
       {!taskRows.length ? (
@@ -70,70 +75,89 @@ export default async function MyTasksPage() {
           description="Las tareas que te asignen aparecerán aquí"
         />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-10">
           {pending.length > 0 && (
             <section>
-              <h3 className="mb-3 text-sm font-semibold text-text-muted">
-                Pendientes
-              </h3>
-              <div className="space-y-1">
-                {pending.map((task) => {
+              <HairlineRule label="Pendientes" count={`${pending.length}`} />
+              <ul className="h-list mt-3">
+                {pending.map((task, i) => {
                   const isOverdue =
                     task.dueDate && new Date(task.dueDate) < new Date();
-
+                  const due = task.dueDate
+                    ? format(new Date(task.dueDate), "dd MMM", { locale: es })
+                    : null;
+                  const isUrgent = task.priority === "urgent";
                   return (
-                    <Link
-                      key={task.id}
-                      href={`/projects/${task.projectId}`}
-                      className="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 transition hover:border-border hover:bg-surface-el"
-                    >
-                      <TaskStatusBadge status={task.status} />
-                      <span className="flex-1 truncate text-sm text-text">
-                        {task.title}
+                    <li key={task.id} className="h-list-item">
+                      <span className="h-list-item-n">
+                        {String(i + 1).padStart(2, "0")}
                       </span>
-                      <TaskPriorityBadge priority={task.priority} />
-                      {task.projectName && (
-                        <span className="flex items-center gap-1.5 text-xs text-text-muted">
-                          <span
-                            className="h-2 w-2 rounded-sm"
-                            style={{ backgroundColor: task.projectColor ?? "var(--accent)" }}
-                          />
-                          {task.projectName}
-                        </span>
-                      )}
-                      {task.dueDate && (
+                      <Link
+                        href={`/projects/${task.projectId}`}
+                        className="flex min-w-0 flex-1 items-baseline gap-3"
+                      >
                         <span
-                          className={`text-xs ${isOverdue ? "font-semibold text-danger" : "text-text-tertiary"}`}
+                          className={
+                            "min-w-0 flex-1 truncate text-[14px] leading-snug " +
+                            (isUrgent
+                              ? "font-bold text-ink"
+                              : "font-medium text-ink")
+                          }
                         >
-                          {format(new Date(task.dueDate), "dd/MM")}
+                          {task.title}
                         </span>
-                      )}
-                    </Link>
+                        <span className="flex flex-shrink-0 items-baseline gap-2">
+                          <span
+                            className="h-2 w-2 self-center rounded-full"
+                            style={{
+                              backgroundColor:
+                                task.projectColor ?? "var(--ink-faint)",
+                            }}
+                          />
+                          <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-faint">
+                            {task.projectName}
+                          </span>
+                        </span>
+                      </Link>
+                      {isUrgent || isOverdue ? (
+                        <span className="pill pill-urgent">
+                          {due ?? "Urgente"}
+                        </span>
+                      ) : due ? (
+                        <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-faint">
+                          {due}
+                        </span>
+                      ) : null}
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             </section>
           )}
 
           {done.length > 0 && (
             <section>
-              <h3 className="mb-3 text-sm font-semibold text-text-muted">
-                Completadas ({done.length})
-              </h3>
-              <div className="space-y-1 opacity-60">
-                {done.slice(0, 10).map((task) => (
-                  <Link
-                    key={task.id}
-                    href={`/projects/${task.projectId}`}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-surface-el"
-                  >
-                    <TaskStatusBadge status={task.status} />
-                    <span className="flex-1 truncate text-sm text-text-tertiary line-through">
-                      {task.title}
+              <HairlineRule label="Completadas" count={`${done.length}`} />
+              <ul className="h-list mt-3 opacity-60">
+                {done.slice(0, 10).map((task, i) => (
+                  <li key={task.id} className="h-list-item">
+                    <span className="h-list-item-n">
+                      {String(i + 1).padStart(2, "0")}
                     </span>
-                  </Link>
+                    <Link
+                      href={`/projects/${task.projectId}`}
+                      className="flex min-w-0 flex-1 items-baseline gap-3"
+                    >
+                      <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink-soft line-through">
+                        {task.title}
+                      </span>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-faint">
+                        {task.projectName}
+                      </span>
+                    </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </section>
           )}
         </div>

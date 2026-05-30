@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 
 /**
- * TabNav — barra de tabs horizontal compartida.
+ * TabNav (Edition 04).
  *
- * Usado por:
- * - OperationsNav (Resumen/Catálogo/Cotizador/Ventas/Gastos/Equipo)
- * - Project tabs (Tareas/Documentos/Notas/Changelog/Config)
- *
- * Detecta el tab activo via usePathname (exact si el tab tiene `exact: true`,
- * sino prefix match con startsWith).
+ * - Labels en weight 500 normal, 700 cuando active.
+ * - Active state: subrayado 2px en var(--project-color) — heredado del
+ *   project layout cuando aplique. En operations o pages neutrales,
+ *   --project-color resuelve a --accent que es ink/foreground, así
+ *   que el subrayado se ve oscuro.
+ * - Más generous gap (24px) que el viejo (1px).
  */
 export interface TabItem {
   href: string;
@@ -34,7 +34,7 @@ export function TabNav({
   return (
     <div
       className={cn(
-        "mb-4 flex flex-wrap items-center gap-1 border-b border-border",
+        "mb-6 flex flex-wrap items-center gap-6 border-b border-rule",
         className
       )}
     >
@@ -45,11 +45,16 @@ export function TabNav({
             key={tab.href}
             href={tab.href}
             className={cn(
-              "border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
+              "-mb-px border-b-2 pb-3 text-[13px] transition-colors duration-150 ease-out",
               active
-                ? "border-primary text-primary"
-                : "border-transparent text-text-muted hover:text-text"
+                ? "font-bold text-ink"
+                : "border-transparent font-medium text-ink-soft hover:text-ink"
             )}
+            style={
+              active
+                ? { borderBottomColor: "var(--project-color)" }
+                : undefined
+            }
           >
             {tab.label}
           </Link>

@@ -12,9 +12,9 @@ import {
   Pie,
   Legend,
 } from "recharts";
-import { Users } from "lucide-react";
 import type { WorkspaceReport } from "@/lib/actions/reports";
 import { formatMoney } from "@/lib/utils/money";
+import { HairlineRule } from "@/components/shared/HairlineRule";
 
 interface Props {
   report: WorkspaceReport;
@@ -28,95 +28,76 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  todo: "#b39c84",
-  in_progress: "#ffb347",
-  review: "#ff6b6b",
-  done: "#ff3d8b",
+  todo: "var(--ink-faint)",
+  in_progress: "var(--info)",
+  review: "var(--warn)",
+  done: "var(--done)",
 };
 
-const PIE_COLORS = ["#ffb347", "#ff6b6b", "#ff3d8b", "#a78bfa", "#34d399"];
+// Paleta de proyectos cuando no tienen color asignado o queremos
+// distinguir series en pie charts.
+const PIE_COLORS = [
+  "#d63a1f",
+  "#1f7a4d",
+  "#e89a0d",
+  "#2e52d9",
+  "#7a3aa0",
+  "#3a8a8a",
+];
 
+/**
+ * ReportsView (Edition 04).
+ *
+ * Estructura:
+ *   1. KPI table — 4 columnas, numerales 44px, sin cards.
+ *   2. Asymmetric grid:
+ *      LEFT — Por proyecto (lista con color dots).
+ *      RIGHT — Tareas por estado (chart neutral con colores semánticos).
+ *   3. Ventas por categoría (pie) + Top colaboradores (bar list).
+ */
 export function ReportsView({ report }: Props) {
   const { kpis } = report;
 
-  // Stat strip: stats agrupados en un único container con divisores
-  // verticales (en vez de cards individuales con glow/gradient). Más
-  // denso, más legible, más Linear/Stripe.
-  const operationalStats: Stat[] = [
-    { label: "Proyectos activos", value: kpis.activeProjects },
-    { label: "Tareas en curso", value: kpis.activeTasks },
-    { label: "Completadas (30d)", value: kpis.completedTasksLast30Days },
-    { label: "Cotizaciones abiertas", value: kpis.pendingQuotes },
-  ];
-  const financialStats: Stat[] = [
-    { label: "Ventas (30d)", value: formatMoney(kpis.salesLast30Days) },
-    { label: "Gastos (30d)", value: formatMoney(kpis.expensesLast30Days) },
-    {
-      label: "Neto (30d)",
-      value: formatMoney(kpis.netLast30Days),
-      accent: kpis.netLast30Days >= 0 ? "coral" : "danger",
-    },
-  ];
-
   return (
-    <div className="space-y-8">
-      <StatStrip stats={operationalStats} />
-      <StatStrip stats={financialStats} />
+    <div className="mt-2 space-y-12">
+      {/* ── KPI Table ──────────────────────────────────────────── */}
+      <section>
+        <HairlineRule label="Resumen del mes" count={`/ ${kpis.activeProjects}p`} />
+        <dl className="mt-6 grid grid-cols-2 gap-x-12 gap-y-8 md:grid-cols-4">
+          <Kpi
+            label="Proyectos"
+            value={String(kpis.activeProjects)}
+            sub={`${kpis.activeTasks} tareas activas`}
+          />
+          <Kpi
+            label="Ventas (30d)"
+            value={formatMoney(kpis.salesLast30Days)}
+            sub={`${kpis.completedTasksLast30Days} tareas completadas`}
+          />
+          <Kpi
+            label="Gastos (30d)"
+            value={formatMoney(kpis.expensesLast30Days)}
+            sub={`${kpis.pendingQuotes} cotizaciones abiertas`}
+          />
+          <Kpi
+            label="Neto (30d)"
+            value={formatMoney(kpis.netLast30Days)}
+            sub={kpis.netLast30Days >= 0 ? "positivo" : "negativo"}
+            accent={kpis.netLast30Days >= 0 ? "done" : "urgent"}
+          />
+        </dl>
+      </section>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Section title="Tareas por estado">
-          {report.tasksByStatus.length === 0 ? (
-            <Empty label="Sin tareas aún." />
-          ) : (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart
-                data={report.tasksByStatus.map((r) => ({
-                  status: STATUS_LABELS[r.status] ?? r.status,
-                  count: r.count,
-                  fill: STATUS_COLORS[r.status] ?? "#b39c84",
-                }))}
-                margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
-              >
-                <XAxis
-                  dataKey="status"
-                  stroke="var(--text-tertiary)"
-                  tickLine={false}
-                  axisLine={false}
-                  style={{ fontSize: 11 }}
-                />
-                <YAxis
-                  stroke="var(--text-tertiary)"
-                  tickLine={false}
-                  axisLine={false}
-                  style={{ fontSize: 11 }}
-                  allowDecimals={false}
-                />
-                <Tooltip
-                  cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                  contentStyle={{
-                    background: "rgba(15,8,12,0.92)",
-                    border: "1px solid rgba(255,220,200,0.18)",
-                    borderRadius: "6px",
-                    color: "var(--text)",
-                    fontSize: 12,
-                    padding: "6px 10px",
-                  }}
-                />
-                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                  {report.tasksByStatus.map((r, i) => (
-                    <Cell key={i} fill={STATUS_COLORS[r.status] ?? "#b39c84"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </Section>
-
-        <Section title="Ventas por categoría (30d)">
+      {/* ── Asymmetric: Por proyecto + Tareas por estado ─────── */}
+      <section className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:gap-14">
+        <div>
+          <HairlineRule label="Ventas por categoría" count={`${report.salesByCategory.length}`} />
           {report.salesByCategory.length === 0 ? (
-            <Empty label="Sin ventas en los últimos 30 días." />
+            <p className="mt-4 text-sm italic text-ink-faint">
+              Sin ventas en los últimos 30 días.
+            </p>
           ) : (
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={220} className="!mt-6">
               <PieChart>
                 <Pie
                   data={report.salesByCategory}
@@ -124,8 +105,8 @@ export function ReportsView({ report }: Props) {
                   nameKey="category"
                   cx="50%"
                   cy="50%"
-                  innerRadius={48}
-                  outerRadius={82}
+                  innerRadius={52}
+                  outerRadius={86}
                   paddingAngle={2}
                   stroke="none"
                 >
@@ -135,46 +116,114 @@ export function ReportsView({ report }: Props) {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: "rgba(15,8,12,0.92)",
-                    border: "1px solid rgba(255,220,200,0.18)",
-                    borderRadius: "6px",
-                    color: "var(--text)",
-                    fontSize: 12,
+                    background: "var(--surface-el)",
+                    border: "1px solid var(--rule-strong)",
+                    borderRadius: "4px",
+                    color: "var(--ink)",
+                    fontSize: 11,
+                    fontFamily: "Satoshi, sans-serif",
                     padding: "6px 10px",
                   }}
                   formatter={(value) =>
-                    formatMoney(typeof value === "number" ? value : Number(value))
+                    formatMoney(
+                      typeof value === "number" ? value : Number(value)
+                    )
                   }
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 11, color: "var(--text-muted)" }}
+                  wrapperStyle={{
+                    fontSize: 11,
+                    color: "var(--ink-soft)",
+                    fontFamily: "Satoshi, sans-serif",
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
           )}
-        </Section>
-      </div>
+        </div>
 
-      <Section title="Top colaboradores (30d)">
-        {report.topContributors.length === 0 ? (
-          <Empty label="Sin tareas completadas con asignación." />
-        ) : (
-          <ul className="divide-y divide-border">
-            {report.topContributors.map((c, i) => (
-              <li
-                key={c.userId}
-                className="flex items-center gap-4 py-2.5 first:pt-0 last:pb-0"
+        <div>
+          <HairlineRule
+            label="Tareas por estado"
+            count={`${report.tasksByStatus.reduce((a, r) => a + r.count, 0)} totales`}
+          />
+          {report.tasksByStatus.length === 0 ? (
+            <p className="mt-4 text-sm italic text-ink-faint">
+              Sin tareas aún.
+            </p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220} className="!mt-6">
+              <BarChart
+                data={report.tasksByStatus.map((r) => ({
+                  status: STATUS_LABELS[r.status] ?? r.status,
+                  count: r.count,
+                  fill: STATUS_COLORS[r.status] ?? "var(--ink-faint)",
+                }))}
+                margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
               >
-                <span className="w-5 text-right text-xs tabular-nums text-text-tertiary">
-                  {i + 1}
+                <XAxis
+                  dataKey="status"
+                  stroke="var(--ink-faint)"
+                  tickLine={false}
+                  axisLine={false}
+                  style={{ fontSize: 11, fontFamily: "Satoshi, sans-serif" }}
+                />
+                <YAxis
+                  stroke="var(--ink-faint)"
+                  tickLine={false}
+                  axisLine={false}
+                  style={{ fontSize: 11, fontFamily: "Satoshi, sans-serif" }}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  cursor={{ fill: "var(--accent-soft)" }}
+                  contentStyle={{
+                    background: "var(--surface-el)",
+                    border: "1px solid var(--rule-strong)",
+                    borderRadius: "4px",
+                    color: "var(--ink)",
+                    fontSize: 12,
+                    fontFamily: "Satoshi, sans-serif",
+                    padding: "6px 10px",
+                  }}
+                />
+                <Bar dataKey="count" radius={[3, 3, 0, 0]}>
+                  {report.tasksByStatus.map((r, i) => (
+                    <Cell
+                      key={i}
+                      fill={STATUS_COLORS[r.status] ?? "var(--ink-faint)"}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </section>
+
+      {/* ── Top colaboradores ─────────────────────────────────── */}
+      <section>
+        <HairlineRule
+          label="Top colaboradores (30d)"
+          count={`${report.topContributors.length}`}
+        />
+        {report.topContributors.length === 0 ? (
+          <p className="mt-4 text-sm italic text-ink-faint">
+            Sin tareas completadas con asignación.
+          </p>
+        ) : (
+          <ul className="h-list mt-4 max-w-2xl">
+            {report.topContributors.map((c, i) => (
+              <li key={c.userId} className="h-list-item">
+                <span className="h-list-item-n">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <Users className="h-4 w-4 flex-shrink-0 text-text-tertiary" />
-                <span className="flex-1 truncate text-sm text-text">
+                <span className="flex-1 truncate text-[14px] font-medium text-ink">
                   {c.name ?? "Sin nombre"}
                 </span>
-                <span className="text-sm font-medium tabular-nums text-text">
+                <span className="font-mono text-[11px] tabular-nums text-ink-soft">
                   {c.completedTasks}
-                  <span className="ml-1 text-xs text-text-tertiary">
+                  <span className="ml-1 uppercase tracking-[0.1em] text-ink-faint">
                     tareas
                   </span>
                 </span>
@@ -182,79 +231,49 @@ export function ReportsView({ report }: Props) {
             ))}
           </ul>
         )}
-      </Section>
+      </section>
     </div>
   );
 }
 
-// ── Stat strip ────────────────────────────────────────────────────────
-// Stats horizontales en un container único con divisores verticales.
-// Sin glass, sin glow, sin gradient. Sólo tipografía + un single accent
-// donde la semántica lo justifica (ej. neto positivo/negativo).
+// ── KPI atom ────────────────────────────────────────────────────
+// Numeral grande, label mono small-caps, sub-text body soft.
+// Sin card, sin glow. La tipografía es el objeto.
 
-interface Stat {
+interface KpiProps {
   label: string;
-  value: string | number;
-  accent?: "coral" | "danger";
+  value: string;
+  sub?: string;
+  accent?: "done" | "urgent" | "info" | "warn";
 }
 
-function StatStrip({ stats }: { stats: Stat[] }) {
-  // Grid auto-fit a la cantidad: 2 columnas en mobile, len-columnas en sm+
-  const cols = {
-    2: "sm:grid-cols-2",
-    3: "sm:grid-cols-3",
-    4: "sm:grid-cols-4",
-    5: "sm:grid-cols-5",
-    6: "sm:grid-cols-6",
-  }[stats.length] ?? "sm:grid-cols-4";
-
+function Kpi({ label, value, sub, accent }: KpiProps) {
+  const numColor =
+    accent === "done"
+      ? "text-done"
+      : accent === "urgent"
+        ? "text-urgent"
+        : accent === "info"
+          ? "text-info"
+          : accent === "warn"
+            ? "text-warn"
+            : "text-ink";
   return (
-    <dl
-      className={`grid grid-cols-2 divide-y divide-border sm:divide-y-0 sm:divide-x rounded-lg border border-border bg-surface ${cols}`}
-    >
-      {stats.map((s) => (
-        <div key={s.label} className="flex flex-col gap-1.5 px-5 py-4">
-          <dt className="text-[11px] font-medium uppercase tracking-[0.06em] text-text-tertiary">
-            {s.label}
-          </dt>
-          <dd
-            className="text-[28px] font-medium tabular-nums leading-none text-text"
-            style={
-              s.accent === "coral"
-                ? { color: "var(--coral)" }
-                : s.accent === "danger"
-                  ? { color: "var(--danger)" }
-                  : undefined
-            }
-          >
-            {s.value}
-          </dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-// ── Section ───────────────────────────────────────────────────────────
-// Contenedor genérico para charts y listas. Un solo borde, sin glass.
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-lg border border-border bg-surface px-5 py-4">
-      <h2 className="mb-4 text-sm font-semibold text-text">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function Empty({ label }: { label: string }) {
-  return (
-    <p className="py-10 text-center text-sm text-text-tertiary">{label}</p>
+    <div className="flex flex-col gap-2">
+      <dt className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-ink-faint">
+        {label}
+      </dt>
+      <dd
+        className={
+          "text-[44px] font-bold tabular-nums leading-none tracking-[-0.04em] " +
+          numColor
+        }
+      >
+        {value}
+      </dd>
+      {sub && (
+        <span className="text-[12px] italic text-ink-soft">{sub}</span>
+      )}
+    </div>
   );
 }

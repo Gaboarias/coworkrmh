@@ -15,10 +15,21 @@ import {
 } from "@/lib/actions/erp";
 import { formatMoney } from "@/lib/utils/money";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { HairlineRule } from "@/components/shared/HairlineRule";
 import { OperationsNav } from "@/components/operations/OperationsNav";
 import { NoEntorno } from "@/components/operations/NoEntorno";
-import { Card, CardContent } from "@/components/ui/Card";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
+/**
+ * Operations dashboard (Edition 04).
+ *
+ * Layout:
+ *   - PageHeader drop-line "Operaciones," "del estudio"
+ *   - OperationsNav (tabs)
+ *   - KPI grid 6 columnas tipografía pura
+ *   - Asymmetric: módulos como lista (no card grid)
+ */
 export default async function OperationsDashboard() {
   const ws = await getActiveWorkspace();
   if (!ws) return <NoEntorno title="Operaciones" />;
@@ -95,65 +106,88 @@ export default async function OperationsDashboard() {
     },
   ];
 
+  const monthShort = format(new Date(), "MMM yyyy", { locale: es }).toUpperCase();
+
   return (
-    <div className="animate-fade-in p-6 md:p-8">
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <PageHeader
-        title="Resumen"
-        description="Vista general del entorno activo"
+        eyebrow="/ operations · resumen"
+        title="Operaciones,"
+        subtitle="del estudio."
+        issueLines={[
+          `Ed. 04 · ${monthShort}`,
+          `${kpis.length} KPIs · ${modules.length} módulos`,
+        ]}
       />
 
-      {/* Stat strip — sin cards individuales, divisores finos, tipografía pura */}
-      <dl className="mb-8 grid grid-cols-2 divide-y divide-border rounded-lg border border-border bg-surface sm:grid-cols-3 sm:divide-y-0 sm:divide-x lg:grid-cols-6">
-        {kpis.map((k) => (
-          <div key={k.label} className="flex flex-col gap-1.5 px-5 py-4">
-            <dt className="text-[11px] font-medium uppercase tracking-[0.06em] text-text-tertiary">
-              {k.label}
-            </dt>
-            <dd className="text-[24px] font-medium leading-none tabular-nums text-text">
-              {k.value}
-            </dd>
-            {k.sub && (
-              <p className="text-[11px] text-text-tertiary">{k.sub}</p>
-            )}
-          </div>
-        ))}
-      </dl>
+      {/* KPIs como objetos tipográficos */}
+      <section>
+        <HairlineRule label="Resumen del estudio" />
+        <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-8 md:grid-cols-3 lg:grid-cols-6">
+          {kpis.map((k) => (
+            <div key={k.label} className="flex flex-col gap-2">
+              <dt className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-ink-faint">
+                {k.label}
+              </dt>
+              <dd className="text-[26px] font-bold tabular-nums leading-none tracking-[-0.035em] text-ink">
+                {k.value}
+              </dd>
+              {k.sub && (
+                <span className="text-[11px] italic text-ink-soft">
+                  {k.sub}
+                </span>
+              )}
+            </div>
+          ))}
+        </dl>
+      </section>
 
       {isEmpty && (
-        <Card className="mb-4 border-primary/30">
-          <CardContent className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-text-muted">
-              Este entorno está vacío. Empezá cargando productos en el
-              catálogo para ver costos, márgenes y el resto.
-            </p>
-            <Link
-              href="/operations/catalogo"
-              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-elev-1 transition-[background-color] duration-200 ease-out hover:bg-primary-hover"
-            >
-              Ir al Catálogo
-            </Link>
-          </CardContent>
-        </Card>
+        <section className="mt-10 flex flex-wrap items-center justify-between gap-4 border-l-2 border-urgent pl-4">
+          <p className="max-w-[60ch] text-[14px] text-ink-soft">
+            Este entorno está vacío. Empezá cargando productos en el catálogo
+            para ver costos, márgenes y el resto.
+          </p>
+          <Link
+            href="/operations/catalogo"
+            className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink transition-colors hover:text-urgent"
+          >
+            Ir al catálogo →
+          </Link>
+        </section>
       )}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {modules.map((m) => (
-          <Link key={m.href} href={m.href}>
-            <Card className="h-full transition-colors hover:border-primary/50">
-              <CardContent className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                  <m.icon className="h-5 w-5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-medium text-text">{m.label}</p>
-                  <p className="truncate text-xs text-text-muted">{m.desc}</p>
+      {/* Módulos — lista (NO card grid genérico) */}
+      <section className="mt-12">
+        <HairlineRule label="Módulos" count={`${modules.length}`} />
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {modules.map((m) => (
+            <li key={m.href}>
+              <Link
+                href={m.href}
+                className="row-hover -mx-3 flex items-center gap-3 rounded-md px-3 py-3"
+              >
+                <m.icon
+                  className="h-4 w-4 flex-shrink-0 text-ink-faint"
+                  strokeWidth={1.75}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[14px] font-bold text-ink">
+                    {m.label}
+                  </p>
+                  <p className="truncate text-[12px] text-ink-soft">
+                    {m.desc}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
+                  →
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }
