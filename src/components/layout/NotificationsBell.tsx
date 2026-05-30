@@ -146,7 +146,7 @@ export function NotificationsBell() {
         {unread > 0 && (
           <span
             aria-hidden
-            className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--coral)] px-1 text-[9px] font-bold text-white"
+            className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--coral)] px-1 text-[11px] font-bold text-white"
           >
             {unread > 99 ? "99+" : unread}
           </span>
@@ -216,7 +216,7 @@ export function NotificationsBell() {
                             {item.payload.body}
                           </p>
                         )}
-                        <p className="mt-1 text-[11px] text-text-tertiary">
+                        <p className="mt-1 text-[13px] text-text-tertiary">
                           {timeAgo(item.createdAt)}
                         </p>
                       </div>

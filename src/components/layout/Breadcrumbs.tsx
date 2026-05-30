@@ -90,7 +90,7 @@ export function Breadcrumbs({ overrideLast, className }: BreadcrumbsProps) {
     <nav
       aria-label="Breadcrumb"
       className={
-        "flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint " +
+        "flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.14em] text-ink-faint " +
         (className ?? "")
       }
     >

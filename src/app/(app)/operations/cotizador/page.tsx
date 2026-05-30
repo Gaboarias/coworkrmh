@@ -28,7 +28,7 @@ export default async function CotizadorPage() {
   const newButton = canManage ? (
     <Link
       href="/operations/cotizador/nuevo"
-      className="inline-flex items-center gap-2 rounded-md bg-ink px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft"
+      className="inline-flex items-center gap-2 rounded-md bg-ink px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft"
     >
       <Plus className="h-3 w-3" />
       Nueva cotización
@@ -81,21 +81,21 @@ export default async function CotizadorPage() {
                   className="flex min-w-0 flex-1 items-baseline gap-3"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-bold text-ink">
+                    <span className="block truncate text-[16px] font-bold text-ink">
                       {q.title}
                     </span>
-                    <span className="block truncate text-[12px] text-ink-soft">
+                    <span className="block truncate text-[14px] text-ink-soft">
                       {q.customerName ?? "Sin cliente"} · {q.items.length}{" "}
                       ítem(s)
                     </span>
                   </span>
                 </Link>
                 <div className="flex flex-shrink-0 items-baseline gap-4">
-                  <span className="text-[14px] font-bold tabular-nums text-ink">
+                  <span className="text-[16px] font-bold tabular-nums text-ink">
                     {formatMoney(total)}
                   </span>
                   <span
-                    className="font-mono text-[9px] uppercase tracking-[0.16em]"
+                    className="font-mono text-[11px] uppercase tracking-[0.16em]"
                     style={{ color: statusColor }}
                   >
                     {s.label}

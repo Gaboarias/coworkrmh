@@ -218,10 +218,10 @@ export function ReportsView({ report }: Props) {
                 <span className="h-list-item-n">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="flex-1 truncate text-[14px] font-medium text-ink">
+                <span className="flex-1 truncate text-[16px] font-medium text-ink">
                   {c.name ?? "Sin nombre"}
                 </span>
-                <span className="font-mono text-[11px] tabular-nums text-ink-soft">
+                <span className="font-mono text-[13px] tabular-nums text-ink-soft">
                   {c.completedTasks}
                   <span className="ml-1 uppercase tracking-[0.1em] text-ink-faint">
                     tareas
@@ -260,19 +260,19 @@ function Kpi({ label, value, sub, accent }: KpiProps) {
             : "text-ink";
   return (
     <div className="flex flex-col gap-2">
-      <dt className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-ink-faint">
+      <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-ink-faint">
         {label}
       </dt>
       <dd
         className={
-          "text-[44px] font-bold tabular-nums leading-none tracking-[-0.04em] " +
+          "text-[56px] font-bold tabular-nums leading-none tracking-[-0.04em] " +
           numColor
         }
       >
         {value}
       </dd>
       {sub && (
-        <span className="text-[12px] italic text-ink-soft">{sub}</span>
+        <span className="text-[14px] italic text-ink-soft">{sub}</span>
       )}
     </div>
   );

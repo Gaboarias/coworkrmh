@@ -132,16 +132,16 @@
     color: var(--ink);
   }
   html {
-    font-size: 16px;
+    font-size: 17px;                           /* bumped 16 → 17 menos cramped */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
   body {
     font-family: "Satoshi", system-ui, -apple-system, sans-serif;
-    font-weight: 500;                          /* body 500 bumped */
+    font-weight: 500;
     font-feature-settings: "ss01" 1, "kern" 1, "liga" 1, "calt" 1;
-    line-height: 1.55;
+    line-height: 1.6;                          /* bumped 1.55 → 1.6 más respiración */
   }
 
   /* Headings: Satoshi bold + tight tracking, generous size */
@@ -211,18 +211,18 @@
 }
 .h-rule .lbl {
   font-family: var(--font-mono), monospace;
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
+  font-size: 12px;                             /* bumped 9 → 12 */
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-soft);
   white-space: nowrap;
 }
 .h-rule .ct {
   font-family: var(--font-mono), monospace;
-  font-size: 9px;
+  font-size: 12px;                             /* bumped 9 → 12 */
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   color: var(--ink-faint);
   white-space: nowrap;
 }
@@ -245,21 +245,21 @@
 /* Issue numeration (top-right corner) */
 .issue {
   font-family: var(--font-mono), monospace;
-  font-size: 9px;
+  font-size: 12px;                             /* bumped 9 → 12 */
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-faint);
-  line-height: 1.5;
+  line-height: 1.6;
   text-align: right;
 }
 
 /* Eyebrow above title */
 .eyebrow-line {
   font-family: var(--font-mono), monospace;
-  font-size: 9px;
+  font-size: 12px;                             /* bumped 9 → 12 */
   font-weight: 500;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-faint);
 }
@@ -269,11 +269,11 @@
   display: inline-flex;
   align-items: center;
   font-family: var(--font-mono), monospace;
-  font-size: 9px;
-  font-weight: 500;
-  padding: 3px 7px;
+  font-size: 11px;                             /* bumped 9 → 11 */
+  font-weight: 600;
+  padding: 4px 8px;
   border-radius: 2px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   line-height: 1;
 }
@@ -298,19 +298,19 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.75rem;
-  padding: 0.625rem 0;
+  padding: 0.875rem 0;                         /* bumped 0.625 → 0.875 más respiración */
   align-items: baseline;
   position: relative;
 }
 .h-list-item + .h-list-item { border-top: 1px solid var(--rule); }
 .h-list-item-n {
   position: absolute;
-  left: -2rem;
-  top: 0.75rem;
-  width: 1.5rem;
+  left: -2.25rem;
+  top: 1rem;
+  width: 1.75rem;
   text-align: right;
   font-family: var(--font-mono), monospace;
-  font-size: 10px;
+  font-size: 13px;                             /* bumped 10 → 13 */
   font-weight: 500;
   letter-spacing: 0.04em;
   color: var(--ink-faint);

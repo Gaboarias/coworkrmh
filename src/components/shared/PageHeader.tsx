@@ -50,26 +50,27 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn("relative pb-6", className)}>
+    <div className={cn("relative pb-8", className)}>
       {issueLines && issueLines.length > 0 && (
         <IssueNumber lines={issueLines} className="absolute right-0 top-0" />
       )}
 
-      {eyebrow && <div className="eyebrow-line mb-3">{eyebrow}</div>}
+      {eyebrow && <div className="eyebrow-line mb-4">{eyebrow}</div>}
 
-      <div className="title-drop text-[52px] md:text-[56px]">
+      {/* Display title bumped: 60 mobile, 72 md, 84 lg — más presencia */}
+      <div className="title-drop text-[60px] md:text-[72px] lg:text-[84px]">
         <span>{title}</span>
         {subtitle && <span className="l2">{subtitle}</span>}
       </div>
 
       {description && (
-        <p className="mt-4 max-w-[640px] text-[15px] leading-[1.55] text-ink-soft">
+        <p className="mt-5 max-w-[640px] text-[17px] leading-[1.6] text-ink-soft">
           {description}
         </p>
       )}
 
       {actions && (
-        <div className="mt-5 flex items-center gap-2">{actions}</div>
+        <div className="mt-6 flex items-center gap-2">{actions}</div>
       )}
     </div>
   );

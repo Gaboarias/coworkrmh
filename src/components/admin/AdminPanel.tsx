@@ -452,7 +452,7 @@ const WorkspacesTab = ({
                             <h4 className="text-xs font-semibold text-text">
                               Permisos por rol
                             </h4>
-                            <p className="text-[11px] text-text-muted">
+                            <p className="text-[13px] text-text-muted">
                               El propietario siempre tiene acceso total.
                             </p>
                           </div>
@@ -699,7 +699,7 @@ const GroupRows = ({
       <tr className="bg-surface-el/60">
         <td
           colSpan={roleKeys.length + 1}
-          className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-text-muted"
+          className="px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-text-muted"
         >
           {group}
         </td>

@@ -80,7 +80,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
     <div className="animate-fade-in mx-auto max-w-xl px-8 py-10 md:px-12">
       <Link
         href="/projects"
-        className="mb-6 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft transition-colors hover:text-ink"
+        className="mb-6 inline-flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.16em] text-ink-soft transition-colors hover:text-ink"
       >
         <ChevronLeft className="h-3 w-3" />
         Volver a proyectos

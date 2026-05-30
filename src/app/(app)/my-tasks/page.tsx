@@ -98,7 +98,7 @@ export default async function MyTasksPage() {
                       >
                         <span
                           className={
-                            "min-w-0 flex-1 truncate text-[14px] leading-snug " +
+                            "min-w-0 flex-1 truncate text-[16px] leading-snug " +
                             (isUrgent
                               ? "font-bold text-ink"
                               : "font-medium text-ink")
@@ -114,7 +114,7 @@ export default async function MyTasksPage() {
                                 task.projectColor ?? "var(--ink-faint)",
                             }}
                           />
-                          <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-faint">
+                          <span className="font-mono text-[12px] uppercase tracking-[0.1em] text-ink-faint">
                             {task.projectName}
                           </span>
                         </span>
@@ -124,7 +124,7 @@ export default async function MyTasksPage() {
                           {due ?? "Urgente"}
                         </span>
                       ) : due ? (
-                        <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-faint">
+                        <span className="font-mono text-[12px] uppercase tracking-[0.06em] text-ink-faint">
                           {due}
                         </span>
                       ) : null}
@@ -148,10 +148,10 @@ export default async function MyTasksPage() {
                       href={`/projects/${task.projectId}`}
                       className="flex min-w-0 flex-1 items-baseline gap-3"
                     >
-                      <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink-soft line-through">
+                      <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-ink-soft line-through">
                         {task.title}
                       </span>
-                      <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-faint">
+                      <span className="font-mono text-[12px] uppercase tracking-[0.1em] text-ink-faint">
                         {task.projectName}
                       </span>
                     </Link>

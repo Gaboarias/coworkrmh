@@ -91,7 +91,7 @@ export default async function ProjectsPage() {
   const newProjectButton = (
     <Link
       href="/projects/new"
-      className="inline-flex items-center gap-2 rounded-md bg-ink px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft"
+      className="inline-flex items-center gap-2 rounded-md bg-ink px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft"
     >
       <Plus className="h-3 w-3" />
       Nuevo proyecto
@@ -154,11 +154,11 @@ export default async function ProjectsPage() {
                             }}
                           />
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[14px] font-bold text-ink">
+                            <span className="block truncate text-[16px] font-bold text-ink">
                               {project.name}
                             </span>
                             {project.description && (
-                              <span className="block truncate text-[12px] text-ink-soft">
+                              <span className="block truncate text-[14px] text-ink-soft">
                                 {project.description}
                               </span>
                             )}
@@ -166,7 +166,7 @@ export default async function ProjectsPage() {
                         </Link>
                         <div className="flex flex-shrink-0 items-baseline gap-3">
                           <span
-                            className="font-mono text-[9px] uppercase tracking-[0.16em]"
+                            className="font-mono text-[11px] uppercase tracking-[0.16em]"
                             style={{
                               color:
                                 cfg.variant === "danger"
@@ -179,7 +179,7 @@ export default async function ProjectsPage() {
                             {cfg.label}
                           </span>
                           {project.startDate && project.endDate ? (
-                            <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-faint">
+                            <span className="font-mono text-[12px] uppercase tracking-[0.06em] text-ink-faint">
                               {durationDays(
                                 project.startDate,
                                 project.endDate
@@ -187,7 +187,7 @@ export default async function ProjectsPage() {
                               días
                             </span>
                           ) : project.dueDate ? (
-                            <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-faint">
+                            <span className="font-mono text-[12px] uppercase tracking-[0.06em] text-ink-faint">
                               {formatDate(project.dueDate)}
                             </span>
                           ) : null}

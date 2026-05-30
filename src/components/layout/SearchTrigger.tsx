@@ -18,7 +18,7 @@ export function SearchTrigger() {
     >
       <Search className="h-4 w-4 flex-shrink-0" />
       <span className="flex-1 truncate text-left">Buscar...</span>
-      <kbd className="rounded border border-border bg-surface-el px-1.5 py-0.5 font-mono text-[10px] font-medium text-text-tertiary">
+      <kbd className="rounded border border-border bg-surface-el px-1.5 py-0.5 font-mono text-[12px] font-medium text-text-tertiary">
         ⌘K
       </kbd>
     </button>

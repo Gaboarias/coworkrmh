@@ -248,7 +248,7 @@ export function CalendarView({
                             locale: es,
                           })}`}
                           className={cn(
-                            "block h-4 truncate px-1 text-[10px] font-medium leading-4 text-text/90 transition-opacity hover:opacity-80",
+                            "block h-4 truncate px-1 text-[12px] font-medium leading-4 text-text/90 transition-opacity hover:opacity-80",
                             isStart ? "rounded-l-sm" : "",
                             isEnd ? "rounded-r-sm" : "",
                             !isStart && !isEnd && "rounded-none"
@@ -265,7 +265,7 @@ export function CalendarView({
                       );
                     })}
                     {dayProjects.length > 2 && (
-                      <p className="px-1 text-[10px] text-text-tertiary">
+                      <p className="px-1 text-[12px] text-text-tertiary">
                         +{dayProjects.length - 2} proyectos
                       </p>
                     )}
@@ -312,7 +312,7 @@ export function CalendarView({
                         key={n.id}
                         href={`/projects/${n.projectId}/notes`}
                         title={`Nota: ${n.title}`}
-                        className="inline-flex max-w-full items-center gap-0.5 rounded bg-surface-el px-1 py-0.5 text-[10px] text-text-muted transition-colors hover:text-text"
+                        className="inline-flex max-w-full items-center gap-0.5 rounded bg-surface-el px-1 py-0.5 text-[12px] text-text-muted transition-colors hover:text-text"
                       >
                         <FileText className="h-2.5 w-2.5 flex-shrink-0" />
                         <span className="truncate">{n.title}</span>
@@ -326,7 +326,7 @@ export function CalendarView({
                             : "#"
                         }
                         title={`${dayChanges.length} cambio(s)`}
-                        className="inline-flex items-center gap-0.5 rounded bg-surface-el px-1 py-0.5 text-[10px] text-text-muted transition-colors hover:text-text"
+                        className="inline-flex items-center gap-0.5 rounded bg-surface-el px-1 py-0.5 text-[12px] text-text-muted transition-colors hover:text-text"
                       >
                         <History className="h-2.5 w-2.5" />
                         {dayChanges.length}

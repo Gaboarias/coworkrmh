@@ -152,7 +152,7 @@ export default async function DashboardPage() {
                     >
                       <span
                         className={
-                          "min-w-0 flex-1 truncate text-[14px] leading-snug " +
+                          "min-w-0 flex-1 truncate text-[16px] leading-snug " +
                           (isUrgent || isHigh
                             ? "font-bold text-ink"
                             : "font-medium text-ink")
@@ -160,7 +160,7 @@ export default async function DashboardPage() {
                       >
                         {task.title}
                       </span>
-                      <span className="flex-shrink-0 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-faint">
+                      <span className="flex-shrink-0 font-mono text-[12px] uppercase tracking-[0.1em] text-ink-faint">
                         {task.projectName}
                       </span>
                     </Link>
@@ -169,7 +169,7 @@ export default async function DashboardPage() {
                         {due ?? "Urgente"}
                       </span>
                     ) : due ? (
-                      <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-faint">
+                      <span className="font-mono text-[12px] uppercase tracking-[0.06em] text-ink-faint">
                         {due}
                       </span>
                     ) : null}
@@ -182,7 +182,7 @@ export default async function DashboardPage() {
           <div className="mt-4">
             <Link
               href="/my-tasks"
-              className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft transition-colors hover:text-ink"
+              className="font-mono text-[12px] uppercase tracking-[0.18em] text-ink-soft transition-colors hover:text-ink"
             >
               Ver todas →
             </Link>
@@ -214,7 +214,7 @@ export default async function DashboardPage() {
                           backgroundColor: project.color ?? "#161412",
                         }}
                       />
-                      <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">
+                      <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-ink">
                         {project.name}
                       </span>
                     </Link>
@@ -225,7 +225,7 @@ export default async function DashboardPage() {
             <div className="mt-4">
               <Link
                 href="/projects"
-                className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft transition-colors hover:text-ink"
+                className="font-mono text-[12px] uppercase tracking-[0.18em] text-ink-soft transition-colors hover:text-ink"
               >
                 Ver todos →
               </Link>
@@ -250,17 +250,17 @@ export default async function DashboardPage() {
                       className="flex items-baseline justify-between gap-3 py-1"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] font-medium text-ink">
+                        <p className="truncate text-[15px] font-medium text-ink">
                           {payment.description}
                         </p>
-                        <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
+                        <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-ink-faint">
                           {client?.companyName}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-0.5 text-right">
                         <span
                           className={
-                            "text-[13px] font-bold tabular-nums " +
+                            "text-[15px] font-bold tabular-nums " +
                             (isOverdue ? "text-urgent" : "text-ink")
                           }
                         >
@@ -272,7 +272,7 @@ export default async function DashboardPage() {
                         {payment.dueDate && (
                           <span
                             className={
-                              "font-mono text-[9px] uppercase tracking-[0.06em] " +
+                              "font-mono text-[11px] uppercase tracking-[0.06em] " +
                               (isOverdue ? "text-urgent" : "text-ink-faint")
                             }
                           >
@@ -291,10 +291,10 @@ export default async function DashboardPage() {
 
           {/* Nota tipo marginalia — placeholder, podría ser un input futuro */}
           <div className="border-l-2 border-rule-strong pl-4">
-            <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink-faint">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
               Hoy
             </p>
-            <p className="mt-2 text-[13px] italic leading-relaxed text-ink-soft">
+            <p className="mt-2 text-[15px] italic leading-relaxed text-ink-soft">
               {todayLong}.
             </p>
           </div>

@@ -206,7 +206,7 @@ export const EntornoSwitcher = () => {
           <Layers className="h-4 w-4" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[10px] uppercase tracking-wider text-sidebar-muted">
+          <span className="block text-[12px] uppercase tracking-wider text-sidebar-muted">
             Entorno
           </span>
           <span className="block truncate text-sm font-semibold text-sidebar-foreground">

@@ -91,7 +91,7 @@ export function ProjectTasksView({
   const newButton = canEdit ? (
     <button
       onClick={() => setShowCreateModal(true)}
-      className="inline-flex items-center gap-2 rounded-md bg-ink px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft"
+      className="inline-flex items-center gap-2 rounded-md bg-ink px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft"
     >
       <Plus className="h-3 w-3" />
       Nueva tarea
@@ -136,7 +136,7 @@ export function ProjectTasksView({
               key={s}
               onClick={() => setStatusFilter(s)}
               className={cn(
-                "rounded-md px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors duration-150",
+                "rounded-md px-2.5 py-1 font-mono text-[12px] uppercase tracking-[0.14em] transition-colors duration-150",
                 statusFilter === s
                   ? "bg-ink text-bg"
                   : "text-ink-soft hover:bg-accent-soft hover:text-ink"
@@ -146,7 +146,7 @@ export function ProjectTasksView({
             </button>
           ))}
         </div>
-        <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+        <span className="ml-auto font-mono text-[12px] uppercase tracking-[0.14em] text-ink-faint">
           {filtered.length} de {tasks.length}
         </span>
       </div>

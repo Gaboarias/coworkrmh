@@ -36,9 +36,9 @@ const button = cva(
           "bg-done text-white hover:opacity-90 focus-visible:ring-done",
       },
       size: {
-        sm: "h-8 px-3 text-[12px]",
-        md: "h-9 px-4 text-[13px]",
-        lg: "h-10 px-5 text-[14px]",
+        sm: "h-8 px-3 text-[14px]",
+        md: "h-9 px-4 text-[15px]",
+        lg: "h-10 px-5 text-[16px]",
         icon: "h-9 w-9 p-0",
       },
     },

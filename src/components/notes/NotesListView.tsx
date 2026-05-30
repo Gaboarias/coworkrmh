@@ -108,17 +108,17 @@ export function NotesListView({
                   href={`/projects/${project.id}/notes/${note.id}`}
                   className="flex min-w-0 flex-1 flex-col gap-0.5"
                 >
-                  <span className="truncate text-[14px] font-bold text-ink">
+                  <span className="truncate text-[16px] font-bold text-ink">
                     {note.title}
                   </span>
                   {note.contentText && (
-                    <span className="line-clamp-1 text-[12px] text-ink-soft">
+                    <span className="line-clamp-1 text-[14px] text-ink-soft">
                       {note.contentText}
                     </span>
                   )}
                 </Link>
                 <div className="flex flex-shrink-0 items-center gap-3">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
+                  <span className="font-mono text-[12px] uppercase tracking-[0.08em] text-ink-faint">
                     {note.updatedAt &&
                       format(new Date(note.updatedAt), "dd MMM", {
                         locale: es,

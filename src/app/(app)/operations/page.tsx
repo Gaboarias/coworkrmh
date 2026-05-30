@@ -127,14 +127,14 @@ export default async function OperationsDashboard() {
         <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-8 md:grid-cols-3 lg:grid-cols-6">
           {kpis.map((k) => (
             <div key={k.label} className="flex flex-col gap-2">
-              <dt className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-ink-faint">
+              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-ink-faint">
                 {k.label}
               </dt>
-              <dd className="text-[26px] font-bold tabular-nums leading-none tracking-[-0.035em] text-ink">
+              <dd className="text-[34px] font-bold tabular-nums leading-none tracking-[-0.035em] text-ink">
                 {k.value}
               </dd>
               {k.sub && (
-                <span className="text-[11px] italic text-ink-soft">
+                <span className="text-[13px] italic text-ink-soft">
                   {k.sub}
                 </span>
               )}
@@ -145,13 +145,13 @@ export default async function OperationsDashboard() {
 
       {isEmpty && (
         <section className="mt-10 flex flex-wrap items-center justify-between gap-4 border-l-2 border-urgent pl-4">
-          <p className="max-w-[60ch] text-[14px] text-ink-soft">
+          <p className="max-w-[60ch] text-[16px] text-ink-soft">
             Este entorno está vacío. Empezá cargando productos en el catálogo
             para ver costos, márgenes y el resto.
           </p>
           <Link
             href="/operations/catalogo"
-            className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink transition-colors hover:text-urgent"
+            className="font-mono text-[12px] uppercase tracking-[0.18em] text-ink transition-colors hover:text-urgent"
           >
             Ir al catálogo →
           </Link>
@@ -173,14 +173,14 @@ export default async function OperationsDashboard() {
                   strokeWidth={1.75}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-bold text-ink">
+                  <p className="truncate text-[16px] font-bold text-ink">
                     {m.label}
                   </p>
-                  <p className="truncate text-[12px] text-ink-soft">
+                  <p className="truncate text-[14px] text-ink-soft">
                     {m.desc}
                   </p>
                 </div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
+                <span className="font-mono text-[12px] uppercase tracking-[0.18em] text-ink-faint">
                   →
                 </span>
               </Link>

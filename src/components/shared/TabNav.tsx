@@ -45,7 +45,7 @@ export function TabNav({
             key={tab.href}
             href={tab.href}
             className={cn(
-              "-mb-px border-b-2 pb-3 text-[13px] transition-colors duration-150 ease-out",
+              "-mb-px border-b-2 pb-3 text-[15px] transition-colors duration-150 ease-out",
               active
                 ? "font-bold text-ink"
                 : "border-transparent font-medium text-ink-soft hover:text-ink"

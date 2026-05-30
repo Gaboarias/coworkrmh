@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils/cn";
  * (no urgency primary). Para urgencia/done usar .pill-urgent / .pill-done.
  */
 const badge = cva(
-  "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-[0.14em] leading-none",
+  "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] leading-none",
   {
     variants: {
       variant: {

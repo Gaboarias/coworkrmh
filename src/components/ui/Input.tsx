@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils/cn";
  * - Radius md (era lg).
  */
 const fieldBase =
-  "w-full rounded-md border border-rule-strong bg-surface px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint transition-colors duration-150 ease-out focus:outline-none focus:border-ink focus:ring-2 focus:ring-[color-mix(in_oklab,var(--project-color)_30%,transparent)] disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-urgent aria-[invalid=true]:focus:ring-[color-mix(in_oklab,var(--urgent)_30%,transparent)]";
+  "w-full rounded-md border border-rule-strong bg-surface px-3 py-2 text-[15px] text-ink placeholder:text-ink-faint transition-colors duration-150 ease-out focus:outline-none focus:border-ink focus:ring-2 focus:ring-[color-mix(in_oklab,var(--project-color)_30%,transparent)] disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-urgent aria-[invalid=true]:focus:ring-[color-mix(in_oklab,var(--urgent)_30%,transparent)]";
 
 export const Input = forwardRef<
   HTMLInputElement,
