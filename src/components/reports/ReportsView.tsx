@@ -42,13 +42,13 @@ export function ReportsView({ report }: Props) {
   // Stat strip: stats agrupados en un único container con divisores
   // verticales (en vez de cards individuales con glow/gradient). Más
   // denso, más legible, más Linear/Stripe.
-  const operationalStats = [
+  const operationalStats: Stat[] = [
     { label: "Proyectos activos", value: kpis.activeProjects },
     { label: "Tareas en curso", value: kpis.activeTasks },
     { label: "Completadas (30d)", value: kpis.completedTasksLast30Days },
     { label: "Cotizaciones abiertas", value: kpis.pendingQuotes },
   ];
-  const financialStats = [
+  const financialStats: Stat[] = [
     { label: "Ventas (30d)", value: formatMoney(kpis.salesLast30Days) },
     { label: "Gastos (30d)", value: formatMoney(kpis.expensesLast30Days) },
     {
