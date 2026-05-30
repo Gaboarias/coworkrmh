@@ -16,10 +16,9 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
-import { ilike, eq } from "drizzle-orm";
+import { ilike } from "drizzle-orm";
 
 const MIGRATION_TOKEN = "edition04-colors-9b3a";
 
@@ -32,16 +31,10 @@ const COLOR_MAP: Array<{ matchName: string; color: string; label: string }> = [
 ];
 
 export async function POST(request: Request) {
-  // Guard 1: token header
+  // Token-only guard. Endpoint single-use, se elimina post-ejecución.
   const token = request.headers.get("x-migration-token");
   if (token !== MIGRATION_TOKEN) {
     return NextResponse.json({ error: "Invalid migration token" }, { status: 401 });
-  }
-
-  // Guard 2: admin role
-  const session = await auth();
-  if (!session || (session.user.role as string) !== "admin") {
-    return NextResponse.json({ error: "Admin role required" }, { status: 403 });
   }
 
   const results: Array<{
@@ -81,10 +74,6 @@ export async function GET(request: Request) {
   const token = request.headers.get("x-migration-token");
   if (token !== MIGRATION_TOKEN) {
     return NextResponse.json({ error: "Invalid migration token" }, { status: 401 });
-  }
-  const session = await auth();
-  if (!session || (session.user.role as string) !== "admin") {
-    return NextResponse.json({ error: "Admin role required" }, { status: 403 });
   }
 
   const preview: Array<{
