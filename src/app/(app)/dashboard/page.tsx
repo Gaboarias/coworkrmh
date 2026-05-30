@@ -91,7 +91,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {/* My Tasks */}
-        <div className="col-span-1 rounded-xl border border-border-strong bg-surface backdrop-blur-xl backdrop-saturate-150 p-5 shadow-elev-2">
+        <div className="col-span-1 rounded-lg border border-border bg-surface p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckSquare className="h-4 w-4 text-primary" />
@@ -144,7 +144,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent Projects */}
-        <div className="col-span-1 rounded-xl border border-border-strong bg-surface backdrop-blur-xl backdrop-saturate-150 p-5 shadow-elev-2">
+        <div className="col-span-1 rounded-lg border border-border bg-surface p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FolderKanban className="h-4 w-4 text-primary" />
@@ -188,7 +188,7 @@ export default async function DashboardPage() {
 
         {/* Upcoming Payments (admin/manager only) */}
         {isManager && (
-          <div className="col-span-1 rounded-xl border border-border-strong bg-surface backdrop-blur-xl backdrop-saturate-150 p-5 shadow-elev-2">
+          <div className="col-span-1 rounded-lg border border-border bg-surface p-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-warning" />
