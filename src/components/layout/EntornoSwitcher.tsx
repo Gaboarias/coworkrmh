@@ -194,13 +194,13 @@ export const EntornoSwitcher = () => {
         <span
           aria-hidden
           className="absolute inset-y-0 left-0 w-1"
-          style={{ backgroundColor: active?.color ?? "#6B5FE4" }}
+          style={{ backgroundColor: active?.color ?? DEFAULT_ENTORNO_COLOR }}
         />
         <span
           className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
           style={{
-            backgroundColor: active?.color ?? "#6B5FE4",
-            color: readableFg(active?.color ?? "#6B5FE4"),
+            backgroundColor: active?.color ?? DEFAULT_ENTORNO_COLOR,
+            color: readableFg(active?.color ?? DEFAULT_ENTORNO_COLOR),
           }}
         >
           <Layers className="h-4 w-4" />

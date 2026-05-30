@@ -108,7 +108,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
 
     try {
       const canvas = await html2canvas(element as HTMLElement, {
-        backgroundColor: "#111118",
+        backgroundColor: "#0a0408",
         scale: 2,
       });
       const imgData = canvas.toDataURL("image/png");

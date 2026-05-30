@@ -19,6 +19,7 @@ import { SwatchPicker } from "@/components/ui/SwatchPicker";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { cn } from "@/lib/utils/cn";
 import { readableFg } from "@/lib/utils/color";
+import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
 import {
   createWorkspace,
   updateWorkspace,
@@ -123,7 +124,7 @@ const WorkspacesTab = ({
   onChange: () => void;
 }) => {
   const [name, setName] = useState("");
-  const [color, setColor] = useState("#6B5FE4");
+  const [color, setColor] = useState<string>(DEFAULT_ENTORNO_COLOR);
   const [creating, setCreating] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [members, setMembers] = useState<Record<string, Member[]>>({});
@@ -131,7 +132,7 @@ const WorkspacesTab = ({
   const [addUserId, setAddUserId] = useState("");
   const [busy, setBusy] = useState(false);
   const [editName, setEditName] = useState("");
-  const [editColor, setEditColor] = useState("#6B5FE4");
+  const [editColor, setEditColor] = useState<string>(DEFAULT_ENTORNO_COLOR);
   const [savingEdit, setSavingEdit] = useState(false);
   const [matrix, setMatrix] = useState<Record<string, WsRolePermissions>>({});
   const [savingMatrix, setSavingMatrix] = useState(false);

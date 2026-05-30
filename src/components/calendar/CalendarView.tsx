@@ -73,7 +73,7 @@ const priorityDot: Record<TaskPriority, string> = {
   low: "bg-text-tertiary",
 };
 
-const DEFAULT_COLOR = "#6E83FF";
+const DEFAULT_COLOR = "#ff6b6b"; // coral (Sunset Aurora primary)
 
 export function CalendarView({
   tasks,

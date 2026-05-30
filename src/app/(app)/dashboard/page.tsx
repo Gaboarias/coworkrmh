@@ -83,7 +83,7 @@ export default async function DashboardPage() {
   const firstName = session.user.name?.split(" ")[0] ?? "equipo";
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in p-6 md:p-8">
       <PageHeader
         title={`Hola, ${firstName} 👋`}
         description={today}
@@ -91,7 +91,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {/* My Tasks */}
-        <div className="col-span-1 rounded-xl border border-border bg-surface p-5">
+        <div className="col-span-1 rounded-xl border border-border bg-surface backdrop-blur-xl backdrop-saturate-150 p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckSquare className="h-4 w-4 text-primary" />
@@ -144,7 +144,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent Projects */}
-        <div className="col-span-1 rounded-xl border border-border bg-surface p-5">
+        <div className="col-span-1 rounded-xl border border-border bg-surface backdrop-blur-xl backdrop-saturate-150 p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FolderKanban className="h-4 w-4 text-primary" />
@@ -174,7 +174,7 @@ export default async function DashboardPage() {
                   >
                     <span
                       className="h-3 w-3 rounded-sm flex-shrink-0"
-                      style={{ backgroundColor: project.color ?? "#6B5FE4" }}
+                      style={{ backgroundColor: project.color ?? "#ff6b6b" }}
                     />
                     <span className="flex-1 truncate text-sm text-text">
                       {project.name}
@@ -188,7 +188,7 @@ export default async function DashboardPage() {
 
         {/* Upcoming Payments (admin/manager only) */}
         {isManager && (
-          <div className="col-span-1 rounded-xl border border-border bg-surface p-5">
+          <div className="col-span-1 rounded-xl border border-border bg-surface backdrop-blur-xl backdrop-saturate-150 p-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-warning" />
