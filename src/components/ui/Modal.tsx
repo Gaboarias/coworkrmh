@@ -18,6 +18,16 @@ interface ModalProps {
 
 const sizes = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" };
 
+/**
+ * Modal (Edition 04).
+ *
+ * Cambios:
+ * - Overlay sin backdrop-blur (sólo opacity ink).
+ * - Panel sólido bg-surface-el, sin blur.
+ * - Border md rounded.
+ * - Title con font-bold tracking-tight (Edition 04 typography).
+ * - Header con drop-line opcional via title + description.
+ */
 export function Modal({
   open,
   onClose,
@@ -49,7 +59,7 @@ export function Modal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       onClick={onClose}
     >
       <div
@@ -60,25 +70,27 @@ export function Modal({
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "w-full animate-slide-up overflow-hidden rounded-xl border border-border bg-surface-el backdrop-blur-2xl backdrop-saturate-150 shadow-elev-3 outline-none",
+          "w-full animate-slide-up overflow-hidden rounded-md border border-rule-strong bg-surface-el shadow-elev-3 outline-none",
           sizes[size],
           className
         )}
       >
         {(title || description) && (
-          <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
+          <div className="flex items-start justify-between gap-4 border-b border-rule px-5 py-4">
             <div>
               {title && (
-                <h2 className="text-base font-semibold text-text">{title}</h2>
+                <h2 className="text-[16px] font-bold tracking-[-0.02em] text-ink">
+                  {title}
+                </h2>
               )}
               {description && (
-                <p className="mt-1 text-sm text-text-muted">{description}</p>
+                <p className="mt-1 text-[13px] text-ink-soft">{description}</p>
               )}
             </div>
             <button
               onClick={onClose}
               aria-label="Cerrar"
-              className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-el hover:text-text"
+              className="rounded-md p-1 text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
             >
               <X className="h-4 w-4" />
             </button>
@@ -86,7 +98,7 @@ export function Modal({
         )}
         <div className="px-5 py-4">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
+          <div className="flex items-center justify-end gap-2 border-t border-rule px-5 py-4">
             {footer}
           </div>
         )}

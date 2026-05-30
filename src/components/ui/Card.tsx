@@ -1,5 +1,14 @@
 import { cn } from "@/lib/utils/cn";
 
+/**
+ * Card (Edition 04).
+ *
+ * Cambios vs Sunset Aurora:
+ * - Sin backdrop-blur, sin shadow-elev-2.
+ * - Border hairline (rule, no rule-strong).
+ * - Radius reducido a md (era xl que se siente "blob").
+ * - bg-surface (solid).
+ */
 export function Card({
   className,
   ...props
@@ -7,7 +16,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border bg-surface backdrop-blur-xl backdrop-saturate-150 shadow-elev-2",
+        "rounded-md border border-rule bg-surface",
         className
       )}
       {...props}
@@ -22,7 +31,7 @@ export function CardHeader({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 border-b border-border px-5 py-4",
+        "flex items-center gap-3 border-b border-rule px-5 py-4",
         className
       )}
       {...props}
@@ -36,7 +45,7 @@ export function CardTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn("text-sm font-semibold text-text", className)}
+      className={cn("text-[14px] font-bold text-ink", className)}
       {...props}
     />
   );
@@ -47,7 +56,7 @@ export function CardDescription({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-sm text-text-muted", className)} {...props} />
+    <p className={cn("text-[13px] text-ink-soft", className)} {...props} />
   );
 }
 
@@ -65,7 +74,7 @@ export function CardFooter({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 border-t border-border px-5 py-4",
+        "flex items-center gap-2 border-t border-rule px-5 py-4",
         className
       )}
       {...props}

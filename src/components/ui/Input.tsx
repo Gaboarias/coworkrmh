@@ -1,8 +1,15 @@
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils/cn";
 
+/**
+ * Input + Textarea (Edition 04).
+ * - Border hairline (rule-strong cuando focus).
+ * - bg-surface sólido, sin backdrop-blur.
+ * - Focus ring usa project-color (heredado).
+ * - Radius md (era lg).
+ */
 const fieldBase =
-  "w-full rounded-lg border border-border bg-surface-el backdrop-blur-md px-3 py-2 text-sm text-text placeholder:text-text-tertiary transition-colors duration-200 ease-out focus:border-primary focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-danger";
+  "w-full rounded-md border border-rule-strong bg-surface px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint transition-colors duration-150 ease-out focus:outline-none focus:border-ink focus:ring-2 focus:ring-[color-mix(in_oklab,var(--project-color)_30%,transparent)] disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-urgent aria-[invalid=true]:focus:ring-[color-mix(in_oklab,var(--urgent)_30%,transparent)]";
 
 export const Input = forwardRef<
   HTMLInputElement,
@@ -18,7 +25,7 @@ export const Textarea = forwardRef<
 >(({ className, ...props }, ref) => (
   <textarea
     ref={ref}
-    className={cn(fieldBase, "resize-none py-2.5", className)}
+    className={cn(fieldBase, "resize-none py-2.5 leading-relaxed", className)}
     {...props}
   />
 ));

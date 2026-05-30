@@ -1,23 +1,25 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils/cn";
 
+/**
+ * Badge (Edition 04).
+ *
+ * Reformulado a mono small-caps tracking 0.16em — pattern de los .pill-*
+ * en globals.css pero con variantes "soft" para badges informativos
+ * (no urgency primary). Para urgencia/done usar .pill-urgent / .pill-done.
+ */
 const badge = cva(
-  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+  "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-[0.14em] leading-none",
   {
     variants: {
       variant: {
-        neutral:
-          "bg-[color-mix(in_oklab,var(--text-tertiary)_16%,transparent)] text-text-muted",
-        primary:
-          "bg-[color-mix(in_oklab,var(--primary)_16%,transparent)] text-primary",
-        success:
-          "bg-[color-mix(in_oklab,var(--success)_18%,transparent)] text-success",
-        warning:
-          "bg-[color-mix(in_oklab,var(--warning)_18%,transparent)] text-warning",
-        danger:
-          "bg-[color-mix(in_oklab,var(--danger)_18%,transparent)] text-danger",
-        info: "bg-[color-mix(in_oklab,var(--info)_18%,transparent)] text-info",
-        outline: "border border-border text-text-muted",
+        neutral: "bg-accent-soft text-ink-soft",
+        primary: "bg-accent-soft text-ink",
+        success: "bg-done-soft text-done",
+        warning: "bg-warn-soft text-warn",
+        danger: "bg-urgent-soft text-urgent",
+        info: "bg-info-soft text-info",
+        outline: "border border-rule-strong text-ink-soft",
       },
     },
     defaultVariants: { variant: "neutral" },

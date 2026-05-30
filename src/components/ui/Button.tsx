@@ -3,26 +3,42 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
+/**
+ * Button (Edition 04).
+ *
+ * Variants:
+ *   primary   — solid ink bg, bg text (default ink en light, bg ink en dark).
+ *               No gradient, no glow. Letterspacing tight, weight bold.
+ *   secondary — outline con ink border, ink text.
+ *   outline   — hairline border, neutral.
+ *   ghost     — transparent, hover bg-accent-soft.
+ *   danger    — bg-urgent solid + white text.
+ *   done      — bg-done solid + white text.
+ *
+ * Sizes: sm/md/lg/icon. Bordes rounded-md (suaves, no pill).
+ */
 const button = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-[background-color,box-shadow,transform] duration-200 ease-out focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 active:translate-y-px select-none",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold tracking-[-0.005em] transition-[background-color,color,border-color,opacity] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:pointer-events-none disabled:opacity-50 select-none",
   {
     variants: {
       variant: {
-        // Primary: gradiente triotone Sunset Aurora con glow coral
         primary:
-          "bg-[linear-gradient(135deg,var(--amber),var(--coral),var(--magenta))] text-primary-foreground font-semibold shadow-[0_0_18px_rgba(255,107,107,0.35)] hover:brightness-110",
-        // Secondary: glass sólido cálido
+          "bg-ink text-bg hover:bg-ink-soft focus-visible:ring-ink",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-elev-1 hover:opacity-90",
+          "border border-rule-strong bg-transparent text-ink hover:bg-accent-soft focus-visible:ring-ink",
         outline:
-          "border border-border-strong bg-transparent text-text backdrop-blur-md hover:bg-surface-el",
-        ghost: "bg-transparent text-text-muted hover:bg-surface-el hover:text-text",
-        danger: "bg-danger text-white shadow-elev-1 hover:opacity-90",
+          "border border-rule-strong bg-transparent text-ink-soft hover:text-ink hover:border-ink focus-visible:ring-ink",
+        ghost:
+          "bg-transparent text-ink-soft hover:bg-accent-soft hover:text-ink focus-visible:ring-ink",
+        danger:
+          "bg-urgent text-white hover:opacity-90 focus-visible:ring-urgent",
+        done:
+          "bg-done text-white hover:opacity-90 focus-visible:ring-done",
       },
       size: {
-        sm: "h-8 px-3 text-xs",
-        md: "h-9 px-4 text-sm",
-        lg: "h-10 px-5 text-sm",
+        sm: "h-8 px-3 text-[12px]",
+        md: "h-9 px-4 text-[13px]",
+        lg: "h-10 px-5 text-[14px]",
         icon: "h-9 w-9 p-0",
       },
     },
