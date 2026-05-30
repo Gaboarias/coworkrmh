@@ -3,12 +3,13 @@
 import { Breadcrumbs } from "./Breadcrumbs";
 import { AvatarDropdown } from "./AvatarDropdown";
 import { SearchTrigger } from "./SearchTrigger";
+import { NotificationsBell } from "./NotificationsBell";
 
 /**
- * Topbar (Sunset Aurora · N1 + N3).
+ * Topbar (Sunset Aurora · N1 + N3 + N4).
  *
  * Layout:
- *   [Breadcrumbs]   ........   [Search trigger ⌘K] [Avatar dropdown]
+ *   [Breadcrumbs]  ...  [Search ⌘K] [🔔Bell] [Avatar dropdown]
  */
 export function Topbar() {
   return (
@@ -16,6 +17,7 @@ export function Topbar() {
       <Breadcrumbs />
       <div className="flex items-center gap-3">
         <SearchTrigger />
+        <NotificationsBell />
         <AvatarDropdown />
       </div>
     </header>

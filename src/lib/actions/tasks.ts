@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { tasks, tags, taskTags } from "@/lib/db/schema";
+import { tasks, tags, taskTags, projects } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
+import { createNotification } from "@/lib/actions/notifications";
 
 async function requireUser() {
   const session = await auth();
@@ -53,6 +54,28 @@ export async function createTask(formData: {
     .returning();
 
   revalidatePath(`/projects/${formData.projectId}`);
+
+  // Notification trigger: si la tarea se crea ya asignada a alguien, notificar.
+  if (formData.assigneeId && formData.assigneeId !== user.id) {
+    const [project] = await db
+      .select({ name: projects.name })
+      .from(projects)
+      .where(eq(projects.id, formData.projectId))
+      .limit(1);
+    await createNotification({
+      userId: formData.assigneeId,
+      type: "task_assigned",
+      payload: {
+        title: "Te asignaron una tarea",
+        body: `${formData.title} — ${project?.name ?? "proyecto"}`,
+        actorId: user.id,
+        actorName: user.name ?? user.email ?? undefined,
+        refs: { taskId: task.id, projectId: formData.projectId },
+      },
+      href: `/projects/${formData.projectId}`,
+    });
+  }
+
   return task;
 }
 
@@ -68,7 +91,7 @@ export async function updateTask(
     dueDate?: string | null;
   }
 ) {
-  await requireProjectsManage();
+  const user = await requireProjectsManage();
   const completedAt =
     updates.status === "done"
       ? new Date()
@@ -76,10 +99,48 @@ export async function updateTask(
       ? null
       : undefined;
 
+  // Capturar assignee anterior para detectar cambios (notification trigger)
+  let prevAssigneeId: string | null = null;
+  let taskTitle: string | null = null;
+  if (updates.assigneeId !== undefined) {
+    const [prev] = await db
+      .select({ assigneeId: tasks.assigneeId, title: tasks.title })
+      .from(tasks)
+      .where(eq(tasks.id, taskId))
+      .limit(1);
+    prevAssigneeId = prev?.assigneeId ?? null;
+    taskTitle = prev?.title ?? null;
+  }
+
   await db
     .update(tasks)
     .set({ ...updates, ...(completedAt !== undefined ? { completedAt } : {}), updatedAt: new Date() })
     .where(eq(tasks.id, taskId));
+
+  // Notification trigger: assigneeId cambió a alguien distinto
+  if (
+    updates.assigneeId &&
+    updates.assigneeId !== prevAssigneeId &&
+    updates.assigneeId !== user.id
+  ) {
+    const [project] = await db
+      .select({ name: projects.name })
+      .from(projects)
+      .where(eq(projects.id, projectId))
+      .limit(1);
+    await createNotification({
+      userId: updates.assigneeId,
+      type: "task_assigned",
+      payload: {
+        title: "Te asignaron una tarea",
+        body: `${updates.title ?? taskTitle ?? "Tarea"} — ${project?.name ?? "proyecto"}`,
+        actorId: user.id,
+        actorName: user.name ?? user.email ?? undefined,
+        refs: { taskId, projectId },
+      },
+      href: `/projects/${projectId}`,
+    });
+  }
 
   revalidatePath(`/projects/${projectId}`);
   revalidatePath("/my-tasks");

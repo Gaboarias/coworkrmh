@@ -41,6 +41,15 @@ export const changelogActionEnum = pgEnum("changelog_action", [
 export const clientStatusEnum = pgEnum("client_status", ["active", "inactive", "prospect"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["pending", "paid", "overdue", "cancelled"]);
 export const currencyEnum = pgEnum("currency", ["CRC", "USD"]);
+export const notificationTypeEnum = pgEnum("notification_type", [
+  "task_assigned",
+  "task_due_soon",
+  "task_status_changed",
+  "note_mentioned",
+  "project_member_added",
+  "workspace_member_added",
+  "comment_reply",
+]);
 
 // ─── Users (replaces Supabase auth.users + profiles) ─────────────────────────
 
@@ -244,6 +253,33 @@ export const changelog = pgTable("changelog", {
   oldValue: json("old_value"),
   newValue: json("new_value"),
   description: text("description").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ─── Notifications (N4) ──────────────────────────────────────────────────────
+// Bell con badge en topbar + drawer slide-in. Polling cada 30s.
+// Trigger desde server actions cuando algo "le pasa al usuario" (asignación,
+// mención, member-add, etc.). Sin webhooks ni SSE en esta iter (más simple).
+
+export interface NotificationPayload {
+  title: string;       // "Te asignaron una tarea"
+  body?: string;       // "Diseño hero web — Sitio RMH"
+  actorId?: string;    // quién lo originó
+  actorName?: string;
+  actorAvatarUrl?: string | null;
+  // Relaciones libres por type (taskId, projectId, noteId, etc.)
+  refs?: Record<string, string>;
+}
+
+export const notifications = pgTable("notifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: notificationTypeEnum("type").notNull(),
+  payload: json("payload").$type<NotificationPayload>().notNull(),
+  href: text("href"), // URL para hacer click (opcional)
+  readAt: timestamp("read_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
