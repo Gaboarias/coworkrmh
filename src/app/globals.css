@@ -84,15 +84,19 @@
     font-size: 17px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Fallback dark detrás del AuroraBackground (que va en body con
+       position:fixed). Si el SVG no cargara, queda el dark base. */
+    background: var(--background);
   }
   body {
-    @apply bg-background text-text;
-    /* Body weight 500 + features Butterick (kerning, ligatures, ss alt) */
+    /* CRÍTICO: body con background TRANSPARENTE — si tiene un color
+       sólido (incluso var(--background)), tapa el AuroraBackground
+       que está fixed con z-index:-1. */
+    background: transparent;
+    @apply text-text;
     font-weight: 500;
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "ss01" 1;
     text-rendering: optimizeLegibility;
-    /* El AuroraBackground en layout.tsx va position:fixed con z-index:-1
-       y queda detrás de todo. */
   }
   /* Headings: Sora bold-ish (sin serif — la marca ahora es geometric warm) */
   h1, h2, h3, h4 {

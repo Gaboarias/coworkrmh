@@ -47,28 +47,28 @@ export function AuroraBackground() {
             <feGaussianBlur stdDeviation="60" />
           </filter>
         </defs>
-        <g filter="url(#aurora-blur)" opacity="0.7">
+        <g filter="url(#aurora-blur)" opacity="0.85">
           {/* Banda amber — alta, ondulada suave */}
           <path
             d="M -100 280 Q 350 150 800 320 T 1700 360"
-            stroke="rgba(255, 179, 71, 0.65)"
-            strokeWidth="90"
+            stroke="rgba(255, 179, 71, 0.85)"
+            strokeWidth="120"
             fill="none"
             strokeLinecap="round"
           />
           {/* Banda coral — media, ondulada más pronunciada */}
           <path
             d="M -100 520 Q 400 380 850 560 T 1700 580"
-            stroke="rgba(255, 107, 107, 0.55)"
-            strokeWidth="110"
+            stroke="rgba(255, 107, 107, 0.75)"
+            strokeWidth="140"
             fill="none"
             strokeLinecap="round"
           />
           {/* Banda magenta — baja, ondulada suave */}
           <path
             d="M -100 780 Q 500 640 1000 800 T 1700 820"
-            stroke="rgba(255, 61, 139, 0.45)"
-            strokeWidth="90"
+            stroke="rgba(255, 61, 139, 0.65)"
+            strokeWidth="120"
             fill="none"
             strokeLinecap="round"
           />
