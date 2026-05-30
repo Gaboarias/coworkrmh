@@ -3,6 +3,25 @@ import { NextResponse } from "next/server";
 import { requireProjectAccess } from "@/lib/workspace";
 
 /**
+ * Busca el token de Vercel Blob en cualquier env var que comience con
+ * "vercel_blob_rw_". Necesario porque Vercel renombra el env var cuando
+ * un store se conecta al proyecto (no siempre queda `BLOB_READ_WRITE_TOKEN`).
+ * Sin esto, `handleUpload` falla aunque `put()` (server-side) funcione,
+ * porque `put()` hace este fallback internamente pero `handleUpload` no.
+ */
+function findBlobToken(): string | undefined {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return process.env.BLOB_READ_WRITE_TOKEN;
+  }
+  for (const v of Object.values(process.env)) {
+    if (typeof v === "string" && v.startsWith("vercel_blob_rw_")) {
+      return v;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Endpoint para uploads con cliente directo a Vercel Blob.
  * El browser sube DIRECTO a Blob storage saltando el límite ~4.5MB de las
  * Vercel Functions; esta ruta solo emite el token firmado tras verificar
@@ -10,10 +29,10 @@ import { requireProjectAccess } from "@/lib/workspace";
  * action separada que el cliente llama tras la subida (sincronía simple).
  */
 export async function POST(request: Request): Promise<NextResponse> {
+  const token = findBlobToken();
   // Diagnóstico seguro del env var (no revela el secreto, solo si existe).
-  const tok = process.env.BLOB_READ_WRITE_TOKEN || "";
   console.error(
-    `UPL_ENV len=${tok.length} prefix=${tok.slice(0, 18) || "(empty)"}`
+    `UPL_ENV len=${token?.length ?? 0} hasToken=${!!token}`
   );
 
   const body = (await request.json()) as HandleUploadBody;
@@ -22,6 +41,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const jsonResponse = await handleUpload({
       body,
       request,
+      token, // ← explícito: arregla el caso del rename de env var
       onBeforeGenerateToken: async (_pathname, clientPayload) => {
         // clientPayload = JSON { projectId, taskId? }
         if (!clientPayload) {

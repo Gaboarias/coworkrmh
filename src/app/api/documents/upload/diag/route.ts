@@ -11,18 +11,26 @@ export async function GET() {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
   const tok = process.env.BLOB_READ_WRITE_TOKEN || "";
+  // Enumerar TODOS los env vars BLOB-relacionados para encontrar el nombre real
+  const blobVars = Object.entries(process.env)
+    .filter(([k, v]) => v && (
+      k.includes("BLOB") ||
+      k.endsWith("_READ_WRITE_TOKEN") ||
+      (typeof v === "string" && v.startsWith("vercel_blob_"))
+    ))
+    .map(([k, v]) => ({
+      name: k,
+      length: (v as string).length,
+      prefix: (v as string).slice(0, 33),
+    }));
   return NextResponse.json({
-    present: tok.length > 0,
-    length: tok.length,
-    // Primeros 33 chars = "vercel_blob_rw_" (15) + storeId (~18). El storeId
-    // no es secreto. El secreto es la parte después del último "_".
-    prefix: tok.slice(0, 33),
-    startsCorrect: tok.startsWith("vercel_blob_rw_"),
-    // Estructura esperada: "vercel_blob_rw_<storeId>_<secret>"
-    parts: tok.split("_").length,
-    expectedLength: "~76",
-    // Vars relacionadas que Vercel suele setear junto al Blob
-    hasUrl: !!process.env.BLOB_URL,
+    standardEnvVar: {
+      name: "BLOB_READ_WRITE_TOKEN",
+      present: tok.length > 0,
+      length: tok.length,
+      prefix: tok.slice(0, 33),
+    },
+    allBlobEnvVars: blobVars,
     nodeEnv: process.env.NODE_ENV,
   });
 }
