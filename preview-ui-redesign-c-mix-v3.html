@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Preview · Mix v3 — Aurora ribbons (líneas, no círculos)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #050507;
+    color: #c8c8d4;
+    font-family: "Sora", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 32px 80px;
+  }
+  .page-h { max-width: 1500px; margin: 0 auto 36px; }
+  .page-h h1 { margin: 0 0 6px; font-size: 28px; font-weight: 600; color: #fafafa; letter-spacing: -0.02em; }
+  .page-h p { margin: 0; color: #999; max-width: 760px; line-height: 1.55; font-size: 14px; }
+  .change-note { margin-top: 14px; font-size: 13px; color: #34d399; padding: 12px 16px; background: rgba(52, 211, 153, .08); border: 1px solid rgba(52, 211, 153, .25); border-radius: 8px; max-width: 760px; line-height: 1.6; }
+  .change-note strong { color: #fff; }
+
+  .variants {
+    max-width: 1500px;
+    margin: 0 auto 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .col-card { background: #0d0d12; border: 1px solid #1a1a22; border-radius: 16px; overflow: hidden; }
+  .col-head { padding: 16px 22px 14px; border-bottom: 1px solid #1a1a22; }
+  .col-head h2 { margin: 0 0 4px; font-size: 16px; font-weight: 600; color: #fafafa; letter-spacing: -0.01em; }
+  .col-head p { margin: 0; color: #999; font-size: 12px; line-height: 1.45; }
+  .col-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .wireframe { background: #050507; border: 1px solid #1a1a22; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 10; position: relative; }
+  .wireframe-label { position: absolute; bottom: 8px; left: 10px; font-size: 10px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: 0.06em; font-family: "JetBrains Mono", monospace; z-index: 3; pointer-events: none; background: rgba(0,0,0,.6); padding: 2px 6px; border-radius: 4px; backdrop-filter: blur(6px); }
+  .frame { width: 100%; height: 100%; overflow: hidden; display: flex; font-family: "Sora", system-ui, sans-serif; position: relative; }
+  .bg-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .frame > .f-sidebar, .frame > .f-main { position: relative; z-index: 1; }
+  .f-sidebar { width: 24%; display: flex; flex-direction: column; padding: 10px 8px; }
+  .f-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .f-topbar { height: 34px; display: flex; align-items: center; padding: 0 12px; gap: 8px; font-size: 9px; }
+  .f-content { flex: 1; padding: 12px; overflow: hidden; }
+
+  /* Common chrome */
+  .ww {
+    --glass: rgba(255, 235, 220, 0.045);
+    --glass-2: rgba(255, 235, 220, 0.1);
+    --border: rgba(255, 220, 200, 0.12);
+    --border-2: rgba(255, 220, 200, 0.24);
+    --text: #fff8f0;
+    --text-2: #e0cebc;
+    --text-3: #8a7766;
+    --amber: #ffb347;
+    --coral: #ff6b6b;
+    --magenta: #ff3d8b;
+  }
+  .ww .frame { background: linear-gradient(180deg, #18091a 0%, #0a0408 100%); color: var(--text); font-size: 9px; }
+  .ww .f-sidebar { background: rgba(0,0,0,.32); backdrop-filter: blur(28px) saturate(180%); border-right: 1px solid var(--border); }
+  .ww .logo { font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 10px; letter-spacing: -0.02em; }
+  .ww .ws-tag { background: linear-gradient(135deg, rgba(255,179,71,.16), rgba(255,107,107,.14), rgba(255,61,139,.13)); border: 1px solid var(--border-2); padding: 6px 9px; border-radius: 10px; font-size: 8.5px; color: var(--text); backdrop-filter: blur(20px); margin-bottom: 10px; }
+  .ww .nav { display: flex; flex-direction: column; gap: 3px; }
+  .ww .nav .item { padding: 5px 8px; font-size: 9px; color: var(--text-2); border-radius: 7px; }
+  .ww .nav .item.active { background: var(--glass-2); color: var(--text); border: 1px solid var(--border-2); }
+  .ww .f-topbar { background: rgba(0,0,0,.3); backdrop-filter: blur(28px); border-bottom: 1px solid var(--border); font-size: 9px; color: var(--text-2); }
+  .ww .f-topbar .grow { flex: 1; }
+  .ww .f-topbar .pill { padding: 3px 10px; border-radius: 14px; background: var(--glass-2); border: 1px solid var(--border); font-size: 8.5px; }
+  .ww h3 { margin: 0 0 10px; font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.015em; }
+  .ww .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+  .ww .kpi { background: rgba(0,0,0,.4); backdrop-filter: blur(28px); border: 1px solid var(--border); border-radius: 12px; padding: 9px 10px; }
+  .ww .kpi .label { font-size: 8px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; }
+  .ww .kpi .value { font-size: 18px; font-weight: 700; margin-top: 3px; }
+  .ww .kpi:nth-child(1) .value { color: var(--amber); text-shadow: 0 0 8px rgba(255,179,71,.35); }
+  .ww .kpi:nth-child(2) .value { color: var(--coral); text-shadow: 0 0 8px rgba(255,107,107,.35); }
+  .ww .kpi:nth-child(3) .value { color: var(--magenta); text-shadow: 0 0 8px rgba(255,61,139,.35); }
+  .ww .table { background: rgba(0,0,0,.36); backdrop-filter: blur(28px); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .ww .tr { display: grid; grid-template-columns: 1fr 70px 60px; padding: 6px 10px; font-size: 9px; color: var(--text-2); border-bottom: 1px solid var(--border); }
+  .ww .tr.head { color: var(--text-3); font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .ww .tr:last-child { border-bottom: 0; }
+  .ww .badge { display: inline-block; font-size: 7.5px; padding: 2px 7px; border-radius: 10px; background: rgba(255,179,71,.18); border: 1px solid rgba(255,179,71,.4); color: var(--amber); }
+  .ww .badge.coral { background: rgba(255,107,107,.18); border-color: rgba(255,107,107,.42); color: var(--coral); }
+  .ww .badge.mag { background: rgba(255,61,139,.18); border-color: rgba(255,61,139,.42); color: var(--magenta); }
+
+  footer.pick { max-width: 1500px; margin: 24px auto 0; padding: 24px 28px; background: #0d0d12; border: 1px solid #1a1a22; border-radius: 14px; color: #ccc; font-size: 14px; line-height: 1.6; }
+  footer.pick strong { color: #fff; }
+  footer.pick code { background: #22222c; padding: 1px 8px; border-radius: 4px; font-family: "JetBrains Mono", monospace; font-size: 12px; color: #eee; }
+</style>
+</head>
+<body>
+
+<div class="page-h">
+  <h1>Mix v3 · Aurora ribbons (líneas, no círculos)</h1>
+  <p>Reemplacé todos los radial-gradients por SVG paths onduladas blureados — bandas continuas que cruzan la pantalla como aurora boreal real. Cero formas circulares. Dos variantes: <strong>RIBBONS</strong> (3 bandas onduladas) y <strong>BEAMS</strong> (líneas más rectas tipo rayos de luz).</p>
+  <div class="change-note"><strong>Cambio clave</strong>: SVG path con stroke-width grande + feGaussianBlur fuerte → la línea se ve como una banda de luz difusa. No es un blob localizado, es un trazo que recorre la pantalla.</div>
+</div>
+
+<div class="variants">
+
+  <!-- ─────────── A · RIBBONS (curvas) ─────────── -->
+  <article class="col-card">
+    <header class="col-head">
+      <h2>v3a · Aurora ribbons (curvas)</h2>
+      <p>3 bandas onduladas que fluyen como aurora real. Más orgánico y "líquido". Mantiene calidez pero con movimiento.</p>
+    </header>
+    <div class="col-body">
+      <div class="wireframe">
+        <span class="wireframe-label">Dashboard · ribbons</span>
+        <div class="frame ww">
+          <svg class="bg-svg" viewBox="0 0 1000 600" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="blur-rib-a" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="38" />
+              </filter>
+            </defs>
+            <g filter="url(#blur-rib-a)" opacity="0.7">
+              <path d="M -50 180 Q 200 100 500 200 T 1050 220" stroke="rgba(255, 179, 71, .65)" stroke-width="55" fill="none" stroke-linecap="round" />
+              <path d="M -50 330 Q 250 230 550 350 T 1050 360" stroke="rgba(255, 107, 107, .55)" stroke-width="65" fill="none" stroke-linecap="round" />
+              <path d="M -50 480 Q 300 380 650 500 T 1050 510" stroke="rgba(255, 61, 139, .45)" stroke-width="55" fill="none" stroke-linecap="round" />
+            </g>
+          </svg>
+          <div class="f-sidebar">
+            <div class="logo">pistachio ◐</div>
+            <div class="ws-tag">✦ Workspace Acme</div>
+            <div class="nav">
+              <div class="item active">Dashboard</div>
+              <div class="item">Proyectos</div>
+              <div class="item">Operaciones</div>
+            </div>
+          </div>
+          <div class="f-main">
+            <div class="f-topbar"><span>Resumen del mes</span><div class="grow"></div><span class="pill">Mayo 2026</span></div>
+            <div class="f-content">
+              <h3>Mayo 2026</h3>
+              <div class="kpi-row">
+                <div class="kpi"><div class="label">Tareas</div><div class="value">47</div></div>
+                <div class="kpi"><div class="label">Ingresos</div><div class="value">₡4.8M</div></div>
+                <div class="kpi"><div class="label">Margen</div><div class="value">38%</div></div>
+              </div>
+              <div class="table">
+                <div class="tr head"><span>Próximas</span><span>Proyecto</span><span>Est.</span></div>
+                <div class="tr"><span>Diseño hero web</span><span style="color:var(--text-3)">RMH</span><span><span class="badge">PROG</span></span></div>
+                <div class="tr"><span>Cot. Mesa Com.</span><span style="color:var(--text-3)">Azulejos</span><span><span class="badge coral">REV</span></span></div>
+                <div class="tr"><span>Contrato Q3</span><span style="color:var(--text-3)">Legal</span><span><span class="badge mag">DONE</span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wireframe">
+        <span class="wireframe-label">App shell · ribbons</span>
+        <div class="frame ww">
+          <svg class="bg-svg" viewBox="0 0 1000 600" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="blur-rib-b" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="38" />
+              </filter>
+            </defs>
+            <g filter="url(#blur-rib-b)" opacity="0.7">
+              <path d="M -50 180 Q 200 100 500 200 T 1050 220" stroke="rgba(255, 179, 71, .65)" stroke-width="55" fill="none" stroke-linecap="round" />
+              <path d="M -50 330 Q 250 230 550 350 T 1050 360" stroke="rgba(255, 107, 107, .55)" stroke-width="65" fill="none" stroke-linecap="round" />
+              <path d="M -50 480 Q 300 380 650 500 T 1050 510" stroke="rgba(255, 61, 139, .45)" stroke-width="55" fill="none" stroke-linecap="round" />
+            </g>
+          </svg>
+          <div class="f-sidebar">
+            <div class="logo">pistachio ◐</div>
+            <div class="ws-tag">✦ Workspace Acme</div>
+            <div class="nav">
+              <div class="item active">Dashboard</div>
+              <div class="item">Proyectos</div>
+              <div class="item">Mis tareas</div>
+              <div class="item">Operaciones</div>
+              <div class="item">Admin</div>
+            </div>
+          </div>
+          <div class="f-main">
+            <div class="f-topbar"><span>Dashboard</span><div class="grow"></div><span class="pill">⌘K</span></div>
+            <div class="f-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ─────────── B · BEAMS (rectas) ─────────── -->
+  <article class="col-card">
+    <header class="col-head">
+      <h2>v3b · Light beams (rectas)</h2>
+      <p>3 líneas rectas en diagonal, como rayos de luz cruzando un espacio. Más geométrico y "arquitectónico". Energía más controlada.</p>
+    </header>
+    <div class="col-body">
+      <div class="wireframe">
+        <span class="wireframe-label">Dashboard · beams</span>
+        <div class="frame ww">
+          <svg class="bg-svg" viewBox="0 0 1000 600" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="blur-beam-a" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="32" />
+              </filter>
+            </defs>
+            <g filter="url(#blur-beam-a)" opacity="0.65">
+              <line x1="-100" y1="0" x2="1100" y2="280" stroke="rgba(255, 179, 71, .7)" stroke-width="40" stroke-linecap="round" />
+              <line x1="-100" y1="220" x2="1100" y2="500" stroke="rgba(255, 107, 107, .6)" stroke-width="50" stroke-linecap="round" />
+              <line x1="-100" y1="450" x2="1100" y2="730" stroke="rgba(255, 61, 139, .5)" stroke-width="42" stroke-linecap="round" />
+            </g>
+          </svg>
+          <div class="f-sidebar">
+            <div class="logo">pistachio ◐</div>
+            <div class="ws-tag">✦ Workspace Acme</div>
+            <div class="nav">
+              <div class="item active">Dashboard</div>
+              <div class="item">Proyectos</div>
+              <div class="item">Operaciones</div>
+            </div>
+          </div>
+          <div class="f-main">
+            <div class="f-topbar"><span>Resumen del mes</span><div class="grow"></div><span class="pill">Mayo 2026</span></div>
+            <div class="f-content">
+              <h3>Mayo 2026</h3>
+              <div class="kpi-row">
+                <div class="kpi"><div class="label">Tareas</div><div class="value">47</div></div>
+                <div class="kpi"><div class="label">Ingresos</div><div class="value">₡4.8M</div></div>
+                <div class="kpi"><div class="label">Margen</div><div class="value">38%</div></div>
+              </div>
+              <div class="table">
+                <div class="tr head"><span>Próximas</span><span>Proyecto</span><span>Est.</span></div>
+                <div class="tr"><span>Diseño hero web</span><span style="color:var(--text-3)">RMH</span><span><span class="badge">PROG</span></span></div>
+                <div class="tr"><span>Cot. Mesa Com.</span><span style="color:var(--text-3)">Azulejos</span><span><span class="badge coral">REV</span></span></div>
+                <div class="tr"><span>Contrato Q3</span><span style="color:var(--text-3)">Legal</span><span><span class="badge mag">DONE</span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wireframe">
+        <span class="wireframe-label">App shell · beams</span>
+        <div class="frame ww">
+          <svg class="bg-svg" viewBox="0 0 1000 600" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="blur-beam-b" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="32" />
+              </filter>
+            </defs>
+            <g filter="url(#blur-beam-b)" opacity="0.65">
+              <line x1="-100" y1="0" x2="1100" y2="280" stroke="rgba(255, 179, 71, .7)" stroke-width="40" stroke-linecap="round" />
+              <line x1="-100" y1="220" x2="1100" y2="500" stroke="rgba(255, 107, 107, .6)" stroke-width="50" stroke-linecap="round" />
+              <line x1="-100" y1="450" x2="1100" y2="730" stroke="rgba(255, 61, 139, .5)" stroke-width="42" stroke-linecap="round" />
+            </g>
+          </svg>
+          <div class="f-sidebar">
+            <div class="logo">pistachio ◐</div>
+            <div class="ws-tag">✦ Workspace Acme</div>
+            <div class="nav">
+              <div class="item active">Dashboard</div>
+              <div class="item">Proyectos</div>
+              <div class="item">Mis tareas</div>
+              <div class="item">Operaciones</div>
+              <div class="item">Admin</div>
+            </div>
+          </div>
+          <div class="f-main">
+            <div class="f-topbar"><span>Dashboard</span><div class="grow"></div><span class="pill">⌘K</span></div>
+            <div class="f-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+</div>
+
+<footer class="pick">
+  <p style="margin:0 0 8px"><strong>Las dos opciones usan SVG paths con blur</strong> — son líneas reales (un trazo continuo) no blobs. Cambia el shape:</p>
+  <ul style="margin:0 0 8px 18px;padding:0;line-height:1.7">
+    <li><strong>v3a Ribbons</strong> — bandas onduladas (Q curves), más orgánico, "aurora líquida". Sensación calmada con movimiento.</li>
+    <li><strong>v3b Beams</strong> — líneas rectas diagonales, "rayos de luz cruzando". Más arquitectónico, más estructurado.</li>
+  </ul>
+  <p style="margin:0">Decime <code>RIBBONS</code> o <code>BEAMS</code> y arranco implementación. O ajustes: más finas, menos opacidad, otro ángulo, otra cantidad de líneas, etc.</p>
+</footer>
+
+</body>
+</html>

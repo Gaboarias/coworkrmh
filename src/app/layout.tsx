@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
-import { Fraunces, JetBrains_Mono } from "next/font/google";
+import { Sora, JetBrains_Mono } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { AuroraBackground } from "@/components/layout/AuroraBackground";
 
-// Body: Geist Sans variable (paquete oficial Vercel), humanista,
-// x-height alta, óptima para UI a 14–16px. Expone variable --font-geist-sans,
-// la mapeamos a --font-sans abajo.
+// Body: Geist Sans variable (Vercel oficial) — humanista, x-height alta,
+// óptima para UI a 14–16px. Expone --font-geist-sans (lo usa el body).
 
-// Display: Fraunces como variable font (opsz + SOFT axes). next/font/google
-// no admite `weight` array junto a `axes` — omitir weight para usar la
-// variable completa y controlar peso vía font-variation-settings en CSS.
-const fraunces = Fraunces({
+// Sora — sans geométrica cálida para headings (Sunset Aurora).
+// Pareada con Geist en body para contraste sutil display/body.
+const sora = Sora({
   subsets: ["latin"],
-  axes: ["opsz", "SOFT"],
-  variable: "--font-display",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sora",
   display: "swap",
 });
 
@@ -45,8 +44,10 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${GeistSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} font-sans`}
+        className={`${GeistSans.variable} ${sora.variable} ${jetbrainsMono.variable} font-sans`}
       >
+        {/* Fondo aurora fijo detrás de todo (z-index: -1) */}
+        <AuroraBackground />
         <ThemeProvider>
           <SessionProvider>
             {children}
@@ -54,7 +55,8 @@ export default function RootLayout({
               position="bottom-right"
               toastOptions={{
                 style: {
-                  background: "var(--surface-el)",
+                  background: "rgba(0, 0, 0, 0.5)",
+                  backdropFilter: "blur(28px) saturate(180%)",
                   border: "1px solid var(--border)",
                   color: "var(--text)",
                 },

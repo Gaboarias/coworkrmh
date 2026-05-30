@@ -8,12 +8,14 @@ const button = cva(
   {
     variants: {
       variant: {
+        // Primary: gradiente triotone Sunset Aurora con glow coral
         primary:
-          "bg-primary text-primary-foreground shadow-elev-1 hover:bg-primary-hover",
+          "bg-[linear-gradient(135deg,var(--amber),var(--coral),var(--magenta))] text-primary-foreground font-semibold shadow-[0_0_18px_rgba(255,107,107,0.35)] hover:brightness-110",
+        // Secondary: glass sólido cálido
         secondary:
           "bg-secondary text-secondary-foreground shadow-elev-1 hover:opacity-90",
         outline:
-          "border border-border bg-transparent text-text hover:bg-surface-el",
+          "border border-border-strong bg-transparent text-text backdrop-blur-md hover:bg-surface-el",
         ghost: "bg-transparent text-text-muted hover:bg-surface-el hover:text-text",
         danger: "bg-danger text-white shadow-elev-1 hover:opacity-90",
       },

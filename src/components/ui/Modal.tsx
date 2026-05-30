@@ -49,7 +49,7 @@ export function Modal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
       onClick={onClose}
     >
       <div
@@ -60,7 +60,7 @@ export function Modal({
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "w-full animate-slide-up overflow-hidden rounded-xl border border-border bg-surface shadow-elev-3 outline-none",
+          "w-full animate-slide-up overflow-hidden rounded-xl border border-border bg-surface-el backdrop-blur-2xl backdrop-saturate-150 shadow-elev-3 outline-none",
           sizes[size],
           className
         )}

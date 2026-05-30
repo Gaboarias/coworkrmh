@@ -53,7 +53,7 @@ export function Sidebar() {
     "text-sidebar-muted hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_8%,transparent)] hover:text-sidebar-foreground";
 
   return (
-    <aside className="flex h-full w-60 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+    <aside className="flex h-full w-60 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground backdrop-blur-xl backdrop-saturate-150">
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
         <img

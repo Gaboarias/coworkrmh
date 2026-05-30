@@ -1,0 +1,1518 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Preview · Rediseño UI — 4 direcciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans+Condensed:wght@400;500;700&family=Space+Grotesk:wght@400..700&family=Outfit:wght@400..700&family=Fraunces:opsz,wght@9..144,500..700&family=JetBrains+Mono:wght@400..600&family=Inter+Tight:wght@400..700&family=Big+Shoulders+Display:wght@600;800&display=swap" rel="stylesheet" />
+<style>
+  /* ─── Reset & page chrome ────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0a0a0c;
+    color: #d1d1d4;
+    font-family: "Geist", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 32px 80px;
+  }
+  .page-h {
+    max-width: 1500px;
+    margin: 0 auto 48px;
+  }
+  .page-h h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #fafafa;
+    letter-spacing: -0.02em;
+  }
+  .page-h p {
+    margin: 0;
+    color: #888;
+    max-width: 720px;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+  .page-h .legend {
+    margin-top: 16px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #666;
+  }
+  .page-h .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .page-h .legend i {
+    width: 8px; height: 8px; border-radius: 2px;
+    background: #444;
+    display: inline-block;
+  }
+
+  /* ─── Section per direction ───────────────────────────────────────── */
+  .direction {
+    max-width: 1500px;
+    margin: 0 auto 64px;
+    background: #14141a;
+    border: 1px solid #1f1f27;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .dir-head {
+    padding: 28px 32px 22px;
+    display: grid;
+    grid-template-columns: 50px 1fr auto;
+    gap: 18px;
+    align-items: start;
+    border-bottom: 1px solid #1f1f27;
+  }
+  .dir-letter {
+    font-size: 38px;
+    font-weight: 700;
+    color: #fafafa;
+    line-height: 1;
+    font-family: "Geist", system-ui, sans-serif;
+  }
+  .dir-text h2 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #fafafa;
+    letter-spacing: -0.01em;
+  }
+  .dir-text p {
+    margin: 0;
+    color: #999;
+    line-height: 1.55;
+    font-size: 13px;
+    max-width: 680px;
+  }
+  .dir-meta {
+    text-align: right;
+    color: #777;
+    font-size: 11px;
+    font-family: "JetBrains Mono", monospace;
+    line-height: 1.6;
+  }
+  .dir-meta strong { color: #ccc; font-weight: 500; }
+
+  /* Swatches strip */
+  .swatches {
+    padding: 16px 32px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #1f1f27;
+    background: #0e0e13;
+  }
+  .swatches .sw {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    color: #888;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .swatches .sw i {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+
+  /* Wireframe scroller */
+  .scroller {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(360px, 1fr));
+    gap: 14px;
+    padding: 22px 32px 32px;
+    overflow-x: auto;
+  }
+  .wireframe {
+    background: #0a0a0c;
+    border: 1px solid #1f1f27;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    min-height: 280px;
+    position: relative;
+  }
+  .wireframe-label {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    font-size: 10px;
+    color: rgba(255,255,255,.4);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: "JetBrains Mono", monospace;
+    z-index: 2;
+    pointer-events: none;
+    background: rgba(0,0,0,.55);
+    padding: 2px 6px;
+    border-radius: 4px;
+    backdrop-filter: blur(6px);
+  }
+  .frame {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Generic frame primitives reusable across directions */
+  .f-sidebar {
+    width: 24%;
+    display: flex;
+    flex-direction: column;
+  }
+  .f-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .f-topbar {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 6px;
+    font-size: 9px;
+  }
+  .f-content {
+    flex: 1;
+    padding: 10px;
+    overflow: hidden;
+  }
+  .row { display: flex; }
+  .col { display: flex; flex-direction: column; }
+  .gap-1 { gap: 4px; }
+  .gap-2 { gap: 6px; }
+  .gap-3 { gap: 8px; }
+  .gap-4 { gap: 12px; }
+
+  /* ════════════════════════════════════════════════════════════════
+     DIRECTION A — Linear-style (denso, monocromático, función primero)
+     ════════════════════════════════════════════════════════════════ */
+  .dir-a {
+    --bg: #08080a;
+    --surface: #0f0f12;
+    --surface-2: #16161a;
+    --border: #22222a;
+    --text: #e8e8ec;
+    --text-2: #a0a0a8;
+    --text-3: #5e5e68;
+    --accent: #5e6ad2; /* Linear blue */
+    --accent-2: #2dd4bf;
+    font-family: "Geist", system-ui, sans-serif;
+  }
+  .dir-a .frame { background: var(--bg); color: var(--text); font-size: 9px; }
+  .dir-a .f-sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 8px 6px; }
+  .dir-a .f-sidebar .logo { font-weight: 700; font-size: 11px; padding: 4px 6px; color: var(--text); }
+  .dir-a .ws-tag {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 8px;
+    color: var(--text-2);
+    margin: 6px 4px;
+  }
+  .dir-a .ws-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .dir-a .nav { display: flex; flex-direction: column; gap: 1px; padding: 4px; }
+  .dir-a .nav .item {
+    padding: 3px 6px;
+    font-size: 8.5px;
+    color: var(--text-2);
+    border-radius: 3px;
+  }
+  .dir-a .nav .item.active { background: var(--surface-2); color: var(--text); }
+  .dir-a .f-topbar { background: var(--surface); border-bottom: 1px solid var(--border); font-size: 8px; color: var(--text-3); }
+  .dir-a .f-topbar .crumb { color: var(--text-2); }
+  .dir-a .f-topbar .grow { flex: 1; }
+  .dir-a .f-topbar .pill {
+    padding: 2px 6px; border: 1px solid var(--border); border-radius: 12px;
+    font-size: 8px; font-family: "JetBrains Mono", monospace;
+  }
+  .dir-a h3.f-title {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .dir-a .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+  .dir-a .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 6px 8px;
+  }
+  .dir-a .kpi .label {
+    font-size: 8px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .dir-a .kpi .value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 2px;
+    font-feature-settings: "tnum";
+  }
+  .dir-a .kpi .delta { font-size: 8px; color: var(--accent-2); margin-top: 1px; }
+  .dir-a .table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .dir-a .table .tr {
+    display: grid;
+    grid-template-columns: 1fr 60px 50px;
+    padding: 4px 8px;
+    font-size: 8.5px;
+    color: var(--text-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .dir-a .table .tr.head { color: var(--text-3); font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .dir-a .table .tr:last-child { border-bottom: 0; }
+  .dir-a .table .tr.body { color: var(--text); }
+  .dir-a .badge {
+    display: inline-block;
+    font-size: 7px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    font-family: "JetBrains Mono", monospace;
+  }
+  .dir-a .badge.todo { color: var(--text-3); }
+  .dir-a .badge.prog { color: var(--accent); border-color: rgba(94,106,210,.4); background: rgba(94,106,210,.1); }
+  .dir-a .badge.done { color: var(--accent-2); border-color: rgba(45,212,191,.4); background: rgba(45,212,191,.08); }
+  .dir-a .tabs { display: flex; gap: 12px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .dir-a .tabs .tab { font-size: 9px; padding: 4px 0; color: var(--text-3); border-bottom: 2px solid transparent; }
+  .dir-a .tabs .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .dir-a .btn-primary {
+    background: var(--accent);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 8.5px;
+    border: 0;
+  }
+  .dir-a .note-list { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: 4px; display: flex; flex-direction: column; gap: 1px; }
+  .dir-a .note-list .item { padding: 4px 6px; font-size: 8.5px; color: var(--text-2); border-radius: 3px; }
+  .dir-a .note-list .item.active { background: var(--surface-2); color: var(--text); }
+  .dir-a .editor {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dir-a .editor .title-line {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.015em;
+  }
+  .dir-a .editor .text { font-size: 9px; color: var(--text-2); line-height: 1.6; }
+
+  /* ════════════════════════════════════════════════════════════════
+     DIRECTION B — Brutalist editorial
+     ════════════════════════════════════════════════════════════════ */
+  .dir-b {
+    --bg: #f4f1ea;
+    --surface: #ffffff;
+    --ink: #0a0a0a;
+    --ink-2: #555;
+    --rule: #0a0a0a;
+    --accent: #ff3d00;
+    font-family: "IBM Plex Sans Condensed", system-ui, sans-serif;
+  }
+  .dir-b .frame { background: var(--bg); color: var(--ink); font-size: 9px; }
+  .dir-b .f-sidebar { width: 22%; background: var(--ink); color: var(--bg); padding: 10px 8px; border-right: 2px solid var(--ink); }
+  .dir-b .f-sidebar .logo {
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--bg);
+    margin-bottom: 12px;
+  }
+  .dir-b .f-sidebar .ws-tag {
+    border: 1px solid rgba(255,255,255,.3);
+    padding: 4px 6px;
+    font-size: 8px;
+    color: rgba(255,255,255,.7);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .dir-b .f-sidebar .nav { display: flex; flex-direction: column; gap: 0; }
+  .dir-b .f-sidebar .nav .item {
+    padding: 4px 0;
+    font-size: 10px;
+    color: rgba(255,255,255,.65);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .dir-b .f-sidebar .nav .item.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .dir-b .f-topbar { border-bottom: 2px solid var(--ink); padding: 0 10px; font-family: "Instrument Serif", serif; font-style: italic; color: var(--ink); font-size: 11px; height: 28px; }
+  .dir-b .f-topbar .grow { flex: 1; }
+  .dir-b .f-topbar .num {
+    font-family: "IBM Plex Sans Condensed", sans-serif;
+    font-style: normal;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .dir-b h3.f-title {
+    margin: 0 0 10px;
+    font-family: "Instrument Serif", serif;
+    font-size: 32px;
+    line-height: 0.95;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .dir-b h3.f-title em { font-style: italic; color: var(--accent); }
+  .dir-b .lead {
+    font-size: 9px;
+    color: var(--ink-2);
+    max-width: 80%;
+    line-height: 1.45;
+    margin-bottom: 8px;
+  }
+  .dir-b .rule {
+    height: 2px;
+    background: var(--ink);
+    margin: 6px 0;
+  }
+  .dir-b .kpi-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .dir-b .kpi { padding: 6px 8px; border-right: 1px solid var(--ink); }
+  .dir-b .kpi:last-child { border-right: 0; }
+  .dir-b .kpi .label { font-size: 7.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-2); }
+  .dir-b .kpi .value {
+    font-family: "Instrument Serif", serif;
+    font-size: 22px;
+    line-height: 1;
+    margin-top: 2px;
+    color: var(--ink);
+    font-feature-settings: "lnum", "tnum";
+  }
+  .dir-b .kpi .value em { font-style: italic; color: var(--accent); }
+  .dir-b .table { background: var(--surface); border: 2px solid var(--ink); }
+  .dir-b .table .tr { display: grid; grid-template-columns: 1fr 60px 70px; padding: 5px 8px; font-size: 9px; border-bottom: 1px solid var(--ink); }
+  .dir-b .table .tr.head {
+    background: var(--ink); color: var(--bg);
+    font-size: 7.5px; text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .dir-b .table .tr:last-child { border-bottom: 0; }
+  .dir-b .badge { display: inline-block; font-size: 7px; padding: 1px 5px; background: var(--ink); color: var(--bg); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dir-b .badge.acc { background: var(--accent); }
+  .dir-b .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
+  .dir-b .tabs .tab {
+    font-size: 9px;
+    padding: 4px 8px;
+    color: var(--ink-2);
+    border-right: 1px solid var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .dir-b .tabs .tab.active { background: var(--ink); color: var(--bg); }
+  .dir-b .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    padding: 4px 10px;
+    font-size: 8.5px;
+    border: 2px solid var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  .dir-b .note-list { background: var(--surface); border: 2px solid var(--ink); padding: 0; }
+  .dir-b .note-list .item {
+    padding: 5px 8px;
+    font-size: 9px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+    font-family: "Instrument Serif", serif;
+  }
+  .dir-b .note-list .item:last-child { border-bottom: 0; }
+  .dir-b .note-list .item.active { background: var(--accent); color: var(--bg); }
+  .dir-b .editor {
+    background: var(--surface);
+    border: 2px solid var(--ink);
+    padding: 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dir-b .editor .title-line {
+    font-family: "Instrument Serif", serif;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .dir-b .editor .text { font-size: 9px; color: var(--ink-2); line-height: 1.5; font-family: "IBM Plex Sans Condensed", sans-serif; }
+
+  /* ════════════════════════════════════════════════════════════════
+     DIRECTION C — Glassmorphism dark
+     ════════════════════════════════════════════════════════════════ */
+  .dir-c {
+    --bg: #06070d;
+    --bg-grad: radial-gradient(ellipse at top right, #1a1140 0%, #06070d 50%), radial-gradient(ellipse at bottom left, #0a3a3a 0%, #06070d 60%);
+    --surface: rgba(255,255,255,0.03);
+    --surface-2: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.08);
+    --border-2: rgba(255,255,255,0.14);
+    --text: #f5f5fa;
+    --text-2: #b8b8c8;
+    --text-3: #6a6a80;
+    --cyan: #00e5ff;
+    --magenta: #ff00aa;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+  }
+  .dir-c .frame { background: var(--bg-grad), var(--bg); color: var(--text); font-size: 9px; }
+  .dir-c .f-sidebar {
+    width: 24%;
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border);
+    padding: 10px 8px;
+  }
+  .dir-c .f-sidebar .logo {
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .dir-c .f-sidebar .logo::after {
+    content: "•";
+    color: var(--cyan);
+    margin-left: 4px;
+  }
+  .dir-c .ws-tag {
+    background: linear-gradient(135deg, rgba(0,229,255,.15), rgba(255,0,170,.15));
+    border: 1px solid var(--border-2);
+    padding: 5px 7px;
+    border-radius: 8px;
+    font-size: 8.5px;
+    color: var(--text);
+    backdrop-filter: blur(10px);
+    margin-bottom: 10px;
+  }
+  .dir-c .nav { display: flex; flex-direction: column; gap: 2px; }
+  .dir-c .nav .item {
+    padding: 4px 6px;
+    font-size: 8.5px;
+    color: var(--text-2);
+    border-radius: 5px;
+  }
+  .dir-c .nav .item.active {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border-2);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .dir-c .f-topbar {
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    font-size: 8.5px;
+    color: var(--text-2);
+  }
+  .dir-c .f-topbar .grow { flex: 1; }
+  .dir-c .f-topbar .glass-pill {
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 8px;
+  }
+  .dir-c h3.f-title {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .dir-c .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+  .dir-c .kpi {
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .dir-c .kpi::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,229,255,.08) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  .dir-c .kpi .label { font-size: 8px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dir-c .kpi .value {
+    font-size: 16px;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-top: 2px;
+  }
+  .dir-c .table {
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .dir-c .table .tr { display: grid; grid-template-columns: 1fr 60px 50px; padding: 5px 8px; font-size: 8.5px; color: var(--text-2); border-bottom: 1px solid var(--border); }
+  .dir-c .table .tr.head { color: var(--text-3); font-size: 7.5px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .dir-c .table .tr:last-child { border-bottom: 0; }
+  .dir-c .badge {
+    display: inline-block;
+    font-size: 7.5px;
+    padding: 1px 6px;
+    border-radius: 12px;
+    background: rgba(0,229,255,.15);
+    border: 1px solid rgba(0,229,255,.4);
+    color: var(--cyan);
+  }
+  .dir-c .badge.mag { background: rgba(255,0,170,.15); border-color: rgba(255,0,170,.4); color: var(--magenta); }
+  .dir-c .badge.neu { background: var(--surface-2); border-color: var(--border-2); color: var(--text-2); }
+  .dir-c .tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 3px; margin-bottom: 8px; }
+  .dir-c .tabs .tab { font-size: 8.5px; padding: 3px 8px; color: var(--text-3); border-radius: 5px; }
+  .dir-c .tabs .tab.active { background: var(--surface-2); color: var(--text); border: 1px solid var(--border-2); }
+  .dir-c .btn-primary {
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    color: var(--bg);
+    padding: 4px 10px;
+    border-radius: 18px;
+    font-size: 8.5px;
+    border: 0;
+    font-weight: 600;
+  }
+  .dir-c .note-list { background: var(--surface); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 10px; padding: 4px; display: flex; flex-direction: column; gap: 1px; }
+  .dir-c .note-list .item { padding: 4px 7px; font-size: 8.5px; color: var(--text-2); border-radius: 6px; }
+  .dir-c .note-list .item.active { background: var(--surface-2); color: var(--text); border: 1px solid var(--border-2); }
+  .dir-c .editor {
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dir-c .editor .title-line {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .dir-c .editor .text { font-size: 9px; color: var(--text-2); line-height: 1.55; }
+
+  /* ════════════════════════════════════════════════════════════════
+     DIRECTION D — Bento-grid playful
+     ════════════════════════════════════════════════════════════════ */
+  .dir-d {
+    --bg: #f6f5f0;
+    --surface: #ffffff;
+    --ink: #1a1a1a;
+    --ink-2: #555;
+    --ink-3: #999;
+    --border: #e8e6df;
+    --bento-1: #f4f7ed; /* sage */
+    --bento-2: #faf0e6; /* peach */
+    --bento-3: #ece6f6; /* lavender */
+    --bento-4: #e6f0fa; /* sky */
+    --bento-5: #fef6e0; /* butter */
+    --accent: #1a3a2e; /* deep green */
+    --accent-2: #ff6b35; /* coral */
+    font-family: "Outfit", system-ui, sans-serif;
+  }
+  .dir-d .frame { background: var(--bg); color: var(--ink); font-size: 9px; }
+  .dir-d .f-sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 10px 8px; }
+  .dir-d .f-sidebar .logo {
+    font-family: "Fraunces", serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+  }
+  .dir-d .ws-tag {
+    background: var(--bento-1);
+    border-radius: 10px;
+    padding: 6px 8px;
+    font-size: 8.5px;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .dir-d .nav { display: flex; flex-direction: column; gap: 2px; }
+  .dir-d .nav .item {
+    padding: 5px 8px;
+    font-size: 9px;
+    color: var(--ink-2);
+    border-radius: 8px;
+    font-weight: 500;
+  }
+  .dir-d .nav .item.active { background: var(--accent); color: white; }
+  .dir-d .f-topbar { background: var(--surface); border-bottom: 1px solid var(--border); font-size: 9px; color: var(--ink-2); height: 32px; }
+  .dir-d .f-topbar .grow { flex: 1; }
+  .dir-d .f-topbar .pill {
+    padding: 3px 8px;
+    background: var(--bg);
+    border-radius: 12px;
+    font-size: 8px;
+  }
+  .dir-d h3.f-title {
+    margin: 0 0 10px;
+    font-family: "Fraunces", serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .dir-d .bento {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 6px;
+  }
+  .dir-d .bento .cell {
+    border-radius: 12px;
+    padding: 8px 10px;
+    color: var(--ink);
+  }
+  .dir-d .bento .cell.b1 { background: var(--bento-1); grid-column: span 2; }
+  .dir-d .bento .cell.b2 { background: var(--bento-2); }
+  .dir-d .bento .cell.b3 { background: var(--bento-3); }
+  .dir-d .bento .cell .label {
+    font-size: 8px;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .dir-d .bento .cell .value {
+    font-family: "Fraunces", serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-top: 2px;
+    line-height: 1;
+  }
+  .dir-d .bento .cell .sub { font-size: 8.5px; color: var(--ink-2); margin-top: 3px; line-height: 1.4; }
+  .dir-d .card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 10px;
+    border: 1px solid var(--border);
+  }
+  .dir-d .row-item {
+    display: grid; grid-template-columns: 1fr auto;
+    padding: 5px 0;
+    font-size: 9px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--border);
+  }
+  .dir-d .row-item:last-child { border-bottom: 0; }
+  .dir-d .badge {
+    display: inline-block; font-size: 7.5px; padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--bento-1); color: var(--accent); font-weight: 500;
+  }
+  .dir-d .badge.coral { background: rgba(255,107,53,.15); color: var(--accent-2); }
+  .dir-d .badge.lav { background: var(--bento-3); color: #6d4c9e; }
+  .dir-d .tabs { display: flex; gap: 4px; padding: 3px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
+  .dir-d .tabs .tab { font-size: 8.5px; padding: 3px 8px; color: var(--ink-2); border-radius: 7px; font-weight: 500; }
+  .dir-d .tabs .tab.active { background: var(--accent); color: white; }
+  .dir-d .btn-primary {
+    background: var(--accent);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 18px;
+    font-size: 8.5px;
+    border: 0;
+    font-weight: 600;
+  }
+  .dir-d .note-list { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 5px; display: flex; flex-direction: column; gap: 1px; }
+  .dir-d .note-list .item { padding: 5px 8px; font-size: 9px; color: var(--ink-2); border-radius: 8px; }
+  .dir-d .note-list .item.active { background: var(--bento-1); color: var(--accent); font-weight: 500; }
+  .dir-d .editor {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dir-d .editor .title-line {
+    font-family: "Fraunces", serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .dir-d .editor .text { font-size: 9px; color: var(--ink-2); line-height: 1.55; }
+
+  /* Footer */
+  footer.pick {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 24px 32px;
+    background: #14141a;
+    border: 1px solid #1f1f27;
+    border-radius: 14px;
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  footer.pick strong { color: #fff; }
+  footer.pick code {
+    background: #22222a; padding: 1px 8px; border-radius: 4px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    color: #eee;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-h">
+  <h1>Preview · Rediseño UI</h1>
+  <p>4 direcciones distintas, aplicadas a las 5 pantallas que más usás. Cada wireframe usa las fuentes y los colores REALES de la dirección (no es solo un sketch en blanco). El objetivo es que sientas la sensación de cada sistema, no que evalúes pixels. Después elegís una (o un mix) y la implemento en la app real.</p>
+  <div class="legend">
+    <span><i style="background:#5e6ad2"></i>A · Linear-style</span>
+    <span><i style="background:#ff3d00"></i>B · Brutalist editorial</span>
+    <span><i style="background:linear-gradient(135deg,#00e5ff,#ff00aa)"></i>C · Glassmorphism dark</span>
+    <span><i style="background:#1a3a2e"></i>D · Bento playful</span>
+  </div>
+</div>
+
+<!-- ═══════════════════ A · Linear-style ═══════════════════ -->
+<section class="direction dir-a">
+  <header class="dir-head">
+    <div class="dir-letter">A</div>
+    <div class="dir-text">
+      <h2>Linear-style — denso, monocromático, función primero</h2>
+      <p>Inspirado en Linear / Vercel / Height. Paleta neutra con un acento sutil (índigo), tipografía sans pura (Geist), máxima densidad de información, cero ornamento. Sidebar oscuro fijo, content area limpia. Sensación "esto es una herramienta seria de productividad". Ideal si lo que valorás es velocidad de lectura y respeto por tu atención.</p>
+    </div>
+    <div class="dir-meta">
+      <strong>Fonts</strong><br/>Geist + JetBrains Mono<br/><br/>
+      <strong>Accent</strong><br/>#5E6AD2 indigo
+    </div>
+  </header>
+  <div class="swatches">
+    <span class="sw"><i style="background:#08080a"></i>bg #08080a</span>
+    <span class="sw"><i style="background:#0f0f12"></i>surface</span>
+    <span class="sw"><i style="background:#22222a"></i>border</span>
+    <span class="sw"><i style="background:#e8e8ec"></i>text</span>
+    <span class="sw"><i style="background:#5e6ad2"></i>accent</span>
+    <span class="sw"><i style="background:#2dd4bf"></i>success</span>
+  </div>
+  <div class="scroller">
+    <!-- A.1 App shell -->
+    <article class="wireframe">
+      <span class="wireframe-label">App shell</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">▲ pistachio</div>
+          <div class="ws-tag"><span class="dot"></span>Workspace Acme</div>
+          <div class="nav">
+            <div class="item active">Dashboard</div>
+            <div class="item">Proyectos</div>
+            <div class="item">Mis tareas</div>
+            <div class="item">Calendario</div>
+            <div class="item">Operaciones</div>
+            <div class="item" style="margin-top:auto;color:#5e5e68">Admin</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar">
+            <span class="crumb">Workspace Acme</span><span style="color:#3a3a44">/</span><span style="color:#e8e8ec">Dashboard</span>
+            <div class="grow"></div>
+            <span class="pill">⌘K</span>
+          </div>
+          <div class="f-content">
+            <h3 class="f-title">Buenos días, Gabo</h3>
+            <div style="color:#5e5e68;font-size:9px;margin-bottom:8px">Acá empieza tu día. Atajos: ⌘N nuevo, ⌘P proyectos, ⌘/ búsqueda.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              <div style="background:#0f0f12;border:1px solid #22222a;border-radius:5px;padding:8px"><div style="font-size:8px;color:#5e5e68;text-transform:uppercase;letter-spacing:.06em">Próximas</div><div style="font-size:11px;margin-top:4px">3 tareas</div></div>
+              <div style="background:#0f0f12;border:1px solid #22222a;border-radius:5px;padding:8px"><div style="font-size:8px;color:#5e5e68;text-transform:uppercase;letter-spacing:.06em">Activos</div><div style="font-size:11px;margin-top:4px">12 proyectos</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- A.2 Dashboard -->
+    <article class="wireframe">
+      <span class="wireframe-label">Dashboard</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">▲ pistachio</div>
+          <div class="ws-tag"><span class="dot"></span>Workspace Acme</div>
+          <div class="nav">
+            <div class="item active">Dashboard</div>
+            <div class="item">Proyectos</div>
+            <div class="item">Mis tareas</div>
+            <div class="item">Operaciones</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span class="crumb">Dashboard</span><div class="grow"></div><span class="pill">May 2026</span></div>
+          <div class="f-content">
+            <h3 class="f-title">Resumen</h3>
+            <div class="kpi-row">
+              <div class="kpi"><div class="label">Tareas activas</div><div class="value">47</div><div class="delta">+8 vs sem</div></div>
+              <div class="kpi"><div class="label">En revisión</div><div class="value">12</div></div>
+              <div class="kpi"><div class="label">Cotizaciones</div><div class="value">₡4.8M</div><div class="delta">+18%</div></div>
+            </div>
+            <div class="table">
+              <div class="tr head"><span>Tarea</span><span>Proyecto</span><span>Estado</span></div>
+              <div class="tr body"><span>Diseño hero web</span><span style="color:#a0a0a8">Sitio RMH</span><span><span class="badge prog">PROG</span></span></div>
+              <div class="tr body"><span>Cotización Mesa Comedor</span><span style="color:#a0a0a8">Azulejos</span><span><span class="badge todo">TODO</span></span></div>
+              <div class="tr body"><span>Revisar contrato Q3</span><span style="color:#a0a0a8">Legal</span><span><span class="badge done">DONE</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- A.3 Project view -->
+    <article class="wireframe">
+      <span class="wireframe-label">Proyecto · Tareas</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">▲ pistachio</div>
+          <div class="ws-tag"><span class="dot"></span>Workspace Acme</div>
+          <div class="nav">
+            <div class="item">Dashboard</div>
+            <div class="item active">Proyectos</div>
+            <div class="item">Operaciones</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span class="crumb">Proyectos</span><span style="color:#3a3a44">/</span><span style="color:#e8e8ec">Sitio RMH</span><div class="grow"></div><button class="btn-primary">+ Tarea</button></div>
+          <div class="f-content">
+            <div class="tabs">
+              <div class="tab active">Tareas</div>
+              <div class="tab">Docs</div>
+              <div class="tab">Notas</div>
+              <div class="tab">Changelog</div>
+            </div>
+            <div class="table">
+              <div class="tr head"><span>Tarea</span><span>Asignada</span><span>Prio</span></div>
+              <div class="tr body"><span>Diseño hero web</span><span style="color:#a0a0a8">A.R.</span><span><span class="badge prog">P1</span></span></div>
+              <div class="tr body"><span>Setup analytics</span><span style="color:#a0a0a8">M.L.</span><span><span class="badge todo">P2</span></span></div>
+              <div class="tr body"><span>Copy landing</span><span style="color:#a0a0a8">C.M.</span><span><span class="badge todo">P3</span></span></div>
+              <div class="tr body"><span>Deploy preview</span><span style="color:#a0a0a8">Gabo</span><span><span class="badge done">✓</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- A.4 Cotizador -->
+    <article class="wireframe">
+      <span class="wireframe-label">Operaciones · Cotizador</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">▲ pistachio</div>
+          <div class="ws-tag"><span class="dot"></span>Acme</div>
+          <div class="nav">
+            <div class="item">Dashboard</div>
+            <div class="item">Proyectos</div>
+            <div class="item active">Operaciones</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span class="crumb">Operaciones</span><span style="color:#3a3a44">/</span><span style="color:#e8e8ec">Cotizador</span><div class="grow"></div><button class="btn-primary">+ Nueva</button></div>
+          <div class="f-content">
+            <h3 class="f-title">Cotizaciones</h3>
+            <div class="table">
+              <div class="tr head"><span>Cliente</span><span>Total</span><span>Estado</span></div>
+              <div class="tr body"><span>Ana Rojas</span><span style="font-family:'JetBrains Mono';font-size:8.5px">₡1.240.000</span><span><span class="badge done">ACEP</span></span></div>
+              <div class="tr body"><span>RWND Media</span><span style="font-family:'JetBrains Mono';font-size:8.5px">₡680.000</span><span><span class="badge prog">ENV</span></span></div>
+              <div class="tr body"><span>Carlos Méndez</span><span style="font-family:'JetBrains Mono';font-size:8.5px">₡420.000</span><span><span class="badge todo">BORR</span></span></div>
+              <div class="tr body"><span>Sofía Pérez</span><span style="font-family:'JetBrains Mono';font-size:8.5px">₡980.000</span><span><span class="badge prog">ENV</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- A.5 Notes editor -->
+    <article class="wireframe">
+      <span class="wireframe-label">Editor de notas</span>
+      <div class="frame">
+        <div class="f-sidebar" style="width:30%">
+          <div style="font-size:9px;color:#5e5e68;text-transform:uppercase;letter-spacing:.06em;padding:0 4px 6px">Notas · Sitio RMH</div>
+          <div class="note-list">
+            <div class="item active">Brief inicial cliente</div>
+            <div class="item">Decisiones de diseño</div>
+            <div class="item">Estructura del sitio</div>
+            <div class="item">Referencias visuales</div>
+            <div class="item">Open questions</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span class="crumb">Brief inicial cliente</span><div class="grow"></div><span class="pill">Auto-guardado</span></div>
+          <div class="f-content">
+            <div class="editor">
+              <div class="title-line">Brief inicial cliente</div>
+              <div class="text">El cliente busca una identidad <strong style="color:#e8e8ec">editorial-modernista</strong> con foco en performance. Próximos pasos:</div>
+              <div class="text">• Mood board inicial (lunes)</div>
+              <div class="text">• Type pairing options (3 opciones)</div>
+              <div class="text">• Wireframes de 5 pantallas clave</div>
+              <div class="text">• Reunión review viernes 14h</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════ B · Brutalist editorial ═══════════════════ -->
+<section class="direction dir-b">
+  <header class="dir-head">
+    <div class="dir-letter">B</div>
+    <div class="dir-text">
+      <h2>Brutalist editorial — typografía expresiva, layouts rotos</h2>
+      <p>Inspirado en estudios creativos como Lab.Mucho / NB Studio / Studio Output. Titulares enormes con serif italica (Instrument Serif), body condensado (IBM Plex Condensed), contrastes duros (negro + crema + un naranja eléctrico), reglas y rules visibles, paleta reducida. Sensación "esto lo hace una estudio creativo con criterio propio, no un dashboard genérico". Ideal si querés que la app tenga personalidad y se sienta diseñada, no SaaS.</p>
+    </div>
+    <div class="dir-meta">
+      <strong>Fonts</strong><br/>Instrument Serif + Plex Cond.<br/><br/>
+      <strong>Accent</strong><br/>#FF3D00 orange
+    </div>
+  </header>
+  <div class="swatches">
+    <span class="sw"><i style="background:#f4f1ea"></i>bg cream</span>
+    <span class="sw"><i style="background:#ffffff;border-color:#0a0a0a"></i>surface</span>
+    <span class="sw"><i style="background:#0a0a0a"></i>ink</span>
+    <span class="sw"><i style="background:#ff3d00"></i>accent</span>
+  </div>
+  <div class="scroller">
+    <!-- B.1 App shell -->
+    <article class="wireframe">
+      <span class="wireframe-label">App shell</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">Pistachio.</div>
+          <div class="ws-tag">Workspace Acme</div>
+          <div class="nav">
+            <div class="item active">Dashboard</div>
+            <div class="item">Proyectos</div>
+            <div class="item">Mis tareas</div>
+            <div class="item">Operaciones</div>
+            <div class="item">Admin</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Dashboard</span><div class="grow"></div><span class="num">N°&nbsp;001</span></div>
+          <div class="f-content">
+            <h3 class="f-title">Buenos<br/><em>días.</em></h3>
+            <div class="lead">3 tareas para hoy. 12 proyectos activos. Cerraste 4 esta semana — récord del trimestre.</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- B.2 Dashboard -->
+    <article class="wireframe">
+      <span class="wireframe-label">Dashboard</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">Pistachio.</div>
+          <div class="ws-tag">Acme</div>
+          <div class="nav">
+            <div class="item active">Dashboard</div>
+            <div class="item">Proyectos</div>
+            <div class="item">Operaciones</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Resumen Mayo</span><div class="grow"></div><span class="num">2026 · Q2</span></div>
+          <div class="f-content">
+            <h3 class="f-title"><em>47</em> tareas<br/>en curso.</h3>
+            <div class="kpi-row">
+              <div class="kpi"><div class="label">Cotizaciones</div><div class="value">₡4<em>.8</em>M</div></div>
+              <div class="kpi"><div class="label">Cerradas</div><div class="value">12</div></div>
+              <div class="kpi"><div class="label">Margen</div><div class="value">38<em>%</em></div></div>
+            </div>
+            <div class="rule"></div>
+            <div style="font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:#555;margin-bottom:4px">Próximas</div>
+            <div style="font-size:9px;color:#0a0a0a;line-height:1.6">→ Diseño hero web — hoy<br/>→ Cot. Mesa Comedor — mañana<br/>→ Reunión cliente Acme — viernes</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- B.3 Project view -->
+    <article class="wireframe">
+      <span class="wireframe-label">Proyecto · Tareas</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">Pistachio.</div>
+          <div class="ws-tag">Acme</div>
+          <div class="nav">
+            <div class="item">Dashboard</div>
+            <div class="item active">Proyectos</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Sitio RMH</span><div class="grow"></div><button class="btn-primary">+ Tarea</button></div>
+          <div class="f-content">
+            <h3 class="f-title">Sitio<br/><em>RMH</em></h3>
+            <div class="tabs">
+              <div class="tab active">Tareas</div>
+              <div class="tab">Docs</div>
+              <div class="tab">Notas</div>
+              <div class="tab">Log</div>
+            </div>
+            <div class="table">
+              <div class="tr head"><span>Tarea</span><span>Quien</span><span>Estado</span></div>
+              <div class="tr"><span>Diseño hero web</span><span>A.R.</span><span><span class="badge acc">EN CURSO</span></span></div>
+              <div class="tr"><span>Setup analytics</span><span>M.L.</span><span><span class="badge">TODO</span></span></div>
+              <div class="tr"><span>Copy landing</span><span>C.M.</span><span><span class="badge">TODO</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- B.4 Cotizador -->
+    <article class="wireframe">
+      <span class="wireframe-label">Cotizador</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">Pistachio.</div>
+          <div class="ws-tag">Acme</div>
+          <div class="nav">
+            <div class="item">Dashboard</div>
+            <div class="item">Proyectos</div>
+            <div class="item active">Operaciones</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Cotizador</span><div class="grow"></div><button class="btn-primary">+ Nueva</button></div>
+          <div class="f-content">
+            <h3 class="f-title"><em>4</em> cotizaciones<br/>activas.</h3>
+            <div class="table">
+              <div class="tr head"><span>Cliente</span><span>Total</span><span>Estado</span></div>
+              <div class="tr"><span>Ana Rojas</span><span style="font-feature-settings:'tnum'">₡1.240.000</span><span><span class="badge acc">ACEP</span></span></div>
+              <div class="tr"><span>RWND Media</span><span style="font-feature-settings:'tnum'">₡680.000</span><span><span class="badge">ENV</span></span></div>
+              <div class="tr"><span>Carlos Méndez</span><span style="font-feature-settings:'tnum'">₡420.000</span><span><span class="badge">BORR</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- B.5 Notes editor -->
+    <article class="wireframe">
+      <span class="wireframe-label">Editor de notas</span>
+      <div class="frame">
+        <div class="f-sidebar" style="width:32%;background:#f4f1ea;color:#0a0a0a;border-right:2px solid #0a0a0a;padding:8px">
+          <div style="font-family:'Instrument Serif',serif;font-size:14px;font-style:italic;margin-bottom:8px;color:#0a0a0a">Notas · RMH</div>
+          <div class="note-list">
+            <div class="item active">Brief inicial</div>
+            <div class="item">Decisiones</div>
+            <div class="item">Estructura</div>
+            <div class="item">Referencias</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Brief inicial</span><div class="grow"></div><span class="num">Guardado · 14:32</span></div>
+          <div class="f-content">
+            <div class="editor">
+              <div class="title-line">Brief inicial,<br/><em style="color:#ff3d00">cliente Acme.</em></div>
+              <div class="text">El cliente busca una identidad <strong>editorial-modernista</strong> con foco en performance.</div>
+              <div class="text">— Mood board (lunes)<br/>— Type pairing options<br/>— Wireframes 5 pantallas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════ C · Glassmorphism dark ═══════════════════ -->
+<section class="direction dir-c">
+  <header class="dir-head">
+    <div class="dir-letter">C</div>
+    <div class="dir-text">
+      <h2>Glassmorphism dark — translúcido, depth, vibrante</h2>
+      <p>Inspirado en Apple Vision OS / Arc browser / Linear dark. Superficies translúcidas con blur, gradientes sutiles, depth construido con sombras y transparencia, fondo radial oscuro con tinte violeta-teal, acentos en cyan y magenta. Sensación "esto es futuro, premium, alta tecnología". Ideal si querés que la app se sienta diferenciada visualmente y tenga "wow factor" cada vez que la abrís. Trade-off: más caro de implementar (motion, backdrop-filter, fallbacks).</p>
+    </div>
+    <div class="dir-meta">
+      <strong>Fonts</strong><br/>Space Grotesk<br/><br/>
+      <strong>Accents</strong><br/>#00E5FF cyan<br/>#FF00AA magenta
+    </div>
+  </header>
+  <div class="swatches">
+    <span class="sw"><i style="background:#06070d"></i>bg deep</span>
+    <span class="sw"><i style="background:linear-gradient(135deg,#1a1140,#0a3a3a)"></i>gradient</span>
+    <span class="sw"><i style="background:rgba(255,255,255,.06)"></i>glass</span>
+    <span class="sw"><i style="background:#00e5ff"></i>cyan</span>
+    <span class="sw"><i style="background:#ff00aa"></i>magenta</span>
+    <span class="sw"><i style="background:#f5f5fa"></i>text</span>
+  </div>
+  <div class="scroller">
+    <!-- C.1 App shell -->
+    <article class="wireframe">
+      <span class="wireframe-label">App shell</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">pistachio</div>
+          <div class="ws-tag">⬢ Workspace Acme</div>
+          <div class="nav">
+            <div class="item active">Dashboard</div>
+            <div class="item">Proyectos</div>
+            <div class="item">Mis tareas</div>
+            <div class="item">Operaciones</div>
+            <div class="item">Admin</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Dashboard</span><div class="grow"></div><span class="glass-pill">⌘K</span></div>
+          <div class="f-content">
+            <h3 class="f-title">Buenos días, Gabo</h3>
+            <div style="font-size:9px;color:#b8b8c8;margin-bottom:8px">3 tareas pendientes hoy.</div>
+            <div class="kpi-row">
+              <div class="kpi"><div class="label">Activas</div><div class="value">47</div></div>
+              <div class="kpi"><div class="label">Cerradas</div><div class="value">12</div></div>
+              <div class="kpi"><div class="label">Margen</div><div class="value">38%</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- C.2 Dashboard -->
+    <article class="wireframe">
+      <span class="wireframe-label">Dashboard</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">pistachio</div>
+          <div class="ws-tag">⬢ Acme</div>
+          <div class="nav">
+            <div class="item active">Dashboard</div>
+            <div class="item">Proyectos</div>
+            <div class="item">Operaciones</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Resumen</span><div class="grow"></div><span class="glass-pill">May 2026</span></div>
+          <div class="f-content">
+            <h3 class="f-title">Resumen del mes</h3>
+            <div class="kpi-row">
+              <div class="kpi"><div class="label">Tareas</div><div class="value">47</div></div>
+              <div class="kpi"><div class="label">Ingresos</div><div class="value">₡4.8M</div></div>
+              <div class="kpi"><div class="label">Margen</div><div class="value">38%</div></div>
+            </div>
+            <div class="table">
+              <div class="tr head"><span>Próximas</span><span>Proyecto</span><span>Est.</span></div>
+              <div class="tr"><span>Diseño hero web</span><span style="color:#b8b8c8">Sitio RMH</span><span><span class="badge">PROG</span></span></div>
+              <div class="tr"><span>Cot. Mesa Com.</span><span style="color:#b8b8c8">Azulejos</span><span><span class="badge mag">REV</span></span></div>
+              <div class="tr"><span>Contrato Q3</span><span style="color:#b8b8c8">Legal</span><span><span class="badge neu">DONE</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- C.3 Project view -->
+    <article class="wireframe">
+      <span class="wireframe-label">Proyecto · Tareas</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">pistachio</div>
+          <div class="ws-tag">⬢ Acme</div>
+          <div class="nav">
+            <div class="item">Dashboard</div>
+            <div class="item active">Proyectos</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Sitio RMH</span><div class="grow"></div><button class="btn-primary">+ Tarea</button></div>
+          <div class="f-content">
+            <h3 class="f-title">Sitio RMH</h3>
+            <div class="tabs">
+              <div class="tab active">Tareas</div>
+              <div class="tab">Docs</div>
+              <div class="tab">Notas</div>
+              <div class="tab">Log</div>
+            </div>
+            <div class="table">
+              <div class="tr head"><span>Tarea</span><span>Quien</span><span>Prio</span></div>
+              <div class="tr"><span>Diseño hero web</span><span style="color:#b8b8c8">A.R.</span><span><span class="badge">P1</span></span></div>
+              <div class="tr"><span>Setup analytics</span><span style="color:#b8b8c8">M.L.</span><span><span class="badge mag">P2</span></span></div>
+              <div class="tr"><span>Copy landing</span><span style="color:#b8b8c8">C.M.</span><span><span class="badge neu">P3</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- C.4 Cotizador -->
+    <article class="wireframe">
+      <span class="wireframe-label">Cotizador</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">pistachio</div>
+          <div class="ws-tag">⬢ Acme</div>
+          <div class="nav">
+            <div class="item">Dashboard</div>
+            <div class="item active">Operaciones</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Cotizador</span><div class="grow"></div><button class="btn-primary">+ Nueva</button></div>
+          <div class="f-content">
+            <h3 class="f-title">Cotizaciones</h3>
+            <div class="table">
+              <div class="tr head"><span>Cliente</span><span>Total</span><span>Est.</span></div>
+              <div class="tr"><span>Ana Rojas</span><span style="font-family:'JetBrains Mono';font-size:8px">₡1.24M</span><span><span class="badge">ACEP</span></span></div>
+              <div class="tr"><span>RWND</span><span style="font-family:'JetBrains Mono';font-size:8px">₡680K</span><span><span class="badge mag">ENV</span></span></div>
+              <div class="tr"><span>Carlos M.</span><span style="font-family:'JetBrains Mono';font-size:8px">₡420K</span><span><span class="badge neu">BORR</span></span></div>
+              <div class="tr"><span>Sofía P.</span><span style="font-family:'JetBrains Mono';font-size:8px">₡980K</span><span><span class="badge mag">ENV</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- C.5 Notes editor -->
+    <article class="wireframe">
+      <span class="wireframe-label">Editor de notas</span>
+      <div class="frame">
+        <div class="f-sidebar" style="width:32%">
+          <div style="font-size:9px;color:#6a6a80;text-transform:uppercase;letter-spacing:.06em;padding:0 4px 6px">Notas · Sitio RMH</div>
+          <div class="note-list">
+            <div class="item active">Brief inicial</div>
+            <div class="item">Decisiones</div>
+            <div class="item">Estructura</div>
+            <div class="item">Referencias</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Brief inicial</span><div class="grow"></div><span class="glass-pill">Auto-save</span></div>
+          <div class="f-content">
+            <div class="editor">
+              <div class="title-line">Brief inicial cliente</div>
+              <div class="text">El cliente busca una identidad <strong style="color:#f5f5fa">editorial-modernista</strong> con foco en performance.</div>
+              <div class="text">• Mood board (lunes)<br/>• Type pairing options<br/>• Wireframes 5 pantallas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════ D · Bento-grid playful ═══════════════════ -->
+<section class="direction dir-d">
+  <header class="dir-head">
+    <div class="dir-letter">D</div>
+    <div class="dir-text">
+      <h2>Bento-grid playful — bloques diferenciados, color por área</h2>
+      <p>Inspirado en Apple landing pages / Notion / dashboards modernos. Layout en bento boxes con cada métrica/sección en su propio bloque de color suave (sage, peach, lavender, sky, butter), tipografía amigable (Outfit + Fraunces serif para títulos), pills redondeados, sensación cálida y "platform amable". Ideal si querés que la app se sienta accesible y memorable, sin perder profesionalismo. Funciona muy bien para apps internas de equipo donde la gente pasa todo el día.</p>
+    </div>
+    <div class="dir-meta">
+      <strong>Fonts</strong><br/>Outfit + Fraunces<br/><br/>
+      <strong>Accent</strong><br/>#1A3A2E deep green<br/>#FF6B35 coral
+    </div>
+  </header>
+  <div class="swatches">
+    <span class="sw"><i style="background:#f6f5f0"></i>bg cream</span>
+    <span class="sw"><i style="background:#f4f7ed"></i>sage</span>
+    <span class="sw"><i style="background:#faf0e6"></i>peach</span>
+    <span class="sw"><i style="background:#ece6f6"></i>lavender</span>
+    <span class="sw"><i style="background:#e6f0fa"></i>sky</span>
+    <span class="sw"><i style="background:#fef6e0"></i>butter</span>
+    <span class="sw"><i style="background:#1a3a2e"></i>accent</span>
+  </div>
+  <div class="scroller">
+    <!-- D.1 App shell -->
+    <article class="wireframe">
+      <span class="wireframe-label">App shell</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">Pistachio</div>
+          <div class="ws-tag">🌿 Workspace Acme</div>
+          <div class="nav">
+            <div class="item active">Dashboard</div>
+            <div class="item">Proyectos</div>
+            <div class="item">Mis tareas</div>
+            <div class="item">Operaciones</div>
+            <div class="item">Admin</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Dashboard</span><div class="grow"></div><span class="pill">⌘K</span></div>
+          <div class="f-content">
+            <h3 class="f-title">Buenos días, Gabo</h3>
+            <div class="bento" style="margin-bottom:6px">
+              <div class="cell b1"><div class="label">Hoy</div><div class="value">3 tareas</div><div class="sub">2 antes del almuerzo</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- D.2 Dashboard -->
+    <article class="wireframe">
+      <span class="wireframe-label">Dashboard</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">Pistachio</div>
+          <div class="ws-tag">🌿 Acme</div>
+          <div class="nav">
+            <div class="item active">Dashboard</div>
+            <div class="item">Proyectos</div>
+            <div class="item">Operaciones</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Resumen</span><div class="grow"></div><span class="pill">Mayo 2026</span></div>
+          <div class="f-content">
+            <h3 class="f-title">Tu mes</h3>
+            <div class="bento">
+              <div class="cell b1"><div class="label">Tareas activas</div><div class="value">47</div><div class="sub">+8 vs semana pasada</div></div>
+              <div class="cell b2"><div class="label">Ingresos</div><div class="value">₡4.8M</div></div>
+              <div class="cell b3"><div class="label">Margen</div><div class="value">38%</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- D.3 Project view -->
+    <article class="wireframe">
+      <span class="wireframe-label">Proyecto · Tareas</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">Pistachio</div>
+          <div class="ws-tag">🌿 Acme</div>
+          <div class="nav">
+            <div class="item">Dashboard</div>
+            <div class="item active">Proyectos</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Sitio RMH</span><div class="grow"></div><button class="btn-primary">+ Tarea</button></div>
+          <div class="f-content">
+            <h3 class="f-title">Sitio RMH</h3>
+            <div class="tabs">
+              <div class="tab active">Tareas</div>
+              <div class="tab">Docs</div>
+              <div class="tab">Notas</div>
+              <div class="tab">Log</div>
+            </div>
+            <div class="card">
+              <div class="row-item"><span>Diseño hero web</span><span class="badge">EN CURSO</span></div>
+              <div class="row-item"><span>Setup analytics</span><span class="badge lav">TODO</span></div>
+              <div class="row-item"><span>Copy landing</span><span class="badge coral">REVIEW</span></div>
+              <div class="row-item"><span>Deploy preview</span><span class="badge">DONE</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- D.4 Cotizador -->
+    <article class="wireframe">
+      <span class="wireframe-label">Cotizador</span>
+      <div class="frame">
+        <div class="f-sidebar">
+          <div class="logo">Pistachio</div>
+          <div class="ws-tag">🌿 Acme</div>
+          <div class="nav">
+            <div class="item">Dashboard</div>
+            <div class="item active">Operaciones</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Cotizador</span><div class="grow"></div><button class="btn-primary">+ Nueva</button></div>
+          <div class="f-content">
+            <h3 class="f-title">Cotizaciones</h3>
+            <div class="bento" style="margin-bottom:6px">
+              <div class="cell b2" style="grid-column:span 2"><div class="label">Aceptadas mayo</div><div class="value">₡4.8M</div><div class="sub">+18% vs abril · 6 cotizaciones</div></div>
+            </div>
+            <div class="card">
+              <div class="row-item"><span>Ana Rojas — ₡1.24M</span><span class="badge">ACEP</span></div>
+              <div class="row-item"><span>RWND Media — ₡680K</span><span class="badge coral">ENV</span></div>
+              <div class="row-item"><span>Carlos Méndez — ₡420K</span><span class="badge lav">BORR</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- D.5 Notes editor -->
+    <article class="wireframe">
+      <span class="wireframe-label">Editor de notas</span>
+      <div class="frame">
+        <div class="f-sidebar" style="width:32%;background:#f4f7ed;border-right:1px solid #e8e6df;padding:8px">
+          <div style="font-family:'Fraunces',serif;font-size:13px;font-weight:500;margin-bottom:8px;color:#1a3a2e">Notas · RMH</div>
+          <div class="note-list">
+            <div class="item active">Brief inicial</div>
+            <div class="item">Decisiones</div>
+            <div class="item">Estructura</div>
+            <div class="item">Referencias</div>
+          </div>
+        </div>
+        <div class="f-main">
+          <div class="f-topbar"><span>Brief inicial</span><div class="grow"></div><span class="pill">Guardado</span></div>
+          <div class="f-content">
+            <div class="editor">
+              <div class="title-line">Brief inicial cliente</div>
+              <div class="text">El cliente busca una identidad <strong style="color:#1a1a1a">editorial-modernista</strong> con foco en performance.</div>
+              <div class="text">• Mood board (lunes)<br/>• Type pairing options<br/>• Wireframes 5 pantallas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<footer class="pick">
+  <p style="margin:0 0 8px"><strong>¿Cómo elegís?</strong> No mires los pixels — mirá la <em>sensación</em>. ¿Cuál te dan ganas de usar todos los días?</p>
+  <p style="margin:0 0 8px">Decime <code>A</code>, <code>B</code>, <code>C</code> o <code>D</code> y arranco la implementación en una nueva branch (`redesign/&lt;letra&gt;`) → preview → main. Toma ~1-2 días según la complejidad (A y D son más rápidas; B y C requieren más motion/layout custom).</p>
+  <p style="margin:0;color:#888;font-size:12px">También válido: <em>"B pero con la paleta de C"</em>, <em>"D más oscura"</em>, o <em>"ninguna me convence, probemos algo distinto"</em>. Esto es la primera ronda, no hay compromiso.</p>
+</footer>
+
+</body>
+</html>

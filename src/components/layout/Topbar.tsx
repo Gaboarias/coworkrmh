@@ -32,7 +32,7 @@ export function Topbar() {
   const { profile } = useUser();
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-surface px-6">
+    <header className="flex h-14 items-center justify-between border-b border-border bg-surface backdrop-blur-xl backdrop-saturate-150 px-6">
       <h2 className="text-sm font-semibold text-text-muted">
         {getTitle(pathname)}
       </h2>
