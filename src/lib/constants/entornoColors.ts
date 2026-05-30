@@ -1,16 +1,20 @@
-// Paleta acotada y accesible para el color identitario de un entorno.
-// Reemplaza el color picker libre (contraste impredecible) por swatches.
-// Marca = café (mocha) + menta; los swatches NO usan verde-menta ni teal
-// para no fundirse con el chrome (sidebar mocha, primary menta).
+// Paleta de colores Edition 04 — saturated, refinados, todos legibles
+// como dots + barras + accents. Diseñada para que ningún par compita por
+// el ojo (cada uno tiene su nicho cromático: warm reds, greens, ambers,
+// blues, purples).
+//
+// Los 4 primeros son los "core" mostrados en specimens (vermillion /
+// emerald / saffron / cobalt). Los 4 siguientes amplían el espectro para
+// que estudios con muchos proyectos tengan variedad.
 export const ENTORNO_SWATCHES = [
-  "#2563B6", // azul royal
-  "#475569", // grafito
-  "#9A6B00", // ámbar
-  "#C2410C", // naranja
-  "#BE123C", // frambuesa
-  "#7C3AED", // púrpura
-  "#DB7C00", // mango
-  "#A03A6B", // magenta
+  "#d63a1f", // vermillion (warm red)
+  "#1f7a4d", // emerald (deep green)
+  "#e89a0d", // saffron (saturated gold)
+  "#2e52d9", // cobalt (true blue)
+  "#7a3aa0", // grape (purple)
+  "#3a8a8a", // teal (cool blue-green)
+  "#b94a8a", // berry (rose magenta)
+  "#5a6020", // moss (olive yellow)
 ] as const;
 
 export const DEFAULT_ENTORNO_COLOR = ENTORNO_SWATCHES[0];

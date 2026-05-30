@@ -21,6 +21,7 @@ import {
   PROJECT_STATUS_ORDER,
   PROJECT_STATUS_CONFIG,
 } from "@/lib/constants/projectStatus";
+import { ENTORNO_SWATCHES } from "@/lib/constants/entornoColors";
 
 interface Profile {
   id: string;
@@ -45,16 +46,8 @@ interface ProjectSettingsFormProps {
   buckets: { id: string; name: string }[];
 }
 
-const COLORS = [
-  "#FF2E72",
-  "#FFC857",
-  "#9967CA",
-  "#A8D3A8",
-  "#5BBFD2",
-  "#F8395A",
-  "#E4845F",
-  "#6E83FF",
-];
+// Paleta canónica Edition 04 — compartida con EntornoSwitcher y NewProject
+const COLORS = ENTORNO_SWATCHES;
 
 export function ProjectSettingsForm({
   project,

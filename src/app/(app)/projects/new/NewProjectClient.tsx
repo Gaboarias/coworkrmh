@@ -12,17 +12,12 @@ import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils/cn";
+import { ENTORNO_SWATCHES } from "@/lib/constants/entornoColors";
 
-const COLORS = [
-  "#FF2E72",
-  "#FFC857",
-  "#9967CA",
-  "#A8D3A8",
-  "#5BBFD2",
-  "#F8395A",
-  "#E4845F",
-  "#6E83FF",
-];
+// Reusamos la paleta canónica Edition 04 (vermillion/emerald/saffron/cobalt+).
+// Antes había una paleta separada hardcoded — ahora consistencia con
+// EntornoSwitcher + ProjectSettings.
+const COLORS = ENTORNO_SWATCHES;
 
 interface NewProjectClientProps {
   initialBuckets: { id: string; name: string }[];
@@ -33,7 +28,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [bucketId, setBucketId] = useState("");
-  const [color, setColor] = useState(COLORS[0]);
+  const [color, setColor] = useState<string>(COLORS[0]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [buckets, setBuckets] = useState(initialBuckets);
