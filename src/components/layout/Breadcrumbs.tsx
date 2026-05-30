@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight } from "lucide-react";
 
 /**
  * Breadcrumbs auto-generados a partir del pathname.
@@ -91,25 +90,28 @@ export function Breadcrumbs({ overrideLast, className }: BreadcrumbsProps) {
     <nav
       aria-label="Breadcrumb"
       className={
-        "flex items-center gap-1 text-sm text-text-muted " + (className ?? "")
+        "flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint " +
+        (className ?? "")
       }
     >
+      <span aria-hidden className="text-ink-faint">
+        /
+      </span>
       {segments.map((s, i) => (
-        <span key={s.href} className="flex items-center gap-1">
+        <span key={s.href} className="flex items-center gap-1.5">
           {i > 0 && (
-            <ChevronRight
-              className="h-3.5 w-3.5 text-text-tertiary"
-              aria-hidden
-            />
+            <span aria-hidden className="text-ink-faint">
+              /
+            </span>
           )}
           {s.isLast ? (
-            <span className="font-medium text-text" aria-current="page">
+            <span className="text-ink" aria-current="page">
               {s.label}
             </span>
           ) : (
             <Link
               href={s.href}
-              className="transition-colors hover:text-text"
+              className="transition-colors hover:text-ink"
             >
               {s.label}
             </Link>

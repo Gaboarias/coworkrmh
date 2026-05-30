@@ -20,16 +20,16 @@ import { useUser } from "@/lib/hooks/useUser";
 import { EntornoSwitcher } from "@/components/layout/EntornoSwitcher";
 
 /**
- * Sidebar (Sunset Aurora · N2).
+ * Sidebar (Edition 04).
  *
- * Cambios vs N1:
- * - Items agrupados en secciones (TRABAJO / ANALYTICS / SISTEMA) con
- *   headers chicos en uppercase tracking expandido.
- * - Colapsable: 240px ↔ 56px icon-only, persistido en localStorage
- *   (`pistachio-sidebar-collapsed`).
- * - Slots reservados para Reportes (N5), Notificaciones (N4 con badge),
- *   Admin (visible si session.user.role === "admin").
- * - Sin user/logout (ya viven en AvatarDropdown del Topbar).
+ * Cambios visuales vs Sunset Aurora:
+ * - Brand: "Pistachio" + tag mono small-caps "RMH STUDIO".
+ * - Section headers en mono small-caps (eyebrow style, no bold caps mate).
+ * - Active state: font-weight bold + bg-accent-soft + 2px left accent bar
+ *   en --project-color (heredado del project layout cuando aplique).
+ * - Sin glass, sin backdrop-blur — Edition 04 vive en surfaces sólidas.
+ * - Width: 200px expandido (un poco más que el viejo 240, para que el
+ *   typography aire respire), 52px collapsed.
  */
 
 interface NavItem {
@@ -61,7 +61,7 @@ const sections: NavSection[] = [
   },
   {
     id: "analytics",
-    label: "Analytics",
+    label: "Análisis",
     items: [
       { href: "/reports", label: "Reportes", icon: BarChart3 },
     ],
@@ -70,7 +70,6 @@ const sections: NavSection[] = [
     id: "system",
     label: "Sistema",
     items: [
-      // Notificaciones viven en la campana del topbar — sin entrada duplicada acá.
       { href: "/admin", label: "Admin", icon: Shield, adminOnly: true },
     ],
   },
@@ -83,8 +82,6 @@ export function Sidebar() {
   const { profile } = useUser();
   const isAdmin = profile?.role === "admin";
 
-  // Estado collapsed con persistencia localStorage. Inicializa false en
-  // SSR; lee localStorage en mount (evita hydration mismatch).
   const [collapsed, setCollapsed] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
@@ -114,42 +111,38 @@ export function Sidebar() {
     return pathname.startsWith(href);
   }
 
-  const navActive =
-    "bg-[color-mix(in_oklab,var(--sidebar-active)_16%,transparent)] text-sidebar-active";
-  const navIdle =
-    "text-sidebar-muted hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_8%,transparent)] hover:text-sidebar-foreground";
-
-  const w = collapsed ? "w-14" : "w-60";
+  const w = collapsed ? "w-[52px]" : "w-[200px]";
 
   return (
     <aside
       className={cn(
-        "flex h-full flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground backdrop-blur-xl backdrop-saturate-150 transition-[width] duration-200 ease-out",
+        "flex h-full flex-col border-r border-rule bg-bg transition-[width] duration-200 ease-out",
         w,
-        // Evita flash de contenido pre-hydration mostrando expanded por default.
         !hydrated && "opacity-0",
         hydrated && "opacity-100"
       )}
     >
-      {/* Logo + toggle */}
+      {/* Brand block */}
       <div
         className={cn(
-          "flex items-center border-b border-sidebar-border",
-          collapsed ? "h-[57px] justify-center px-2" : "h-[57px] gap-3 px-5"
+          "flex items-center gap-2.5 border-b border-rule",
+          collapsed ? "h-[64px] justify-center px-2" : "h-[64px] px-5"
         )}
       >
-        <img
-          src="/pistachio-logo.svg"
-          alt="Pistachio"
-          className="h-8 w-8 flex-shrink-0 rounded-lg"
-        />
+        {/* Mark — square con P, color = project-color (default ink) */}
+        <div
+          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[5px] bg-ink text-[14px] font-bold text-bg"
+          style={{ letterSpacing: "-0.03em" }}
+        >
+          P
+        </div>
         {!collapsed && (
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold text-sidebar-foreground">
+            <p className="truncate text-[15px] font-bold leading-none tracking-[-0.02em] text-ink">
               Pistachio
             </p>
-            <p className="truncate text-xs text-sidebar-muted">
-              Rewind Media House
+            <p className="mt-1 truncate font-mono text-[8.5px] uppercase tracking-[0.2em] text-ink-faint">
+              RMH studio
             </p>
           </div>
         )}
@@ -158,41 +151,40 @@ export function Sidebar() {
             type="button"
             onClick={toggle}
             aria-label="Colapsar sidebar"
-            title="Colapsar (⌘\\)"
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-sidebar-muted transition-colors hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_8%,transparent)] hover:text-sidebar-foreground"
+            title="Colapsar"
+            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
           >
-            <PanelLeftClose className="h-4 w-4" />
+            <PanelLeftClose className="h-3.5 w-3.5" />
           </button>
         )}
       </div>
 
-      {/* Botón expandir cuando está collapsed */}
       {collapsed && (
         <button
           type="button"
           onClick={toggle}
           aria-label="Expandir sidebar"
           title="Expandir"
-          className="mx-auto mt-2 flex h-8 w-8 items-center justify-center rounded-md text-sidebar-muted transition-colors hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_8%,transparent)] hover:text-sidebar-foreground"
+          className="mx-auto mt-2 flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
         >
-          <PanelLeftOpen className="h-4 w-4" />
+          <PanelLeftOpen className="h-3.5 w-3.5" />
         </button>
       )}
 
-      {/* Entorno activo (oculto en collapsed para ahorrar espacio) */}
+      {/* Entorno (collapsed lo oculta) */}
       {!collapsed && <EntornoSwitcher />}
 
-      {/* Navigation por secciones */}
-      <nav className="flex-1 overflow-y-auto px-2 py-3">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
         {sections.map((section) => {
           const visibleItems = section.items.filter(
             (it) => !it.adminOnly || isAdmin
           );
           if (visibleItems.length === 0) return null;
           return (
-            <div key={section.id} className="mb-4 last:mb-0">
+            <div key={section.id} className="mb-6 last:mb-0">
               {!collapsed && (
-                <div className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-sidebar-muted/70">
+                <div className="mb-2 px-2 font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-ink-faint">
                   {section.label}
                 </div>
               )}
@@ -211,28 +203,47 @@ export function Sidebar() {
                         }}
                         title={collapsed ? item.label : undefined}
                         className={cn(
-                          "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
+                          "group relative flex items-center rounded-md transition-colors duration-150 ease-out",
                           collapsed
-                            ? "justify-center"
-                            : "gap-3",
-                          active ? navActive : navIdle,
+                            ? "h-8 w-8 justify-center mx-auto"
+                            : "gap-2.5 px-2 py-1.5",
+                          active
+                            ? "bg-accent-soft text-ink"
+                            : "text-ink-soft hover:bg-accent-soft hover:text-ink",
                           isPlaceholder && "opacity-50 cursor-not-allowed"
                         )}
                       >
-                        <Icon className="h-4 w-4 flex-shrink-0" />
+                        {/* Active accent bar (left), usa project-color */}
+                        {active && !collapsed && (
+                          <span
+                            aria-hidden
+                            className="absolute -left-3 top-1.5 bottom-1.5 w-[2px] rounded-full"
+                            style={{ background: "var(--project-color)" }}
+                          />
+                        )}
+                        <Icon className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.75} />
                         {!collapsed && (
-                          <span className="flex-1 truncate">{item.label}</span>
+                          <span
+                            className={cn(
+                              "flex-1 truncate text-[13px] leading-none",
+                              active ? "font-bold" : "font-medium"
+                            )}
+                          >
+                            {item.label}
+                          </span>
                         )}
                         {!collapsed && item.badge === "soon" && (
-                          <span className="rounded-full bg-[color-mix(in_oklab,var(--sidebar-foreground)_10%,transparent)] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-sidebar-muted">
+                          <span className="rounded-sm bg-accent-soft px-1 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-ink-faint">
                             Pronto
                           </span>
                         )}
-                        {!collapsed && typeof item.badge === "number" && item.badge > 0 && (
-                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[var(--coral)] px-1.5 text-[10px] font-bold text-white">
-                            {item.badge > 99 ? "99+" : item.badge}
-                          </span>
-                        )}
+                        {!collapsed &&
+                          typeof item.badge === "number" &&
+                          item.badge > 0 && (
+                            <span className="pill pill-urgent">
+                              {item.badge > 99 ? "99+" : item.badge}
+                            </span>
+                          )}
                       </Link>
                     </li>
                   );
@@ -243,26 +254,32 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Footer: Configuración */}
+      {/* Footer */}
       <div
         className={cn(
-          "border-t border-sidebar-border",
-          collapsed ? "p-2" : "p-3"
+          "border-t border-rule",
+          collapsed ? "p-2" : "px-3 py-3"
         )}
       >
         <Link
           href="/settings"
           title={collapsed ? "Configuración" : undefined}
           className={cn(
-            "flex items-center rounded-lg text-sm transition-colors duration-200 ease-out",
+            "flex items-center rounded-md transition-colors duration-150 ease-out",
             collapsed
-              ? "justify-center px-2 py-2"
-              : "gap-3 px-3 py-2",
-            isActive("/settings", true) ? navActive : navIdle
+              ? "h-8 w-8 mx-auto justify-center"
+              : "gap-2.5 px-2 py-1.5",
+            isActive("/settings", true)
+              ? "bg-accent-soft text-ink"
+              : "text-ink-soft hover:bg-accent-soft hover:text-ink"
           )}
         >
-          <Settings className="h-4 w-4 flex-shrink-0" />
-          {!collapsed && <span>Configuración</span>}
+          <Settings className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.75} />
+          {!collapsed && (
+            <span className="text-[13px] font-medium leading-none">
+              Configuración
+            </span>
+          )}
         </Link>
       </div>
     </aside>
