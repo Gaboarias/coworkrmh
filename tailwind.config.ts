@@ -82,10 +82,12 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        // Display = Sora (Sunset Aurora) — sans geom. cálida para headings
         display: [
-          "var(--font-display)",
+          "var(--font-sora)",
           "var(--font-geist-sans)",
-          "serif",
+          "system-ui",
+          "sans-serif",
         ],
         mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
       },
