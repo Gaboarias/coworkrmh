@@ -111,7 +111,7 @@ export function Sidebar() {
     return pathname.startsWith(href);
   }
 
-  const w = collapsed ? "w-[52px]" : "w-[200px]";
+  const w = collapsed ? "w-[56px]" : "w-[228px]";
 
   return (
     <aside
