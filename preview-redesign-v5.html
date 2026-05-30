@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1500" />
+<title>Pistachio — Edition 04 · Refined</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bric: 'Bricolage Grotesque', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+
+  /* Project colors — saturated/refined (mismos que v4) */
+  --p-aliaga: #d63a1f;
+  --p-ronda: #1f7a4d;
+  --p-pampita: #e89a0d;
+  --p-spring: #2e52d9;
+
+  --urgent: #e8281c;
+  --done: #1f7a4d;
+
+  /* Light */
+  --l-bg: #f5f2eb;     /* slightly cooler than v4 (#f7f5f0) — more refined */
+  --l-bg-2: #ebe7dc;
+  --l-ink: #161412;
+  --l-ink-soft: #524d44;
+  --l-ink-faint: #8a8378;
+  --l-rule: rgba(22, 20, 18, 0.09);
+  --l-rule-strong: rgba(22, 20, 18, 0.22);
+
+  /* Dark */
+  --d-bg: #0a0a09;
+  --d-bg-2: #14141200;
+  --d-ink: #f0ede5;
+  --d-ink-soft: #a39d92;
+  --d-ink-faint: #6a655c;
+  --d-rule: rgba(240, 237, 229, 0.08);
+  --d-rule-strong: rgba(240, 237, 229, 0.2);
+}
+
+/* OpSz utilities — el truco principal de Bricolage */
+.opsz-12 { font-variation-settings: 'opsz' 14, 'wdth' 100; }
+.opsz-display { font-variation-settings: 'opsz' 96, 'wdth' 100; }
+.opsz-display-tight { font-variation-settings: 'opsz' 96, 'wdth' 90; }
+.opsz-display-wide { font-variation-settings: 'opsz' 96, 'wdth' 110; }
+.opsz-mid { font-variation-settings: 'opsz' 32, 'wdth' 100; }
+
+body {
+  font-family: var(--bric);
+  font-variation-settings: 'opsz' 14, 'wdth' 100;
+  background: #18181a;
+  color: #ddd;
+  padding: 32px 0 80px;
+}
+
+/* Page header */
+.page-hd { max-width: 1460px; margin: 0 auto 64px; padding: 0 40px; }
+.page-hd .eyebrow {
+  font: 500 11px/1 var(--mono); letter-spacing: 0.2em;
+  text-transform: uppercase; color: #888; margin-bottom: 22px;
+}
+.page-hd h1 {
+  font: 400 64px/0.95 var(--bric);
+  font-variation-settings: 'opsz' 96, 'wdth' 90, 'wght' 500;
+  letter-spacing: -0.035em; color: #fff; margin-bottom: 24px;
+}
+.page-hd h1 em { font-style: italic; font-weight: 400; font-variation-settings: 'opsz' 96, 'wdth' 100, 'wght' 400; color: #aaa; }
+.page-hd p { color: #aaa; font-size: 15px; line-height: 1.6; max-width: 780px; }
+.page-hd p + p { margin-top: 12px; }
+.page-hd .meta { margin-top: 26px; padding-top: 18px; border-top: 1px solid #2a2a2c; font-size: 12px; color: #888; max-width: 820px; }
+
+/* Type specimen */
+.specimen { max-width: 1460px; margin: 0 auto 72px; padding: 0 40px; }
+.specimen h2 {
+  font: 500 11px/1 var(--mono); letter-spacing: 0.2em;
+  text-transform: uppercase; color: #888;
+  margin-bottom: 24px; padding-bottom: 14px; border-bottom: 1px solid #2a2a2c;
+}
+.spec-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 48px; }
+
+.type-stack { display: flex; flex-direction: column; gap: 0; }
+.type-stack .row {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 24px; align-items: baseline;
+  padding: 18px 0;
+  border-bottom: 1px dashed #333;
+}
+.type-stack .row:last-child { border-bottom: 0; }
+.type-stack .row .smpl { color: #f0ede5; font-family: var(--bric); }
+.type-stack .row .meta {
+  font: 400 10px/1.4 var(--mono); color: #777;
+  letter-spacing: 0.06em; text-align: right; white-space: nowrap;
+}
+
+.color-stack { display: flex; flex-direction: column; gap: 8px; }
+.color-stack .sw {
+  padding: 14px 16px; display: flex; justify-content: space-between; align-items: baseline;
+  border-radius: 3px;
+}
+.color-stack .sw .role {
+  font: 500 9px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase;
+}
+.color-stack .sw .hex { font: 400 11px/1 var(--mono); }
+
+/* Theme pair */
+.theme-pair { max-width: 1460px; margin: 0 auto 80px; padding: 0 40px; }
+.tp-hd {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-bottom: 16px; border-bottom: 1px solid #2a2a2c;
+  margin-bottom: 24px;
+}
+.tp-hd h2 { font: 500 24px/1 var(--bric); font-variation-settings: 'opsz' 96, 'wght' 500; color: #fff; letter-spacing: -0.02em; }
+.tp-hd h2 em { font-style: italic; color: #888; font-weight: 400; }
+.tp-hd .ct {
+  font: 500 10px/1 var(--mono); color: #888;
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.frame { border-radius: 6px; overflow: hidden; aspect-ratio: 16 / 11.5; position: relative; }
+.frame .pin {
+  position: absolute; top: 14px; right: 16px;
+  font: 500 9px/1 var(--mono); padding: 5px 8px; border-radius: 2px;
+  letter-spacing: 0.16em; text-transform: uppercase; z-index: 50; pointer-events: none;
+}
+.frame.l .pin { background: rgba(22,20,18,0.85); color: #f5f2eb; }
+.frame.d .pin { background: rgba(240,237,229,0.85); color: #0a0a09; }
+
+/* ===================================================================
+   SHARED SHELL — Light + Dark variants via class composition
+   =================================================================== */
+.shell {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  font-family: var(--bric);
+  font-variation-settings: 'opsz' 14;
+}
+
+.shell.l { background: var(--l-bg); color: var(--l-ink); }
+.shell.d { background: var(--d-bg); color: var(--d-ink); }
+
+/* Sidebar */
+.sb { padding: 24px 18px 18px; display: flex; flex-direction: column; gap: 26px; }
+.shell.l .sb { border-right: 1px solid var(--l-rule); }
+.shell.d .sb { border-right: 1px solid var(--d-rule); }
+
+.sb .brand {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.sb .brand .name {
+  font: 600 17px/1 var(--bric);
+  font-variation-settings: 'opsz' 96, 'wdth' 95, 'wght' 600;
+  letter-spacing: -0.02em;
+}
+.sb .brand .tag {
+  font: 500 8px/1 var(--mono);
+  letter-spacing: 0.2em; text-transform: uppercase;
+}
+.shell.l .sb .brand .tag { color: var(--l-ink-faint); }
+.shell.d .sb .brand .tag { color: var(--d-ink-faint); }
+
+.sb .group { display: flex; flex-direction: column; gap: 1px; }
+.sb .group .gh {
+  font: 500 9px/1 var(--mono); letter-spacing: 0.18em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.shell.l .sb .group .gh { color: var(--l-ink-faint); }
+.shell.d .sb .group .gh { color: var(--d-ink-faint); }
+
+.sb .group a {
+  font: 400 12px/1.7 var(--bric);
+  text-decoration: none; padding: 2px 0;
+  display: flex; align-items: center;
+}
+.shell.l .sb .group a { color: var(--l-ink); }
+.shell.d .sb .group a { color: var(--d-ink); }
+.sb .group a.active {
+  font-weight: 600;
+  font-variation-settings: 'opsz' 14, 'wght' 600;
+}
+
+.sb .prj { display: flex; align-items: center; gap: 9px; padding: 2px 0; }
+.sb .prj .pdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.sb .prj .pname { font: 400 11px/1.6 var(--bric); }
+.shell.l .sb .prj .pname { color: var(--l-ink-soft); }
+.shell.d .sb .prj .pname { color: var(--d-ink-soft); }
+.sb .prj.active .pname { font-weight: 500; }
+.shell.l .sb .prj.active .pname { color: var(--l-ink); }
+.shell.d .sb .prj.active .pname { color: var(--d-ink); }
+
+/* Main column */
+.main { padding: 28px 38px; overflow: hidden; display: flex; flex-direction: column; gap: 24px; position: relative; }
+
+/* Issue number — top-right corner, magazine-style numeration */
+.issue {
+  position: absolute; top: 28px; right: 38px;
+  font: 500 9px/1.5 var(--mono); letter-spacing: 0.16em; text-transform: uppercase;
+  text-align: right;
+}
+.shell.l .issue { color: var(--l-ink-faint); }
+.shell.d .issue { color: var(--d-ink-faint); }
+
+/* Eyebrow above title */
+.eyebrow {
+  font: 500 9px/1 var(--mono); letter-spacing: 0.2em; text-transform: uppercase;
+}
+.shell.l .eyebrow { color: var(--l-ink-faint); }
+.shell.d .eyebrow { color: var(--d-ink-faint); }
+
+/* DROP-LINE TITLE — 2 lines, mixed weight */
+.title {
+  font: 500 56px/0.95 var(--bric);
+  font-variation-settings: 'opsz' 96, 'wdth' 88, 'wght' 500;
+  letter-spacing: -0.04em;
+  max-width: 92%;
+  display: flex; flex-direction: column;
+}
+.title .l2 {
+  font-variation-settings: 'opsz' 96, 'wdth' 100, 'wght' 400;
+  font-style: italic;
+  font-weight: 400;
+  padding-left: 1.5em;
+}
+.shell.l .title .l2 { color: var(--l-ink-soft); }
+.shell.d .title .l2 { color: var(--d-ink-soft); }
+
+.title.smaller {
+  font-size: 44px;
+}
+
+/* HAIRLINE WITH INLINE LABEL — signature gesture */
+.h-rule {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 -2px;
+}
+.h-rule .line { flex: 1; height: 1px; }
+.shell.l .h-rule .line { background: var(--l-rule-strong); }
+.shell.d .h-rule .line { background: var(--d-rule-strong); }
+.h-rule .lbl {
+  font: 500 9px/1 var(--mono); letter-spacing: 0.18em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.shell.l .h-rule .lbl { color: var(--l-ink-soft); }
+.shell.d .h-rule .lbl { color: var(--d-ink-soft); }
+.h-rule .ct {
+  font: 500 9px/1 var(--mono); letter-spacing: 0.1em;
+}
+.shell.l .h-rule .ct { color: var(--l-ink-faint); }
+.shell.d .h-rule .ct { color: var(--d-ink-faint); }
+
+/* ASYMMETRIC 60/40 GRID */
+.asym { display: grid; grid-template-columns: 1.5fr 1fr; gap: 56px; align-items: start; }
+.asym .col { display: flex; flex-direction: column; gap: 18px; }
+.asym .col-right { display: flex; flex-direction: column; gap: 24px; padding-top: 8px; }
+
+/* HANGING NUMBERS list — números cuelgan en el margen */
+.h-list { display: flex; flex-direction: column; padding-left: 32px; position: relative; }
+.h-list .item {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 14px; padding: 10px 0; align-items: baseline;
+  position: relative;
+}
+.shell.l .h-list .item + .item { border-top: 1px solid var(--l-rule); }
+.shell.d .h-list .item + .item { border-top: 1px solid var(--d-rule); }
+.h-list .item .n {
+  position: absolute; left: -32px; top: 12px;
+  font: 400 10px/1 var(--mono); letter-spacing: 0.04em;
+  width: 24px; text-align: right;
+}
+.shell.l .h-list .item .n { color: var(--l-ink-faint); }
+.shell.d .h-list .item .n { color: var(--d-ink-faint); }
+.h-list .item .t { font: 400 14px/1.45 var(--bric); }
+.h-list .item.priority .t {
+  font-weight: 500;
+  font-variation-settings: 'opsz' 14, 'wght' 500;
+}
+.h-list .item.done .t {
+  text-decoration: line-through; text-decoration-thickness: 1px;
+}
+.shell.l .h-list .item.done .t { color: var(--l-ink-faint); }
+.shell.d .h-list .item.done .t { color: var(--d-ink-faint); }
+.h-list .item .m { font: 400 10px/1.2 var(--mono); letter-spacing: 0.06em; }
+.shell.l .h-list .item .m { color: var(--l-ink-faint); }
+.shell.d .h-list .item .m { color: var(--d-ink-faint); }
+
+.pill {
+  font: 500 9px/1 var(--mono); padding: 3px 7px; border-radius: 2px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: #f5f2eb;
+}
+.pill.u { background: var(--urgent); }
+.pill.d { background: var(--done); }
+
+/* Marginalia (column right) */
+.mg { display: flex; flex-direction: column; gap: 10px; }
+.mg .mg-lbl {
+  font: 500 9px/1 var(--mono); letter-spacing: 0.18em; text-transform: uppercase;
+}
+.shell.l .mg .mg-lbl { color: var(--l-ink-faint); }
+.shell.d .mg .mg-lbl { color: var(--d-ink-faint); }
+.mg .mg-body {
+  font: 400 13px/1.55 var(--bric); max-width: 95%;
+}
+.shell.l .mg .mg-body { color: var(--l-ink-soft); }
+.shell.d .mg .mg-body { color: var(--d-ink-soft); }
+.mg .mg-body b {
+  font-weight: 600;
+  font-variation-settings: 'opsz' 14, 'wght' 600;
+}
+.shell.l .mg .mg-body b { color: var(--l-ink); }
+.shell.d .mg .mg-body b { color: var(--d-ink); }
+
+/* Hero numeral (marginalia variant) */
+.hero-num {
+  font: 400 88px/0.9 var(--bric);
+  font-variation-settings: 'opsz' 96, 'wdth' 88, 'wght' 400;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+.hero-num .delta { font-size: 14px; letter-spacing: -0.01em; vertical-align: super; margin-left: 4px; }
+
+/* Project accent bar — top of project page */
+.proj-bar { height: 3px; margin: -28px -38px 0; }
+
+/* Tabs */
+.tabs { display: flex; gap: 28px; padding-bottom: 12px; }
+.shell.l .tabs { border-bottom: 1px solid var(--l-rule); }
+.shell.d .tabs { border-bottom: 1px solid var(--d-rule); }
+.tabs .tab {
+  font: 400 12px/1 var(--bric);
+  padding-bottom: 12px; margin-bottom: -13px;
+}
+.shell.l .tabs .tab { color: var(--l-ink-soft); }
+.shell.d .tabs .tab { color: var(--d-ink-soft); }
+.tabs .tab.active {
+  font-weight: 600;
+  font-variation-settings: 'opsz' 14, 'wght' 600;
+  border-bottom: 2px solid currentColor;
+}
+.shell.l .tabs .tab.active { color: var(--l-ink); }
+.shell.d .tabs .tab.active { color: var(--d-ink); }
+
+/* KPI as typographic objects (Reports) */
+.k-table { display: grid; grid-template-columns: repeat(4, 1fr); gap: 48px; padding: 20px 0; }
+.shell.l .k-table { border-top: 1px solid var(--l-rule-strong); border-bottom: 1px solid var(--l-rule-strong); }
+.shell.d .k-table { border-top: 1px solid var(--d-rule-strong); border-bottom: 1px solid var(--d-rule-strong); }
+.k-table .k { display: flex; flex-direction: column; gap: 8px; }
+.k-table .k .num {
+  font: 400 44px/0.95 var(--bric);
+  font-variation-settings: 'opsz' 96, 'wdth' 88, 'wght' 400;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+.k-table .k .lbl {
+  font: 500 9px/1 var(--mono); letter-spacing: 0.18em; text-transform: uppercase;
+}
+.shell.l .k-table .k .lbl { color: var(--l-ink-faint); }
+.shell.d .k-table .k .lbl { color: var(--d-ink-faint); }
+.k-table .k .delta {
+  font: 400 11px/1.4 var(--bric);
+  font-style: italic;
+}
+.shell.l .k-table .k .delta { color: var(--l-ink-soft); }
+.shell.d .k-table .k .delta { color: var(--d-ink-soft); }
+
+/* Footer */
+.foot { max-width: 1460px; margin: 80px auto 0; padding: 36px 40px; border-top: 1px solid #2a2a2c; }
+.foot h3 {
+  font: 400 32px/1 var(--bric);
+  font-variation-settings: 'opsz' 96, 'wdth' 90, 'wght' 500;
+  letter-spacing: -0.025em; color: #fff; margin-bottom: 14px;
+}
+.foot h3 em { font-style: italic; color: #888; font-weight: 400; }
+.foot p { color: #aaa; font-size: 14px; line-height: 1.55; max-width: 760px; }
+.foot ul { color: #ccc; font-size: 14px; line-height: 1.8; margin-top: 16px; padding-left: 20px; }
+.foot ul code { background: #2a2a2c; padding: 2px 6px; border-radius: 2px; font: 500 12px/1.4 var(--mono); color: #fff; }
+</style>
+</head>
+<body>
+
+<header class="page-hd">
+  <div class="eyebrow">// Edition 04 · refined · type-first</div>
+  <h1>Quiet, alive, <em>and crafted.</em></h1>
+  <p>Mismo concepto que Edition 03 — color desde proyecto, monocromo de base — pero ahora con
+  <strong style="color:#fff">type craft real</strong>: Bricolage Grotesque variable
+  (axes opsz/wdth/wght) reemplaza Geist. Layouts asimétricos NOA-style con marginalia.
+  Hanging numbers en listas. Hairlines con label inline. Magazine numeration en cada pantalla.</p>
+  <p>El AI feel viene de Geist (la fuente de Vercel + cada demo de AI) y de layouts predecibles
+  tipo "sidebar + grid de cards". Esto reemplaza ambos.</p>
+  <div class="meta">
+    <strong style="color:#ccc">Cómo evaluar:</strong> mirá los detalles tipográficos.
+    El title condensado, la <em style="font-style:italic">italic en la segunda línea</em>,
+    los números colgando, las hairlines etiquetadas. Estos gestos son lo que separa un
+    diseñador de un generador.
+  </div>
+</header>
+
+<!-- ============================================================== -->
+<!-- TYPE SPECIMEN                                                   -->
+<!-- ============================================================== -->
+<section class="specimen">
+  <h2>// Sistema tipográfico</h2>
+  <div class="spec-grid">
+    <div>
+      <div class="type-stack">
+        <div class="row">
+          <span class="smpl" style="font-size:64px;line-height:0.95;font-variation-settings:'opsz' 96,'wdth' 88,'wght' 500;letter-spacing:-0.04em">Display Condensed</span>
+          <span class="meta">Bricolage · opsz 96 · wdth 88 · wght 500<br/>56-72px · page title</span>
+        </div>
+        <div class="row">
+          <span class="smpl" style="font-size:44px;line-height:1;font-variation-settings:'opsz' 96,'wdth' 100,'wght' 400;font-style:italic;color:#aaa">Display Italic</span>
+          <span class="meta">opsz 96 · wdth 100 · wght 400 · italic<br/>32-44px · subtitle drop</span>
+        </div>
+        <div class="row">
+          <span class="smpl" style="font-size:24px;line-height:1.2;font-variation-settings:'opsz' 32,'wght' 600">Section Semibold</span>
+          <span class="meta">opsz 32 · wght 600<br/>18-24px · h2/h3</span>
+        </div>
+        <div class="row">
+          <span class="smpl" style="font-size:14px;line-height:1.5;font-variation-settings:'opsz' 14,'wght' 400;color:#bbb">Body Regular — texto largo, descriptivo, comentarios. Optical sizing pequeño automáticamente ajusta el contraste para legibilidad.</span>
+          <span class="meta">opsz 14 · wght 400<br/>13-15px · body/UI</span>
+        </div>
+        <div class="row">
+          <span class="smpl" style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:500;color:#888">JBMono caps · meta/labels/issue</span>
+          <span class="meta">JetBrains Mono · 500<br/>9-11px · technical only</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="color-stack">
+        <div class="sw" style="background:#f5f2eb;color:#161412"><span class="role">Light bg</span><span class="hex">#f5f2eb</span></div>
+        <div class="sw" style="background:#0a0a09;color:#f0ede5"><span class="role">Dark bg</span><span class="hex">#0a0a09</span></div>
+        <div class="sw" style="background:#d63a1f;color:#fff"><span class="role">Aliaga · vermillion</span><span class="hex">#d63a1f</span></div>
+        <div class="sw" style="background:#1f7a4d;color:#fff"><span class="role">Ronda · emerald</span><span class="hex">#1f7a4d</span></div>
+        <div class="sw" style="background:#e89a0d;color:#fff"><span class="role">Pampita · saffron</span><span class="hex">#e89a0d</span></div>
+        <div class="sw" style="background:#2e52d9;color:#fff"><span class="role">Spring · cobalt</span><span class="hex">#2e52d9</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- DASHBOARD — dark + light                                        -->
+<!-- ============================================================== -->
+<section class="theme-pair">
+  <div class="tp-hd">
+    <h2>Dashboard <em>— agregado monocromático</em></h2>
+    <span class="ct">// 60/40 asym · marginalia derecha</span>
+  </div>
+  <div class="pair">
+
+    <!-- LIGHT -->
+    <div class="frame l">
+      <span class="pin">Light</span>
+      <div class="shell l">
+        <aside class="sb">
+          <div class="brand">
+            <div class="name">Pistachio</div>
+            <div class="tag">RMH studio</div>
+          </div>
+          <div class="group">
+            <div class="gh">Trabajo</div>
+            <a class="active">Dashboard</a>
+            <a>Mis tareas</a>
+            <a>Calendario</a>
+          </div>
+          <div class="group">
+            <div class="gh">Proyectos</div>
+            <div class="prj"><span class="pdot" style="background:var(--p-aliaga)"></span><span class="pname">Aliaga</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-ronda)"></span><span class="pname">Ronda</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-pampita)"></span><span class="pname">Pampita</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-spring)"></span><span class="pname">Spring</span></div>
+          </div>
+          <div class="group">
+            <div class="gh">Análisis</div>
+            <a>Operaciones</a>
+            <a>Reports</a>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="issue">Ed. 04 · MAY 30 · 2026<br/>22 / 187 ACTIVAS</div>
+          <div class="eyebrow">/ dashboard</div>
+          <div class="title">
+            <span>Hola Gabriel,</span>
+            <span class="l2">buen sábado.</span>
+          </div>
+          <div class="asym">
+            <div class="col">
+              <div class="h-rule">
+                <span class="lbl">Urgente esta semana</span>
+                <span class="line"></span>
+                <span class="ct">3 · 187</span>
+              </div>
+              <div class="h-list">
+                <div class="item priority"><span class="n">01</span><span class="t">Aprobar guión final spot TV</span><span class="pill u">hoy</span></div>
+                <div class="item priority"><span class="n">02</span><span class="t">Confirmar pago Cliente Aliaga</span><span class="m">lun 1 / 6</span></div>
+                <div class="item"><span class="n">03</span><span class="t">Reunión Ronda — review semanal</span><span class="m">mar 2 / 6</span></div>
+              </div>
+            </div>
+            <div class="col-right">
+              <div class="mg">
+                <div class="mg-lbl">Ventas · mayo</div>
+                <div class="hero-num">$4.2<span style="font-size:0.6em;color:var(--l-ink-soft)">M</span></div>
+                <div class="mg-body">+<b>18%</b> vs abril. Mejor mes del trimestre.</div>
+              </div>
+              <div class="mg">
+                <div class="mg-lbl">Nota</div>
+                <div class="mg-body">Pampita entrega <b>doc. final</b> el viernes. Falta revisar el corte.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="frame d">
+      <span class="pin">Dark</span>
+      <div class="shell d">
+        <aside class="sb">
+          <div class="brand">
+            <div class="name">Pistachio</div>
+            <div class="tag">RMH studio</div>
+          </div>
+          <div class="group">
+            <div class="gh">Trabajo</div>
+            <a class="active">Dashboard</a>
+            <a>Mis tareas</a>
+            <a>Calendario</a>
+          </div>
+          <div class="group">
+            <div class="gh">Proyectos</div>
+            <div class="prj"><span class="pdot" style="background:var(--p-aliaga)"></span><span class="pname">Aliaga</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-ronda)"></span><span class="pname">Ronda</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-pampita)"></span><span class="pname">Pampita</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-spring)"></span><span class="pname">Spring</span></div>
+          </div>
+          <div class="group">
+            <div class="gh">Análisis</div>
+            <a>Operaciones</a>
+            <a>Reports</a>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="issue">Ed. 04 · MAY 30 · 2026<br/>22 / 187 ACTIVAS</div>
+          <div class="eyebrow">/ dashboard</div>
+          <div class="title">
+            <span>Hola Gabriel,</span>
+            <span class="l2">buen sábado.</span>
+          </div>
+          <div class="asym">
+            <div class="col">
+              <div class="h-rule">
+                <span class="lbl">Urgente esta semana</span>
+                <span class="line"></span>
+                <span class="ct">3 · 187</span>
+              </div>
+              <div class="h-list">
+                <div class="item priority"><span class="n">01</span><span class="t">Aprobar guión final spot TV</span><span class="pill u">hoy</span></div>
+                <div class="item priority"><span class="n">02</span><span class="t">Confirmar pago Cliente Aliaga</span><span class="m">lun 1 / 6</span></div>
+                <div class="item"><span class="n">03</span><span class="t">Reunión Ronda — review semanal</span><span class="m">mar 2 / 6</span></div>
+              </div>
+            </div>
+            <div class="col-right">
+              <div class="mg">
+                <div class="mg-lbl">Ventas · mayo</div>
+                <div class="hero-num">$4.2<span style="font-size:0.6em;color:var(--d-ink-soft)">M</span></div>
+                <div class="mg-body">+<b>18%</b> vs abril. Mejor mes del trimestre.</div>
+              </div>
+              <div class="mg">
+                <div class="mg-lbl">Nota</div>
+                <div class="mg-body">Pampita entrega <b>doc. final</b> el viernes. Falta revisar el corte.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- PROYECTO ALIAGA — dark + light                                  -->
+<!-- ============================================================== -->
+<section class="theme-pair">
+  <div class="tp-hd">
+    <h2>Proyecto Aliaga <em>— color: vermillion</em></h2>
+    <span class="ct">// project bar · hanging list · tabs typeset</span>
+  </div>
+  <div class="pair">
+
+    <!-- LIGHT -->
+    <div class="frame l">
+      <span class="pin">Light</span>
+      <div class="shell l">
+        <aside class="sb">
+          <div class="brand">
+            <div class="name">Pistachio</div>
+            <div class="tag">RMH studio</div>
+          </div>
+          <div class="group">
+            <div class="gh">Proyectos</div>
+            <div class="prj active"><span class="pdot" style="background:var(--p-aliaga);box-shadow:0 0 0 2px rgba(214,58,31,0.25)"></span><span class="pname">Aliaga</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-ronda)"></span><span class="pname">Ronda</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-pampita)"></span><span class="pname">Pampita</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-spring)"></span><span class="pname">Spring</span></div>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="proj-bar" style="background:var(--p-aliaga)"></div>
+          <div class="issue">PR–024 · MAY 30<br/>4 ACTIVAS · 2 COMPLETADAS</div>
+          <div class="eyebrow">/ proyectos / aliaga</div>
+          <div class="title">
+            <span>Aliaga,</span>
+            <span class="l2">spot TV.</span>
+          </div>
+          <div class="tabs">
+            <span class="tab active" style="color:var(--p-aliaga);border-bottom-color:var(--p-aliaga)">Tareas</span>
+            <span class="tab">Documentos</span>
+            <span class="tab">Notas</span>
+            <span class="tab">Historial</span>
+          </div>
+          <div>
+            <div class="h-rule">
+              <span class="lbl" style="color:var(--p-aliaga)">Activas</span>
+              <span class="line"></span>
+              <span class="ct">2 / 4</span>
+            </div>
+            <div class="h-list">
+              <div class="item priority"><span class="n">01</span><span class="t">Aprobar guión final con cliente</span><span class="pill u">hoy</span></div>
+              <div class="item"><span class="n">02</span><span class="t">Reservar locación exterior</span><span class="m">vie 6 / 6</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="h-rule">
+              <span class="lbl">Completadas</span>
+              <span class="line"></span>
+              <span class="ct">2</span>
+            </div>
+            <div class="h-list">
+              <div class="item done"><span class="n">03</span><span class="t">Reunión con Ronda — kick-off</span><span class="m">28 may</span></div>
+              <div class="item done"><span class="n">04</span><span class="t">Brief inicial recibido</span><span class="m">25 may</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="frame d">
+      <span class="pin">Dark</span>
+      <div class="shell d">
+        <aside class="sb">
+          <div class="brand">
+            <div class="name">Pistachio</div>
+            <div class="tag">RMH studio</div>
+          </div>
+          <div class="group">
+            <div class="gh">Proyectos</div>
+            <div class="prj active"><span class="pdot" style="background:var(--p-aliaga);box-shadow:0 0 0 2px rgba(214,58,31,0.25)"></span><span class="pname">Aliaga</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-ronda)"></span><span class="pname">Ronda</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-pampita)"></span><span class="pname">Pampita</span></div>
+            <div class="prj"><span class="pdot" style="background:var(--p-spring)"></span><span class="pname">Spring</span></div>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="proj-bar" style="background:var(--p-aliaga)"></div>
+          <div class="issue">PR–024 · MAY 30<br/>4 ACTIVAS · 2 COMPLETADAS</div>
+          <div class="eyebrow">/ proyectos / aliaga</div>
+          <div class="title">
+            <span>Aliaga,</span>
+            <span class="l2">spot TV.</span>
+          </div>
+          <div class="tabs">
+            <span class="tab active" style="color:var(--p-aliaga);border-bottom-color:var(--p-aliaga)">Tareas</span>
+            <span class="tab">Documentos</span>
+            <span class="tab">Notas</span>
+            <span class="tab">Historial</span>
+          </div>
+          <div>
+            <div class="h-rule">
+              <span class="lbl" style="color:var(--p-aliaga)">Activas</span>
+              <span class="line"></span>
+              <span class="ct">2 / 4</span>
+            </div>
+            <div class="h-list">
+              <div class="item priority"><span class="n">01</span><span class="t">Aprobar guión final con cliente</span><span class="pill u">hoy</span></div>
+              <div class="item"><span class="n">02</span><span class="t">Reservar locación exterior</span><span class="m">vie 6 / 6</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="h-rule">
+              <span class="lbl">Completadas</span>
+              <span class="line"></span>
+              <span class="ct">2</span>
+            </div>
+            <div class="h-list">
+              <div class="item done"><span class="n">03</span><span class="t">Reunión con Ronda — kick-off</span><span class="m">28 may</span></div>
+              <div class="item done"><span class="n">04</span><span class="t">Brief inicial recibido</span><span class="m">25 may</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- REPORTS — dark + light                                          -->
+<!-- ============================================================== -->
+<section class="theme-pair">
+  <div class="tp-hd">
+    <h2>Reports <em>— KPIs como objetos tipográficos</em></h2>
+    <span class="ct">// 4-col table · numerales 44px · hairlines</span>
+  </div>
+  <div class="pair">
+
+    <!-- LIGHT -->
+    <div class="frame l">
+      <span class="pin">Light</span>
+      <div class="shell l">
+        <aside class="sb">
+          <div class="brand">
+            <div class="name">Pistachio</div>
+            <div class="tag">RMH studio</div>
+          </div>
+          <div class="group">
+            <div class="gh">Análisis</div>
+            <a>Operaciones</a>
+            <a class="active">Reports</a>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="issue">Ed. 04 · MAY 30<br/>MENSUAL / Q2</div>
+          <div class="eyebrow">/ reports</div>
+          <div class="title">
+            <span>Mayo,</span>
+            <span class="l2">en números.</span>
+          </div>
+          <div class="k-table">
+            <div class="k">
+              <div class="num">24</div>
+              <div class="lbl">Proyectos</div>
+              <div class="delta">+3 vs abril</div>
+            </div>
+            <div class="k">
+              <div class="num">$4.2<span style="font-size:0.5em;color:var(--l-ink-soft)">M</span></div>
+              <div class="lbl">Ventas</div>
+              <div class="delta">+18% vs abril</div>
+            </div>
+            <div class="k">
+              <div class="num">$1.8<span style="font-size:0.5em;color:var(--l-ink-soft)">M</span></div>
+              <div class="lbl">Gastos</div>
+              <div class="delta">+4% vs abril</div>
+            </div>
+            <div class="k">
+              <div class="num">$2.4<span style="font-size:0.5em;color:var(--l-ink-soft)">M</span></div>
+              <div class="lbl">Neto</div>
+              <div class="delta">+29% vs abril</div>
+            </div>
+          </div>
+          <div class="asym">
+            <div class="col">
+              <div class="h-rule"><span class="lbl">Por proyecto</span><span class="line"></span><span class="ct">4</span></div>
+              <div class="h-list">
+                <div class="item"><span class="n" style="color:var(--p-aliaga)">●</span><span class="t">Aliaga · Spot TV</span><span class="m">$1.8M</span></div>
+                <div class="item"><span class="n" style="color:var(--p-ronda)">●</span><span class="t">Ronda · Branding</span><span class="m">$1.2M</span></div>
+                <div class="item"><span class="n" style="color:var(--p-pampita)">●</span><span class="t">Pampita · Doc</span><span class="m">$0.7M</span></div>
+                <div class="item"><span class="n" style="color:var(--p-spring)">●</span><span class="t">Spring · Web</span><span class="m">$0.5M</span></div>
+              </div>
+            </div>
+            <div class="col-right">
+              <div class="mg">
+                <div class="mg-lbl">Tareas por estado</div>
+                <div style="display:flex;align-items:end;gap:10px;height:60px;margin-top:14px">
+                  <div style="flex:1;height:30%;background:var(--l-ink-faint)"></div>
+                  <div style="flex:1;height:80%;background:var(--l-ink-soft)"></div>
+                  <div style="flex:1;height:55%;background:var(--urgent)"></div>
+                  <div style="flex:1;height:95%;background:var(--done)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="frame d">
+      <span class="pin">Dark</span>
+      <div class="shell d">
+        <aside class="sb">
+          <div class="brand">
+            <div class="name">Pistachio</div>
+            <div class="tag">RMH studio</div>
+          </div>
+          <div class="group">
+            <div class="gh">Análisis</div>
+            <a>Operaciones</a>
+            <a class="active">Reports</a>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="issue">Ed. 04 · MAY 30<br/>MENSUAL / Q2</div>
+          <div class="eyebrow">/ reports</div>
+          <div class="title">
+            <span>Mayo,</span>
+            <span class="l2">en números.</span>
+          </div>
+          <div class="k-table">
+            <div class="k">
+              <div class="num">24</div>
+              <div class="lbl">Proyectos</div>
+              <div class="delta">+3 vs abril</div>
+            </div>
+            <div class="k">
+              <div class="num">$4.2<span style="font-size:0.5em;color:var(--d-ink-soft)">M</span></div>
+              <div class="lbl">Ventas</div>
+              <div class="delta">+18% vs abril</div>
+            </div>
+            <div class="k">
+              <div class="num">$1.8<span style="font-size:0.5em;color:var(--d-ink-soft)">M</span></div>
+              <div class="lbl">Gastos</div>
+              <div class="delta">+4% vs abril</div>
+            </div>
+            <div class="k">
+              <div class="num">$2.4<span style="font-size:0.5em;color:var(--d-ink-soft)">M</span></div>
+              <div class="lbl">Neto</div>
+              <div class="delta">+29% vs abril</div>
+            </div>
+          </div>
+          <div class="asym">
+            <div class="col">
+              <div class="h-rule"><span class="lbl">Por proyecto</span><span class="line"></span><span class="ct">4</span></div>
+              <div class="h-list">
+                <div class="item"><span class="n" style="color:var(--p-aliaga)">●</span><span class="t">Aliaga · Spot TV</span><span class="m">$1.8M</span></div>
+                <div class="item"><span class="n" style="color:var(--p-ronda)">●</span><span class="t">Ronda · Branding</span><span class="m">$1.2M</span></div>
+                <div class="item"><span class="n" style="color:var(--p-pampita)">●</span><span class="t">Pampita · Doc</span><span class="m">$0.7M</span></div>
+                <div class="item"><span class="n" style="color:var(--p-spring)">●</span><span class="t">Spring · Web</span><span class="m">$0.5M</span></div>
+              </div>
+            </div>
+            <div class="col-right">
+              <div class="mg">
+                <div class="mg-lbl">Tareas por estado</div>
+                <div style="display:flex;align-items:end;gap:10px;height:60px;margin-top:14px">
+                  <div style="flex:1;height:30%;background:var(--d-ink-faint)"></div>
+                  <div style="flex:1;height:80%;background:var(--d-ink-soft)"></div>
+                  <div style="flex:1;height:55%;background:var(--urgent)"></div>
+                  <div style="flex:1;height:95%;background:var(--done)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <h3>¿Suficientemente <em>humano</em>?</h3>
+  <p>El refinamiento crítico: Bricolage variable + asymmetric layout NOA-style + hanging numbers
+  + hairlines etiquetadas + magazine numeration. Son 6 gestos pequeños que juntos cambian la lectura
+  de "AI generado" a "diseñador trabajó esto".</p>
+  <ul>
+    <li><code>Sí, dale</code> — implemento Edition 04 al app (branch <code>redesign/edition-04</code>).</li>
+    <li><code>Sí pero...</code> — me decís qué afinar (otra fuente display, otros project colors, más / menos asimetría).</li>
+    <li><code>Cambiá Bricolage por X</code> — si conocés otra fuente que querés usar.</li>
+    <li><code>No, sigue feeling AI</code> — me decís específicamente qué gesto se ve forzado y propongo más cambios.</li>
+  </ul>
+</footer>
+
+</body>
+</html>

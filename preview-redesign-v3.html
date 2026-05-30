@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1500" />
+<title>Pistachio — Edition 02</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --geist: 'Geist', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+
+  /* Triotone saturated */
+  --lime: #b8ff3d;
+  --coral: #ff5e3a;
+  --cobalt: #4a6eff;
+
+  /* Dark theme */
+  --d-bg: #0c0d0f;
+  --d-surface: #16181c;
+  --d-surface-el: #1d2026;
+  --d-text: #f0f1f3;
+  --d-text-muted: #a8acb4;
+  --d-text-faint: #6c7079;
+  --d-border: rgba(255, 255, 255, 0.08);
+  --d-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Light theme */
+  --l-bg: #fafaf7;
+  --l-surface: #f1f1ee;
+  --l-surface-el: #e7e7e3;
+  --l-text: #0c0d0f;
+  --l-text-muted: #5a5d63;
+  --l-text-faint: #9a9d a4;
+  --l-border: rgba(0, 0, 0, 0.08);
+  --l-border-strong: rgba(0, 0, 0, 0.16);
+}
+
+body {
+  font-family: var(--geist);
+  background: #18181a;
+  color: #ddd;
+  padding: 32px 0 80px;
+  font-feature-settings: 'ss01' 1, 'ss02' 1;
+}
+
+.page-hd { max-width: 1440px; margin: 0 auto 56px; padding: 0 32px; }
+.page-hd h1 { font: 700 42px/1.05 var(--geist); letter-spacing: -0.03em; color: #fff; margin-bottom: 14px; }
+.page-hd h1 .pop { color: var(--lime); }
+.page-hd p { color: #999; font-size: 15px; line-height: 1.55; max-width: 820px; }
+.page-hd .meta { margin-top: 20px; padding-top: 18px; border-top: 1px solid #2a2a2c; font-size: 13px; color: #777; max-width: 820px; }
+.page-hd .meta strong { color: #ccc; }
+
+/* System specs */
+.specs { max-width: 1440px; margin: 0 auto 48px; padding: 0 32px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.spec-card { background: #1c1c1f; border: 1px solid #2a2a2c; border-radius: 8px; padding: 22px; }
+.spec-card h3 { font: 600 11px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: #888; margin-bottom: 16px; }
+
+.type-spec { display: flex; flex-direction: column; gap: 8px; }
+.type-spec .row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid #2a2a2c; }
+.type-spec .row:last-child { border-bottom: 0; }
+.type-spec .row .sample { color: #fff; font-family: var(--geist); }
+.type-spec .row .meta { font: 500 10px/1 var(--mono); color: #888; }
+
+.palette-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.palette-grid .sw { aspect-ratio: 1; border-radius: 6px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; }
+.palette-grid .sw .role { font: 700 9px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.palette-grid .sw .hex { font: 500 10px/1 var(--mono); }
+
+.themes-spec { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.themes-spec .col { display: flex; flex-direction: column; gap: 6px; }
+.themes-spec .col .lbl { font: 600 9px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: #888; margin-bottom: 4px; }
+.themes-spec .col .swatch { height: 28px; border-radius: 4px; padding: 0 10px; display: flex; align-items: center; justify-content: space-between; font: 500 10px/1 var(--mono); }
+
+/* Theme pair section */
+.theme-pair { max-width: 1440px; margin: 0 auto 64px; padding: 0 32px; }
+.theme-pair-hd { margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #2a2a2c; display: flex; justify-content: space-between; align-items: baseline; }
+.theme-pair-hd h2 { font: 700 22px/1 var(--geist); letter-spacing: -0.02em; color: #fff; }
+.theme-pair-hd .ct { font: 500 11px/1 var(--mono); color: #888; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.screen { border-radius: 8px; overflow: hidden; aspect-ratio: 16 / 11; position: relative; }
+.screen .label { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #fff; font: 500 9px/1 var(--mono); padding: 4px 8px; border-radius: 3px; letter-spacing: 0.06em; text-transform: uppercase; z-index: 30; pointer-events: none; }
+
+/* ================================================================
+   DARK THEME SCREENS
+   ================================================================ */
+.dark-screen {
+  background: var(--d-bg);
+  color: var(--d-text);
+  font-family: var(--geist);
+  font-feature-settings: 'ss01' 1;
+}
+.light-screen {
+  background: var(--l-bg);
+  color: var(--l-text);
+  font-family: var(--geist);
+  font-feature-settings: 'ss01' 1;
+}
+
+/* === Dashboard layout (works for both themes via class) === */
+.dash {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  height: 100%;
+}
+.dash .sb {
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.dark-screen .dash .sb { background: var(--d-surface); border-right: 1px solid var(--d-border); }
+.light-screen .dash .sb { background: var(--l-surface); border-right: 1px solid var(--l-border); }
+
+.dash .sb .brand {
+  display: flex; align-items: center; gap: 9px;
+  font: 700 14px/1 var(--geist);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.dash .sb .brand .mark {
+  width: 18px; height: 18px;
+  background: var(--lime);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font: 800 10px/1 var(--geist);
+  color: #0c0d0f;
+}
+.dash .sb .group { display: flex; flex-direction: column; gap: 3px; }
+.dash .sb .group .hd {
+  font: 600 9px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+}
+.dark-screen .dash .sb .group .hd { color: var(--d-text-faint); border-bottom: 1px solid var(--d-border); }
+.light-screen .dash .sb .group .hd { color: var(--l-text-muted); border-bottom: 1px solid var(--l-border); }
+
+.dash .sb .group a {
+  font: 500 11px/1.7 var(--geist);
+  text-decoration: none;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.dark-screen .dash .sb .group a { color: var(--d-text-muted); }
+.dark-screen .dash .sb .group a.active { background: var(--d-surface-el); color: var(--lime); }
+.dark-screen .dash .sb .group a.active::before { content: ''; width: 3px; height: 12px; background: var(--lime); border-radius: 2px; margin-left: -8px; }
+.light-screen .dash .sb .group a { color: var(--l-text-muted); }
+.light-screen .dash .sb .group a.active { background: var(--l-surface-el); color: var(--l-text); }
+.light-screen .dash .sb .group a.active::before { content: ''; width: 3px; height: 12px; background: var(--cobalt); border-radius: 2px; margin-left: -8px; }
+
+.dash .main {
+  padding: 18px 22px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.dash .main .top {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.dash .main .top .crumbs {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dark-screen .dash .main .top .crumbs { color: var(--d-text-faint); }
+.light-screen .dash .main .top .crumbs { color: var(--l-text-muted); }
+
+.dash .main .top .actions {
+  display: flex; gap: 8px;
+}
+.dash .main .top .actions .key {
+  font: 500 9px/1 var(--mono); padding: 4px 6px; border-radius: 3px;
+}
+.dark-screen .dash .main .top .actions .key { background: var(--d-surface-el); color: var(--d-text-muted); border: 1px solid var(--d-border); }
+.light-screen .dash .main .top .actions .key { background: var(--l-surface); color: var(--l-text-muted); border: 1px solid var(--l-border); }
+
+.dash .main .title {
+  font: 700 26px/1.05 var(--geist);
+  letter-spacing: -0.025em;
+}
+.dash .main .title .accent { color: var(--lime); }
+.light-screen .dash .main .title .accent { color: #5d8800; }
+
+/* KPI strip — number first, label inline mono small-caps */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.dark-screen .kpi-strip { background: var(--d-surface); border: 1px solid var(--d-border); }
+.light-screen .kpi-strip { background: var(--l-surface); border: 1px solid var(--l-border); }
+.kpi-strip .kpi { padding: 14px 16px; }
+.dark-screen .kpi-strip .kpi + .kpi { border-left: 1px solid var(--d-border); }
+.light-screen .kpi-strip .kpi + .kpi { border-left: 1px solid var(--l-border); }
+.kpi-strip .kpi .num {
+  font: 700 26px/1 var(--geist);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-strip .kpi.up .num { color: var(--lime); }
+.kpi-strip .kpi.down .num { color: var(--coral); }
+.light-screen .kpi-strip .kpi.up .num { color: #5d8800; }
+.kpi-strip .kpi .row { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
+.kpi-strip .kpi .row .lbl { font: 600 9px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.dark-screen .kpi-strip .kpi .row .lbl { color: var(--d-text-muted); }
+.light-screen .kpi-strip .kpi .row .lbl { color: var(--l-text-muted); }
+.kpi-strip .kpi .row .delta { font: 600 9px/1 var(--mono); padding: 2px 5px; border-radius: 2px; }
+.kpi-strip .kpi .row .delta.up { background: rgba(184,255,61,0.18); color: var(--lime); }
+.kpi-strip .kpi .row .delta.down { background: rgba(255,94,58,0.18); color: var(--coral); }
+.light-screen .kpi-strip .kpi .row .delta.up { background: rgba(140,200,30,0.22); color: #4a6a00; }
+.light-screen .kpi-strip .kpi .row .delta.down { background: rgba(255,94,58,0.18); color: #c43e1c; }
+
+/* List rows */
+.list-block { display: flex; flex-direction: column; gap: 8px; }
+.list-block .hd { display: flex; justify-content: space-between; align-items: baseline; }
+.list-block .hd .ttl { font: 600 13px/1 var(--geist); letter-spacing: -0.01em; }
+.list-block .hd .ct { font: 500 10px/1 var(--mono); }
+.dark-screen .list-block .hd .ct { color: var(--d-text-faint); }
+.light-screen .list-block .hd .ct { color: var(--l-text-muted); }
+.list-block .list { display: flex; flex-direction: column; }
+.list-block .list .row {
+  display: grid; grid-template-columns: 8px 1fr auto; gap: 12px;
+  padding: 9px 0;
+  align-items: center;
+}
+.dark-screen .list-block .list .row + .row { border-top: 1px solid var(--d-border); }
+.light-screen .list-block .list .row + .row { border-top: 1px solid var(--l-border); }
+.list-block .list .row .dot { width: 6px; height: 6px; border-radius: 50%; }
+.list-block .list .row .dot.urgent { background: var(--coral); }
+.list-block .list .row .dot.high { background: var(--lime); }
+.dark-screen .list-block .list .row .dot.normal { background: var(--d-text-faint); }
+.light-screen .list-block .list .row .dot.normal { background: var(--l-text-faint); }
+.list-block .list .row .ttl { font: 500 12px/1.3 var(--geist); }
+.list-block .list .row .meta { font: 500 10px/1 var(--mono); }
+.dark-screen .list-block .list .row .meta { color: var(--d-text-muted); }
+.light-screen .list-block .list .row .meta { color: var(--l-text-muted); }
+.list-block .list .row.done .ttl { text-decoration: line-through; }
+.dark-screen .list-block .list .row.done .ttl { color: var(--d-text-faint); }
+.light-screen .list-block .list .row.done .ttl { color: var(--l-text-faint); }
+
+/* Tag/pill */
+.tag {
+  font: 700 8px/1 var(--mono);
+  padding: 3px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tag.urgent { background: var(--coral); color: #fff; }
+.tag.done { background: var(--lime); color: #0c0d0f; }
+.tag.info { background: var(--cobalt); color: #fff; }
+
+/* Tabs */
+.tabs {
+  display: flex; gap: 16px;
+  padding-bottom: 8px;
+}
+.dark-screen .tabs { border-bottom: 1px solid var(--d-border); }
+.light-screen .tabs { border-bottom: 1px solid var(--l-border); }
+.tabs .tab { font: 600 11px/1 var(--geist); letter-spacing: -0.005em; padding-bottom: 8px; margin-bottom: -9px; }
+.dark-screen .tabs .tab { color: var(--d-text-muted); }
+.dark-screen .tabs .tab.active { color: var(--lime); border-bottom: 2px solid var(--lime); }
+.light-screen .tabs .tab { color: var(--l-text-muted); }
+.light-screen .tabs .tab.active { color: var(--cobalt); border-bottom: 2px solid var(--cobalt); }
+
+/* Reports / chart hint */
+.chart-hint {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.chart-hint .ch {
+  padding: 14px;
+  border-radius: 6px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.dark-screen .chart-hint .ch { background: var(--d-surface); border: 1px solid var(--d-border); }
+.light-screen .chart-hint .ch { background: var(--l-surface); border: 1px solid var(--l-border); }
+.chart-hint .ch .ttl { font: 600 10px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.dark-screen .chart-hint .ch .ttl { color: var(--d-text-muted); }
+.light-screen .chart-hint .ch .ttl { color: var(--l-text-muted); }
+.chart-hint .ch .bars { display: flex; align-items: end; gap: 6px; height: 50px; }
+.chart-hint .ch .bars .b { width: 100%; border-radius: 2px 2px 0 0; }
+
+/* Footer */
+.foot { max-width: 1440px; margin: 80px auto 0; padding: 32px; border-top: 1px solid #2a2a2c; }
+.foot h3 { color: #fff; font: 700 20px/1 var(--geist); letter-spacing: -0.02em; margin-bottom: 14px; }
+.foot p { color: #999; font-size: 14px; line-height: 1.55; max-width: 760px; }
+.foot ul { color: #ccc; font-size: 14px; line-height: 1.8; margin-top: 14px; padding-left: 20px; }
+.foot ul code { background: #2a2a2c; padding: 2px 6px; border-radius: 3px; font: 500 12px/1.4 var(--mono); color: #fff; }
+</style>
+</head>
+<body>
+
+<header class="page-hd">
+  <h1>Edition <span class="pop">02</span></h1>
+  <p>Modern grotesque · triotone saturado · dark + light dual.
+  Sans-only (Geist + JetBrains Mono). Cero serif, cero glass, cero aurora. Acentos:
+  lime (positivo), coral (urgente), cobalt (info) — usados como afordancia funcional,
+  no como decoración. Densidad media, personalidad propia.</p>
+  <div class="meta">
+    <strong>Cómo evaluar:</strong> compará los dos temas lado a lado.
+    ¿La UI te transmite "esto es una herramienta que un studio creativo armó para
+    su propio uso"? ¿El color cae donde la atención debería estar?
+  </div>
+</header>
+
+<!-- ============================================================== -->
+<!-- SYSTEM SPECS                                                    -->
+<!-- ============================================================== -->
+<section class="specs">
+  <div class="spec-card">
+    <h3>// tipografía</h3>
+    <div class="type-spec">
+      <div class="row">
+        <span class="sample" style="font-weight:700;font-size:22px;letter-spacing:-0.025em">Geist Bold</span>
+        <span class="meta">700 · display</span>
+      </div>
+      <div class="row">
+        <span class="sample" style="font-weight:500;font-size:15px">Geist Medium body</span>
+        <span class="meta">500 · body</span>
+      </div>
+      <div class="row">
+        <span class="sample" style="font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#888">JBMono small caps</span>
+        <span class="meta">mono · labels</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-card">
+    <h3>// paleta</h3>
+    <div class="palette-grid">
+      <div class="sw" style="background:#b8ff3d;color:#0c0d0f"><span class="role">Lime</span><span class="hex">#b8ff3d</span></div>
+      <div class="sw" style="background:#ff5e3a;color:#fff"><span class="role">Coral</span><span class="hex">#ff5e3a</span></div>
+      <div class="sw" style="background:#4a6eff;color:#fff"><span class="role">Cobalt</span><span class="hex">#4a6eff</span></div>
+    </div>
+    <p style="font:500 11px/1.4 var(--geist);color:#888;margin-top:12px">
+      <strong style="color:#bbb">Función</strong>: lime = positivo/done, coral = urgente/danger, cobalt = info/links. Los tres saturados, nunca mezclados decorativamente.
+    </p>
+  </div>
+
+  <div class="spec-card">
+    <h3>// dual theme</h3>
+    <div class="themes-spec">
+      <div class="col">
+        <div class="lbl">Dark</div>
+        <div class="swatch" style="background:#0c0d0f;color:#f0f1f3;border:1px solid #2a2a2c">bg <span>#0c0d0f</span></div>
+        <div class="swatch" style="background:#16181c;color:#f0f1f3;border:1px solid #2a2a2c">surface <span>#16181c</span></div>
+        <div class="swatch" style="background:#f0f1f3;color:#0c0d0f">text <span>#f0f1f3</span></div>
+      </div>
+      <div class="col">
+        <div class="lbl">Light</div>
+        <div class="swatch" style="background:#fafaf7;color:#0c0d0f;border:1px solid #2a2a2c">bg <span>#fafaf7</span></div>
+        <div class="swatch" style="background:#f1f1ee;color:#0c0d0f;border:1px solid #2a2a2c">surface <span>#f1f1ee</span></div>
+        <div class="swatch" style="background:#0c0d0f;color:#fafaf7">text <span>#0c0d0f</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- DASHBOARD — Dark + Light pair                                   -->
+<!-- ============================================================== -->
+<section class="theme-pair">
+  <div class="theme-pair-hd">
+    <h2>Dashboard</h2>
+    <span class="ct">// dark + light · mismo layout, idéntico balance</span>
+  </div>
+  <div class="pair">
+    <!-- DARK Dashboard -->
+    <div class="screen dark-screen">
+      <span class="label">Dark</span>
+      <div class="dash">
+        <aside class="sb">
+          <div class="brand"><div class="mark">P</div>Pistachio</div>
+          <div class="group">
+            <div class="hd">Trabajo</div>
+            <a class="active">Dashboard</a>
+            <a>Proyectos</a>
+            <a>Mis tareas</a>
+            <a>Calendario</a>
+          </div>
+          <div class="group">
+            <div class="hd">Análisis</div>
+            <a>Operaciones</a>
+            <a>Reports</a>
+          </div>
+          <div class="group">
+            <div class="hd">Sistema</div>
+            <a>Admin</a>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="top">
+            <span class="crumbs">/ Dashboard</span>
+            <div class="actions"><span class="key">⌘K</span><span class="key">B 3</span></div>
+          </div>
+          <div class="title">Hola Gabriel <span class="accent">↗</span></div>
+          <div class="kpi-strip">
+            <div class="kpi up">
+              <div class="num">24</div>
+              <div class="row"><span class="lbl">Proyectos</span><span class="delta up">+3</span></div>
+            </div>
+            <div class="kpi">
+              <div class="num">187</div>
+              <div class="row"><span class="lbl">Tareas</span></div>
+            </div>
+            <div class="kpi up">
+              <div class="num">$4.2M</div>
+              <div class="row"><span class="lbl">Ventas 30d</span><span class="delta up">+18%</span></div>
+            </div>
+            <div class="kpi down">
+              <div class="num">3</div>
+              <div class="row"><span class="lbl">Vencidos</span><span class="delta down">−1d</span></div>
+            </div>
+          </div>
+          <div class="list-block">
+            <div class="hd">
+              <span class="ttl">Mis tareas</span>
+              <span class="ct">5 / 24</span>
+            </div>
+            <div class="list">
+              <div class="row"><span class="dot urgent"></span><span class="ttl">Aprobar guión final spot TV</span><span class="tag urgent">Hoy</span></div>
+              <div class="row"><span class="dot high"></span><span class="ttl">Reservar locación exterior</span><span class="meta">vie 6 jun</span></div>
+              <div class="row done"><span class="dot normal"></span><span class="ttl">Reunión con Ronda — kick-off</span><span class="meta">28 may</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIGHT Dashboard -->
+    <div class="screen light-screen">
+      <span class="label">Light</span>
+      <div class="dash">
+        <aside class="sb">
+          <div class="brand"><div class="mark">P</div>Pistachio</div>
+          <div class="group">
+            <div class="hd">Trabajo</div>
+            <a class="active">Dashboard</a>
+            <a>Proyectos</a>
+            <a>Mis tareas</a>
+            <a>Calendario</a>
+          </div>
+          <div class="group">
+            <div class="hd">Análisis</div>
+            <a>Operaciones</a>
+            <a>Reports</a>
+          </div>
+          <div class="group">
+            <div class="hd">Sistema</div>
+            <a>Admin</a>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="top">
+            <span class="crumbs">/ Dashboard</span>
+            <div class="actions"><span class="key">⌘K</span><span class="key">B 3</span></div>
+          </div>
+          <div class="title">Hola Gabriel <span class="accent">↗</span></div>
+          <div class="kpi-strip">
+            <div class="kpi up">
+              <div class="num">24</div>
+              <div class="row"><span class="lbl">Proyectos</span><span class="delta up">+3</span></div>
+            </div>
+            <div class="kpi">
+              <div class="num">187</div>
+              <div class="row"><span class="lbl">Tareas</span></div>
+            </div>
+            <div class="kpi up">
+              <div class="num">$4.2M</div>
+              <div class="row"><span class="lbl">Ventas 30d</span><span class="delta up">+18%</span></div>
+            </div>
+            <div class="kpi down">
+              <div class="num">3</div>
+              <div class="row"><span class="lbl">Vencidos</span><span class="delta down">−1d</span></div>
+            </div>
+          </div>
+          <div class="list-block">
+            <div class="hd">
+              <span class="ttl">Mis tareas</span>
+              <span class="ct">5 / 24</span>
+            </div>
+            <div class="list">
+              <div class="row"><span class="dot urgent"></span><span class="ttl">Aprobar guión final spot TV</span><span class="tag urgent">Hoy</span></div>
+              <div class="row"><span class="dot high"></span><span class="ttl">Reservar locación exterior</span><span class="meta">vie 6 jun</span></div>
+              <div class="row done"><span class="dot normal"></span><span class="ttl">Reunión con Ronda — kick-off</span><span class="meta">28 may</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- PROYECTO — Dark + Light pair                                    -->
+<!-- ============================================================== -->
+<section class="theme-pair">
+  <div class="theme-pair-hd">
+    <h2>Proyecto · tareas</h2>
+    <span class="ct">// tabs · lista · acciones</span>
+  </div>
+  <div class="pair">
+    <!-- DARK Proyecto -->
+    <div class="screen dark-screen">
+      <span class="label">Dark</span>
+      <div class="dash">
+        <aside class="sb">
+          <div class="brand"><div class="mark">P</div>Pistachio</div>
+          <div class="group">
+            <div class="hd">Trabajo</div>
+            <a>Dashboard</a>
+            <a class="active">Proyectos</a>
+            <a>Mis tareas</a>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="top">
+            <span class="crumbs">/ Proyectos / Aliaga</span>
+            <div class="actions"><span class="key">⌘K</span></div>
+          </div>
+          <div class="title">Aliaga — Spot TV</div>
+          <div class="tabs">
+            <span class="tab active">Tareas</span>
+            <span class="tab">Documentos</span>
+            <span class="tab">Notas</span>
+            <span class="tab">Historial</span>
+          </div>
+          <div class="list-block">
+            <div class="hd">
+              <span class="ttl">Activas</span>
+              <span class="ct">2 / 4</span>
+            </div>
+            <div class="list">
+              <div class="row"><span class="dot urgent"></span><span class="ttl">Aprobar guión final con cliente</span><span class="tag urgent">Hoy</span></div>
+              <div class="row"><span class="dot high"></span><span class="ttl">Reservar locación exterior</span><span class="meta">vie 6 jun</span></div>
+            </div>
+          </div>
+          <div class="list-block">
+            <div class="hd">
+              <span class="ttl">Completadas</span>
+              <span class="ct">2</span>
+            </div>
+            <div class="list">
+              <div class="row done"><span class="dot normal"></span><span class="ttl">Reunión con Ronda — kick-off</span><span class="meta">28 may</span></div>
+              <div class="row done"><span class="dot normal"></span><span class="ttl">Brief inicial recibido</span><span class="meta">25 may</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIGHT Proyecto -->
+    <div class="screen light-screen">
+      <span class="label">Light</span>
+      <div class="dash">
+        <aside class="sb">
+          <div class="brand"><div class="mark">P</div>Pistachio</div>
+          <div class="group">
+            <div class="hd">Trabajo</div>
+            <a>Dashboard</a>
+            <a class="active">Proyectos</a>
+            <a>Mis tareas</a>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="top">
+            <span class="crumbs">/ Proyectos / Aliaga</span>
+            <div class="actions"><span class="key">⌘K</span></div>
+          </div>
+          <div class="title">Aliaga — Spot TV</div>
+          <div class="tabs">
+            <span class="tab active">Tareas</span>
+            <span class="tab">Documentos</span>
+            <span class="tab">Notas</span>
+            <span class="tab">Historial</span>
+          </div>
+          <div class="list-block">
+            <div class="hd">
+              <span class="ttl">Activas</span>
+              <span class="ct">2 / 4</span>
+            </div>
+            <div class="list">
+              <div class="row"><span class="dot urgent"></span><span class="ttl">Aprobar guión final con cliente</span><span class="tag urgent">Hoy</span></div>
+              <div class="row"><span class="dot high"></span><span class="ttl">Reservar locación exterior</span><span class="meta">vie 6 jun</span></div>
+            </div>
+          </div>
+          <div class="list-block">
+            <div class="hd">
+              <span class="ttl">Completadas</span>
+              <span class="ct">2</span>
+            </div>
+            <div class="list">
+              <div class="row done"><span class="dot normal"></span><span class="ttl">Reunión con Ronda — kick-off</span><span class="meta">28 may</span></div>
+              <div class="row done"><span class="dot normal"></span><span class="ttl">Brief inicial recibido</span><span class="meta">25 may</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- REPORTS — Dark + Light pair                                     -->
+<!-- ============================================================== -->
+<section class="theme-pair">
+  <div class="theme-pair-hd">
+    <h2>Reports — uso del color como dato</h2>
+    <span class="ct">// triotone funcional, charts incluidos</span>
+  </div>
+  <div class="pair">
+    <!-- DARK Reports -->
+    <div class="screen dark-screen">
+      <span class="label">Dark</span>
+      <div class="dash">
+        <aside class="sb">
+          <div class="brand"><div class="mark">P</div>Pistachio</div>
+          <div class="group">
+            <div class="hd">Análisis</div>
+            <a>Operaciones</a>
+            <a class="active">Reports</a>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="top">
+            <span class="crumbs">/ Reports</span>
+          </div>
+          <div class="title">Mayo <span class="accent">2026</span></div>
+          <div class="kpi-strip">
+            <div class="kpi up"><div class="num">$4.2M</div><div class="row"><span class="lbl">Ventas</span><span class="delta up">+18%</span></div></div>
+            <div class="kpi down"><div class="num">$1.8M</div><div class="row"><span class="lbl">Gastos</span><span class="delta down">+4%</span></div></div>
+            <div class="kpi up"><div class="num">$2.4M</div><div class="row"><span class="lbl">Neto</span><span class="delta up">+29%</span></div></div>
+          </div>
+          <div class="chart-hint">
+            <div class="ch">
+              <span class="ttl">Tareas por estado</span>
+              <div class="bars">
+                <div class="b" style="height:30%;background:#6c7079"></div>
+                <div class="b" style="height:75%;background:var(--cobalt)"></div>
+                <div class="b" style="height:50%;background:var(--coral)"></div>
+                <div class="b" style="height:90%;background:var(--lime)"></div>
+              </div>
+            </div>
+            <div class="ch">
+              <span class="ttl">Top colaboradores</span>
+              <div class="bars">
+                <div class="b" style="height:90%;background:var(--lime)"></div>
+                <div class="b" style="height:65%;background:var(--lime);opacity:0.7"></div>
+                <div class="b" style="height:45%;background:var(--lime);opacity:0.5"></div>
+                <div class="b" style="height:30%;background:var(--lime);opacity:0.35"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIGHT Reports -->
+    <div class="screen light-screen">
+      <span class="label">Light</span>
+      <div class="dash">
+        <aside class="sb">
+          <div class="brand"><div class="mark">P</div>Pistachio</div>
+          <div class="group">
+            <div class="hd">Análisis</div>
+            <a>Operaciones</a>
+            <a class="active">Reports</a>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="top">
+            <span class="crumbs">/ Reports</span>
+          </div>
+          <div class="title">Mayo <span class="accent">2026</span></div>
+          <div class="kpi-strip">
+            <div class="kpi up"><div class="num">$4.2M</div><div class="row"><span class="lbl">Ventas</span><span class="delta up">+18%</span></div></div>
+            <div class="kpi down"><div class="num">$1.8M</div><div class="row"><span class="lbl">Gastos</span><span class="delta down">+4%</span></div></div>
+            <div class="kpi up"><div class="num">$2.4M</div><div class="row"><span class="lbl">Neto</span><span class="delta up">+29%</span></div></div>
+          </div>
+          <div class="chart-hint">
+            <div class="ch">
+              <span class="ttl">Tareas por estado</span>
+              <div class="bars">
+                <div class="b" style="height:30%;background:#9a9da4"></div>
+                <div class="b" style="height:75%;background:var(--cobalt)"></div>
+                <div class="b" style="height:50%;background:var(--coral)"></div>
+                <div class="b" style="height:90%;background:#5d8800"></div>
+              </div>
+            </div>
+            <div class="ch">
+              <span class="ttl">Top colaboradores</span>
+              <div class="bars">
+                <div class="b" style="height:90%;background:#5d8800"></div>
+                <div class="b" style="height:65%;background:#5d8800;opacity:0.7"></div>
+                <div class="b" style="height:45%;background:#5d8800;opacity:0.5"></div>
+                <div class="b" style="height:30%;background:#5d8800;opacity:0.35"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <h3>Qué decirme</h3>
+  <p>Yo voto por implementar esta dirección completa. Pero si algo no encaja:</p>
+  <ul>
+    <li><code>Sí, dale</code> — implemento la dirección al app (1-2 días, queda en branch <code>redesign/edition-02</code>).</li>
+    <li><code>Sí, pero cambiá X</code> — iteramos (ej. "cambiá lime por amber", "menos color, más neutro", "más denso").</li>
+    <li><code>Sólo dark</code> / <code>sólo light</code> — implementamos un único theme en vez de los dos.</li>
+    <li><code>No</code> — me decís qué falla específicamente y propongo otra dirección concreta.</li>
+  </ul>
+</footer>
+
+</body>
+</html>

@@ -11,11 +11,31 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
+        // Edition 04 tokens (mapeo directo a CSS vars de globals.css)
+        bg: "var(--bg)",
+        "bg-2": "var(--bg-2)",
+        ink: "var(--ink)",
+        "ink-soft": "var(--ink-soft)",
+        "ink-faint": "var(--ink-faint)",
+        rule: "var(--rule)",
+        "rule-strong": "var(--rule-strong)",
+        accent: "var(--accent)",
+        "accent-soft": "var(--accent-soft)",
+        "project-color": "var(--project-color)",
+        urgent: "var(--urgent)",
+        "urgent-soft": "var(--urgent-soft)",
+        done: "var(--done)",
+        "done-soft": "var(--done-soft)",
+        warn: "var(--warn)",
+        "warn-soft": "var(--warn-soft)",
+
+        // Compat con código existente (Edition 03 y antes)
+        background: "var(--bg)",
+        foreground: "var(--ink)",
         surface: "var(--surface)",
         "surface-el": "var(--surface-el)",
-        border: "var(--border)",
-        "border-strong": "var(--border-strong)",
+        border: "var(--rule)",
+        "border-strong": "var(--rule-strong)",
         primary: {
           DEFAULT: "var(--primary)",
           hover: "var(--primary-hover)",
@@ -27,13 +47,13 @@ const config: Config = {
           foreground: "var(--secondary-foreground)",
         },
         text: {
-          DEFAULT: "var(--text)",
-          muted: "var(--text-muted)",
-          tertiary: "var(--text-tertiary)",
+          DEFAULT: "var(--ink)",
+          muted: "var(--ink-soft)",
+          tertiary: "var(--ink-faint)",
         },
-        success: "var(--success)",
-        warning: "var(--warning)",
-        danger: "var(--danger)",
+        success: "var(--done)",
+        warning: "var(--warn)",
+        danger: "var(--urgent)",
         info: "var(--info)",
         sidebar: {
           DEFAULT: "var(--sidebar)",
@@ -42,30 +62,24 @@ const config: Config = {
           border: "var(--sidebar-border)",
           active: "var(--sidebar-active)",
         },
-        // shadcn compatibility
-        foreground: "var(--text)",
         card: {
           DEFAULT: "var(--surface)",
-          foreground: "var(--text)",
+          foreground: "var(--ink)",
         },
         popover: {
           DEFAULT: "var(--surface-el)",
-          foreground: "var(--text)",
+          foreground: "var(--ink)",
         },
         muted: {
-          DEFAULT: "var(--surface-el)",
-          foreground: "var(--text-muted)",
-        },
-        accent: {
-          DEFAULT: "var(--primary-muted)",
-          foreground: "var(--primary)",
+          DEFAULT: "var(--surface-2)",
+          foreground: "var(--ink-soft)",
         },
         destructive: {
-          DEFAULT: "var(--danger)",
-          foreground: "var(--destructive-foreground)",
+          DEFAULT: "var(--urgent)",
+          foreground: "#ffffff",
         },
-        input: "var(--border)",
-        ring: "var(--primary)",
+        input: "var(--rule)",
+        ring: "var(--project-color)",
       },
       borderRadius: {
         lg: "0.625rem",
@@ -81,20 +95,19 @@ const config: Config = {
         out: "var(--ease-out)",
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
-        // Display = Sora (Sunset Aurora) — sans geom. cálida para headings
-        display: [
-          "var(--font-sora)",
-          "var(--font-geist-sans)",
-          "system-ui",
-          "sans-serif",
-        ],
-        mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
+        // Una sola fuente. Display = mismo Satoshi en mayor peso/tamaño.
+        sans: ["Satoshi", "system-ui", "-apple-system", "sans-serif"],
+        display: ["Satoshi", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"],
+      },
+      letterSpacing: {
+        "title": "-0.04em",
+        "title-tight": "-0.035em",
+        "label": "0.18em",
       },
       animation: {
         "fade-in": "fade-in 0.2s ease-out",
         "slide-up": "slide-up 0.2s var(--ease-out)",
-        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
       keyframes: {
         "fade-in": {

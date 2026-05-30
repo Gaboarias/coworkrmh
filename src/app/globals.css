@@ -3,130 +3,186 @@
 @tailwind utilities;
 
 /* ============================================================
-   Sunset Aurora design tokens
-   Dark theme único — la app vive sobre un fondo aurora cálido
-   con superficies glass. Los 4 selectores (root, [pine], .dark,
-   .dark[pine]) resuelven al mismo set para retro-compat con
-   BaseToggle/ThemeProvider (UI puede quedarse, no afecta).
+   Edition 04 — design tokens
+   ────────────────────────────────────────────────────────────
+   Dual theme: light (default) + dark (.dark class on html).
+   Cero glass, cero aurora, cero gradient. Surfaces sólidas con
+   tinte warm hacia "paper/ink", tipografía Satoshi Variable.
+   El color sale de los proyectos (var(--project-color) opcional),
+   no de accent globales.
    ============================================================ */
 
 @layer base {
-  :root,
-  :root[data-base="pine"],
-  .dark,
-  .dark[data-base="pine"] {
-    /* ---- SUNSET AURORA · base dark ---- */
-    /* La aurora SVG vive como capa fija en el body; los tokens son
-       el dark base + glass overlays que dejan ver la aurora. */
-    --background: #0a0408;
-    /* Surfaces opacas (0.82-0.92) — la aurora vive en el background pero
-       NO se mete debajo del contenido. Tinte cálido sutil hacia el rojo
-       quemado para mantener cohesión con la paleta sin bleed-through. */
-    --surface: rgba(20, 10, 14, 0.86);
-    --surface-el: rgba(28, 14, 20, 0.94);
-    --border: rgba(255, 220, 200, 0.18);
-    --border-strong: rgba(255, 220, 200, 0.32);
+  /* === LIGHT (default) === */
+  :root {
+    --bg: #f5f2eb;
+    --bg-2: #ebe7dc;
+    --surface: #ffffff;
+    --surface-2: #f1ede3;
+    --surface-el: #ffffff;
 
-    /* Acentos triotone cálidos: amber → coral → magenta */
-    --amber: #ffb347;
-    --coral: #ff6b6b;
-    --magenta: #ff3d8b;
+    --ink: #161412;
+    --ink-soft: #524d44;
+    --ink-faint: #8a8378;
 
-    /* Primary = coral (centro del triotone, AA ≥4.5 sobre dark) */
-    --primary: #ff6b6b;
-    --primary-hover: #ff8585;
-    --primary-muted: rgba(255, 107, 107, 0.18);
-    --primary-foreground: #1a0813;
+    --rule: rgba(22, 20, 18, 0.09);
+    --rule-strong: rgba(22, 20, 18, 0.22);
 
-    --secondary: #ffb347;
-    --secondary-foreground: #1a0813;
+    /* Default accent — usado en aggregations (dashboard/reports).
+       Cuando entrás a un proyecto, --project-color lo override. */
+    --accent: #161412;
+    --accent-soft: rgba(22, 20, 18, 0.06);
+    --project-color: var(--accent);
 
-    --text: #fff8f0;          /* warm white, 14+:1 sobre dark */
-    --text-muted: #f0dfcc;    /* brighter, 10+:1 sobre dark */
-    --text-tertiary: #d4bea4; /* brighter, 7+:1 sobre dark, mantiene legibilidad incluso con strikethrough/opacity */
+    /* Estados — committed pero refinados */
+    --urgent: #e8281c;
+    --urgent-soft: rgba(232, 40, 28, 0.1);
+    --done: #1f7a4d;
+    --done-soft: rgba(31, 122, 77, 0.1);
+    --info: #2e52d9;
+    --info-soft: rgba(46, 82, 217, 0.1);
+    --warn: #e89a0d;
+    --warn-soft: rgba(232, 154, 13, 0.1);
 
-    --success: #34d399;       /* emerald, no choca con coral */
-    --warning: #ffb347;
-    --danger: #ff4d6d;
-    --info: #a78bfa;
+    /* Colores semánticos legacy (shadcn/ui compat) */
+    --primary: var(--ink);
+    --primary-hover: #2a2622;
+    --primary-foreground: var(--bg);
+    --primary-muted: var(--accent-soft);
+    --secondary: var(--ink-soft);
+    --secondary-foreground: var(--bg);
+    --background: var(--bg);
+    --foreground: var(--ink);
+    --text: var(--ink);
+    --text-muted: var(--ink-soft);
+    --text-tertiary: var(--ink-faint);
+    --border: var(--rule);
+    --border-strong: var(--rule-strong);
+    --danger: var(--urgent);
+    --success: var(--done);
+    --warning: var(--warn);
 
-    /* Sidebar — superficie opaca, NO glass. La aurora vive afuera. */
-    --sidebar: rgba(20, 10, 14, 0.92);
-    --sidebar-foreground: #fff8f0;
-    --sidebar-muted: #d4bea4;
-    --sidebar-border: rgba(255, 220, 200, 0.18);
-    --sidebar-active: #ffb347;
-
-    /* Elevation: glow cálido en vez de sombra negra */
-    --elev-1: 0 1px 2px rgba(0, 0, 0, 0.5);
-    --elev-2: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px -14px rgba(255, 107, 107, 0.18);
-    --elev-3: 0 2px 4px rgba(0, 0, 0, 0.6), 0 18px 44px -18px rgba(255, 61, 139, 0.22);
-
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --radius: 0.75rem;
-
-    /* shadcn/ui compat aliases */
     --card: var(--surface);
-    --card-foreground: var(--text);
+    --card-foreground: var(--ink);
     --popover: var(--surface-el);
-    --popover-foreground: var(--text);
-    --muted: var(--surface-el);
-    --muted-foreground: var(--text-muted);
-    --accent: var(--primary-muted);
-    --accent-foreground: var(--primary);
-    --destructive: var(--danger);
-    --destructive-foreground: #fff8f0;
-    --input: var(--border);
-    --ring: var(--primary);
+    --popover-foreground: var(--ink);
+    --muted: var(--surface-2);
+    --muted-foreground: var(--ink-soft);
+    --destructive: var(--urgent);
+    --destructive-foreground: #ffffff;
+    --input: var(--rule);
+    --ring: var(--ink);
+
+    --sidebar: var(--bg);
+    --sidebar-foreground: var(--ink);
+    --sidebar-muted: var(--ink-faint);
+    --sidebar-border: var(--rule);
+    --sidebar-active: var(--ink);
+
+    --radius: 0.5rem;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --elev-1: 0 1px 2px rgba(22, 20, 18, 0.06);
+    --elev-2: 0 1px 2px rgba(22, 20, 18, 0.06), 0 4px 12px -4px rgba(22, 20, 18, 0.1);
+    --elev-3: 0 1px 2px rgba(22, 20, 18, 0.08), 0 12px 28px -12px rgba(22, 20, 18, 0.18);
+  }
+
+  /* === DARK === */
+  .dark {
+    --bg: #0a0a09;
+    --bg-2: #131311;
+    --surface: #141412;
+    --surface-2: #1a1a18;
+    --surface-el: #1f1f1c;
+
+    --ink: #f0ede5;
+    --ink-soft: #a39d92;
+    --ink-faint: #6a655c;
+
+    --rule: rgba(240, 237, 229, 0.08);
+    --rule-strong: rgba(240, 237, 229, 0.2);
+
+    --accent: #f0ede5;
+    --accent-soft: rgba(240, 237, 229, 0.08);
+    --project-color: var(--accent);
+
+    --urgent: #ff4a3a;
+    --urgent-soft: rgba(255, 74, 58, 0.14);
+    --done: #2e9e63;
+    --done-soft: rgba(46, 158, 99, 0.14);
+    --info: #5577ee;
+    --info-soft: rgba(85, 119, 238, 0.14);
+    --warn: #f5af2e;
+    --warn-soft: rgba(245, 175, 46, 0.14);
+
+    --primary: var(--ink);
+    --primary-hover: #ffffff;
+    --primary-foreground: var(--bg);
+    --primary-muted: var(--accent-soft);
+
+    --elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --elev-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px -4px rgba(0, 0, 0, 0.5);
+    --elev-3: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 28px -12px rgba(0, 0, 0, 0.6);
   }
 }
 
 @layer base {
-  * { @apply border-border; }
+  * { border-color: var(--rule); }
   html, body {
-    /* IMPORTANTE: SIN background-color en html ni body.
-       El AuroraBackground (position:fixed, z-index:-1) DEBE estar
-       sobre el canvas raíz para verse. Si html o body tienen bg
-       sólido, lo tapan. El AuroraBackground trae su propio gradient
-       dark de fallback. */
-    background: transparent;
+    background: var(--bg);
+    color: var(--ink);
   }
   html {
-    font-size: 17px;
+    font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-  body {
-    @apply text-text;
-    font-weight: 500;
-    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "ss01" 1;
     text-rendering: optimizeLegibility;
   }
-  /* Headings: Sora bold-ish (sin serif — la marca ahora es geometric warm) */
-  h1, h2, h3, h4 {
-    font-family: var(--font-geist-sans), "Sora", system-ui, sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+  body {
+    font-family: "Satoshi", system-ui, -apple-system, sans-serif;
+    font-weight: 500;                          /* body 500 bumped */
+    font-feature-settings: "ss01" 1, "kern" 1, "liga" 1, "calt" 1;
+    line-height: 1.55;
   }
-  h1 { letter-spacing: -0.03em; }
-  h2 { letter-spacing: -0.025em; }
 
-  .tabular, td.numeric, .kpi-value, .money {
+  /* Headings: Satoshi bold + tight tracking, generous size */
+  h1, h2, h3, h4 {
+    font-family: "Satoshi", system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+  h1 { letter-spacing: -0.035em; font-weight: 700; }
+  h2 { letter-spacing: -0.025em; font-weight: 700; }
+  h3 { font-weight: 600; }
+
+  /* Tabular numerals donde importa */
+  .tabular, td.numeric, .kpi-value, .money, .num {
     font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* Mono utility (labels técnicos) */
+  .mono, .eyebrow, .issue-num {
+    font-family: var(--font-mono), "JetBrains Mono", monospace;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
   }
 }
 
-/* Scrollbar — sutil, tinte cálido */
+/* Scrollbar — sutil, ink-based */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255, 179, 71, 0.2); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 179, 71, 0.4); }
-
-/* Focus ring — coral */
-:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+::-webkit-scrollbar-thumb {
+  background: var(--rule-strong);
   border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--ink-soft); }
+
+/* Focus ring — usa project-color o ink fallback */
+:focus-visible {
+  outline: 2px solid var(--project-color);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 /* TipTap */
@@ -134,44 +190,139 @@
 .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: var(--text-tertiary);
+  color: var(--ink-faint);
   pointer-events: none;
   height: 0;
 }
 
-/* Glass utility — sólo casos puntuales (drawers/overlays sobre la aurora).
-   Las superficies normales (bg-surface) son opacas. */
-.glass {
-  background: rgba(20, 10, 14, 0.7);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+/* ── Componentes signature de Edition 04 ─────────────────────── */
+
+/* Hairline rule con label inline */
+.h-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
 }
-.glass-strong {
-  background: rgba(20, 10, 14, 0.85);
-  backdrop-filter: blur(32px) saturate(160%);
-  -webkit-backdrop-filter: blur(32px) saturate(160%);
-  border: 1px solid var(--border);
+.h-rule .line {
+  flex: 1;
+  height: 1px;
+  background: var(--rule-strong);
+}
+.h-rule .lbl {
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.h-rule .ct {
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  white-space: nowrap;
 }
 
-/* Auto-blur leve en superficies para softness, pero las superficies ya
-   son ~86-94% opacas → el blur es decorativo, no estructural. Si fuera
-   un browser viejo sin backdrop-filter, el contraste sigue OK. */
-.bg-surface,
-.bg-surface-el,
-.bg-sidebar {
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
+/* Drop-line title — pattern reusable */
+.title-drop {
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+.title-drop .l2 {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-soft);
+  padding-left: 1.2em;
 }
 
-/* Status badges — triotone cálido */
-.status-todo { background: rgba(179, 156, 132, 0.16); color: var(--text-muted); }
-.status-in_progress { background: rgba(255, 179, 71, 0.18); color: var(--amber); border: 1px solid rgba(255, 179, 71, 0.4); }
-.status-review { background: rgba(255, 107, 107, 0.18); color: var(--coral); border: 1px solid rgba(255, 107, 107, 0.4); }
-.status-done { background: rgba(255, 61, 139, 0.18); color: var(--magenta); border: 1px solid rgba(255, 61, 139, 0.4); }
+/* Issue numeration (top-right corner) */
+.issue {
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  line-height: 1.5;
+  text-align: right;
+}
 
-.priority-low { background: rgba(167, 139, 250, 0.16); color: var(--info); }
-.priority-medium { background: rgba(255, 179, 71, 0.18); color: var(--amber); }
-.priority-high { background: rgba(255, 107, 107, 0.2); color: var(--coral); }
-.priority-urgent { background: rgba(255, 77, 109, 0.22); color: var(--danger); @apply animate-pulse; }
+/* Eyebrow above title */
+.eyebrow-line {
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Pills (status badges) — small caps mono */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 3px 7px;
+  border-radius: 2px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.pill-urgent { background: var(--urgent); color: #ffffff; }
+.pill-done { background: var(--done); color: #ffffff; }
+.pill-info { background: var(--info); color: #ffffff; }
+.pill-warn { background: var(--warn); color: #161412; }
+.pill-outline {
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  color: var(--ink-soft);
+}
+
+/* Hanging numbers en listas */
+.h-list {
+  display: flex;
+  flex-direction: column;
+  padding-left: 2rem;
+  position: relative;
+}
+.h-list-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  align-items: baseline;
+  position: relative;
+}
+.h-list-item + .h-list-item { border-top: 1px solid var(--rule); }
+.h-list-item-n {
+  position: absolute;
+  left: -2rem;
+  top: 0.75rem;
+  width: 1.5rem;
+  text-align: right;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+}
+
+/* Project accent bar — top de proyectos */
+.proj-bar {
+  height: 3px;
+  background: var(--project-color);
+  width: 100%;
+}
+
+/* Hover surface (filas clickeables) */
+.row-hover { transition: background-color 0.15s ease-out; }
+.row-hover:hover { background: var(--accent-soft); }

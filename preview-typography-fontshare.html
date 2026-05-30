@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1400" />
+<title>Pistachio — 5 fuentes Fontshare</title>
+<link rel="preconnect" href="https://api.fontshare.com" />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&f[]=switzer@300,400,500,600,700,800&f[]=cabinet-grotesk@500,700,800,900&f[]=tanker@400&f[]=synonym@300,400,500,600,700,800&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --mono: 'JetBrains Mono', monospace;
+  --ink: #0a0a09;
+  --paper: #f5f2eb;
+  --rule: rgba(22, 20, 18, 0.12);
+  --rule-strong: rgba(22, 20, 18, 0.28);
+  --accent: #d63a1f;
+  --soft: #524d44;
+  --faint: #8a8378;
+}
+body {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 40px 0 80px;
+  min-height: 100vh;
+  font-family: 'Satoshi', system-ui, sans-serif;
+}
+
+/* Page header */
+.hd { max-width: 1320px; margin: 0 auto 48px; padding: 0 40px; }
+.hd .eyebrow {
+  font: 500 11px/1 var(--mono); letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--faint); margin-bottom: 18px;
+}
+.hd h1 {
+  font: 500 48px/1 'Satoshi';
+  letter-spacing: -0.03em; margin-bottom: 16px;
+}
+.hd p { color: var(--soft); font-size: 15px; line-height: 1.55; max-width: 740px; }
+.hd .legend {
+  margin-top: 26px; padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  font: 400 12px/1.5 'Satoshi'; color: var(--soft); max-width: 820px;
+}
+.hd .legend b { color: var(--ink); font-weight: 600; }
+.hd .license-pill {
+  display: inline-block;
+  font: 500 9px/1 var(--mono); letter-spacing: 0.16em;
+  text-transform: uppercase; padding: 5px 9px;
+  background: var(--ink); color: var(--paper);
+  border-radius: 2px; margin-top: 12px;
+}
+
+/* Option card */
+.opt { max-width: 1320px; margin: 0 auto 64px; padding: 0 40px; }
+.opt .opt-hd {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 32px; align-items: end;
+  padding-bottom: 18px; margin-bottom: 32px;
+  border-bottom: 1px solid var(--rule-strong);
+}
+.opt .opt-hd .left .num {
+  font: 500 11px/1 var(--mono); letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--faint); margin-bottom: 10px;
+}
+.opt .opt-hd .left .name {
+  font-size: 32px; letter-spacing: -0.025em;
+  margin-bottom: 8px;
+}
+.opt .opt-hd .left .meta {
+  font: 400 13px/1.5 'Satoshi'; color: var(--soft);
+  max-width: 540px;
+}
+.opt .opt-hd .left .meta b { color: var(--ink); font-weight: 600; }
+.opt .opt-hd .right {
+  font: 500 10px/1.5 var(--mono); letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--faint);
+  text-align: right; flex-shrink: 0;
+}
+.opt .opt-hd .right b { color: var(--ink); font-weight: 500; }
+.opt .opt-hd .right .lic {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 7px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  border-radius: 2px;
+  font-size: 9px;
+}
+
+/* Specimen grid */
+.specimen { display: grid; grid-template-columns: 1.6fr 1fr; gap: 56px; align-items: start; }
+.specimen .left-col { display: flex; flex-direction: column; gap: 32px; }
+.specimen .right-col { display: flex; flex-direction: column; gap: 28px; padding-top: 12px; }
+
+.sample-block { display: flex; flex-direction: column; gap: 6px; }
+.sample-block .role {
+  font: 500 9px/1 var(--mono); letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--faint);
+}
+
+.display {
+  font-size: 64px; line-height: 0.95; letter-spacing: -0.04em;
+}
+.display em { font-style: italic; color: var(--soft); font-weight: 400; }
+.h2 { font-size: 24px; line-height: 1.2; letter-spacing: -0.02em; }
+.body { font-size: 14px; line-height: 1.55; color: var(--soft); }
+.body b { color: var(--ink); font-weight: 600; }
+
+.big-num {
+  font-size: 88px; line-height: 0.9; letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+.big-num .sub { font-size: 0.5em; color: var(--soft); }
+.delta { font: 400 12px/1.5 'Satoshi'; color: var(--soft); font-style: italic; }
+
+.mini-list { display: flex; flex-direction: column; padding-left: 28px; position: relative; }
+.mini-list .row {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 12px; padding: 9px 0; align-items: baseline;
+  position: relative;
+}
+.mini-list .row + .row { border-top: 1px solid var(--rule); }
+.mini-list .row .n {
+  position: absolute; left: -28px; top: 11px;
+  font: 400 10px/1 var(--mono); color: var(--faint);
+  width: 22px; text-align: right; letter-spacing: 0.04em;
+}
+.mini-list .row .t { font-size: 13px; line-height: 1.45; }
+.mini-list .row.priority .t { font-weight: 500; }
+.mini-list .row .m { font: 400 10px/1 var(--mono); color: var(--faint); letter-spacing: 0.06em; }
+.mini-list .row.done .t { text-decoration: line-through; color: var(--faint); }
+.pill {
+  font: 500 9px/1 var(--mono); padding: 3px 7px;
+  background: var(--accent); color: var(--paper);
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+
+/* ===== PER-OPTION FONTS ===== */
+
+/* 01 SATOSHI — todo Satoshi · BUMP DE PESOS para mayor presencia */
+.opt-satoshi .display, .opt-satoshi .h2, .opt-satoshi .body,
+.opt-satoshi .big-num, .opt-satoshi .delta,
+.opt-satoshi .mini-list .row .t,
+.opt-satoshi .opt-hd .left .name { font-family: 'Satoshi', sans-serif; }
+.opt-satoshi .display { font-weight: 700; }            /* era 500 */
+.opt-satoshi .h2 { font-weight: 700; }
+.opt-satoshi .body { font-weight: 500; }               /* nuevo · body antes era inheritado 400 */
+.opt-satoshi .big-num { font-weight: 500; }            /* era 400 */
+.opt-satoshi .delta { font-weight: 500; }              /* nuevo · delta antes 400 */
+.opt-satoshi .mini-list .row .t { font-weight: 500; }  /* nuevo · lista antes 400 */
+.opt-satoshi .mini-list .row.priority .t { font-weight: 700; }  /* priority bold */
+.opt-satoshi .opt-hd .left .name { font-weight: 900; }  /* era 700 */
+
+/* 02 SWITZER — todo Switzer */
+.opt-switzer .display, .opt-switzer .h2, .opt-switzer .body,
+.opt-switzer .big-num, .opt-switzer .delta,
+.opt-switzer .mini-list .row .t,
+.opt-switzer .opt-hd .left .name { font-family: 'Switzer', sans-serif; }
+.opt-switzer .display { font-weight: 500; }
+.opt-switzer .h2 { font-weight: 600; }
+.opt-switzer .big-num { font-weight: 400; }
+.opt-switzer .opt-hd .left .name { font-weight: 700; }
+
+/* 03 CABINET GROTESK — display + body diferentes contextos */
+.opt-cabinet .display, .opt-cabinet .h2, .opt-cabinet .big-num,
+.opt-cabinet .opt-hd .left .name {
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+.opt-cabinet .body, .opt-cabinet .delta,
+.opt-cabinet .mini-list .row .t {
+  font-family: 'Synonym', sans-serif;
+}
+.opt-cabinet .display { font-weight: 700; }
+.opt-cabinet .h2 { font-weight: 700; }
+.opt-cabinet .big-num { font-weight: 500; }
+.opt-cabinet .opt-hd .left .name { font-weight: 800; }
+
+/* 04 TANKER (display) + SATOSHI (body) */
+.opt-tanker .display, .opt-tanker .h2, .opt-tanker .big-num,
+.opt-tanker .opt-hd .left .name {
+  font-family: 'Tanker', sans-serif;
+}
+.opt-tanker .body, .opt-tanker .delta,
+.opt-tanker .mini-list .row .t {
+  font-family: 'Satoshi', sans-serif;
+}
+.opt-tanker .display { font-weight: 400; letter-spacing: -0.03em; }
+.opt-tanker .h2 { font-weight: 400; letter-spacing: -0.01em; }
+.opt-tanker .big-num { font-weight: 400; letter-spacing: -0.04em; }
+.opt-tanker .opt-hd .left .name { font-weight: 400; letter-spacing: -0.02em; }
+
+/* 05 SYNONYM — todo Synonym */
+.opt-synonym .display, .opt-synonym .h2, .opt-synonym .body,
+.opt-synonym .big-num, .opt-synonym .delta,
+.opt-synonym .mini-list .row .t,
+.opt-synonym .opt-hd .left .name { font-family: 'Synonym', sans-serif; }
+.opt-synonym .display { font-weight: 500; }
+.opt-synonym .h2 { font-weight: 600; }
+.opt-synonym .big-num { font-weight: 400; }
+.opt-synonym .opt-hd .left .name { font-weight: 700; }
+
+/* Footer */
+.foot { max-width: 1320px; margin: 80px auto 0; padding: 36px 40px; border-top: 1px solid var(--rule-strong); }
+.foot h3 { font: 500 28px/1 'Satoshi'; letter-spacing: -0.02em; margin-bottom: 14px; }
+.foot p { color: var(--soft); font-size: 14px; line-height: 1.55; max-width: 760px; }
+.foot ul { color: var(--ink); font-size: 14px; line-height: 1.8; margin-top: 14px; padding-left: 20px; }
+.foot ul code {
+  background: var(--ink); color: var(--paper);
+  padding: 2px 6px; border-radius: 2px;
+  font: 500 12px/1.4 var(--mono);
+}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="eyebrow">// Tipografía Fontshare · 5 opciones</div>
+  <h1>5 fuentes Fontshare, mismo contenido.</h1>
+  <p>Toda la biblioteca Fontshare es <b>free para uso comercial</b> — diseñada y mantenida por
+  Indian Type Foundry. Las mismas fuentes que pagan Stripe, Linear, Notion. Curación alta,
+  variables, italic donde aplica.</p>
+  <span class="license-pill">✓ Commercial free · Indian Type Foundry</span>
+</header>
+
+<!-- ============================================================== -->
+<!-- 1. SATOSHI                                                       -->
+<!-- ============================================================== -->
+<section class="opt opt-satoshi">
+  <div class="opt-hd">
+    <div class="left">
+      <div class="num">01 / 05</div>
+      <div class="name">Satoshi</div>
+      <div class="meta">Modern geometric sans con calidez. <b>5 weights · italic</b>.
+      Default-pro: limpia, contemporánea, neutral en el buen sentido. Numerales fuertes con tabular variant.
+      Si fuera una sola fuente para todo, esta sería la apuesta segura.</div>
+    </div>
+    <div class="right">
+      Foundry: <b>Indian Type Foundry</b><br/>
+      Weights: <b>300, 400, 500, 700, 900 + italic</b><br/>
+      Use: display + body<br/>
+      <span class="lic">commercial free</span>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="left-col">
+      <div class="sample-block">
+        <div class="role">Display · 64px · wght 700 (bumped)</div>
+        <div class="display">Hola Gabriel, <em>buen sábado.</em></div>
+      </div>
+      <div class="sample-block">
+        <div class="role">H2 · 24px · wght 700</div>
+        <div class="h2">Urgente esta semana</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Body · 14px · wght 500 (bumped)</div>
+        <div class="body">El estudio tiene <b>24 proyectos activos</b> y <b>187 tareas</b> en curso.
+        Cerraste <b>$4.2M</b> el mes pasado — el mejor mes del trimestre.</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Lista · regular 500 · priority 700</div>
+        <div class="mini-list">
+          <div class="row priority"><span class="n">01</span><span class="t">Aprobar guión final spot TV</span><span class="pill">hoy</span></div>
+          <div class="row"><span class="n">02</span><span class="t">Reservar locación exterior</span><span class="m">vie 6 jun</span></div>
+          <div class="row done"><span class="n">03</span><span class="t">Reunión con Ronda — kick-off</span><span class="m">28 may</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="sample-block">
+        <div class="role">Hero · 88px · wght 500 (bumped)</div>
+        <div class="big-num">$4.2<span class="sub">M</span></div>
+        <div class="delta">+18% vs abril</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Numerales en grilla · wght 500</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px">
+          <div>
+            <div style="font-family:'Satoshi';font-size:36px;font-weight:500;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">24</div>
+            <div style="font:500 9px/1 var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-top:6px">Proyectos</div>
+          </div>
+          <div>
+            <div style="font-family:'Satoshi';font-size:36px;font-weight:500;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">187</div>
+            <div style="font:500 9px/1 var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-top:6px">Tareas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- 2. SWITZER                                                       -->
+<!-- ============================================================== -->
+<section class="opt opt-switzer">
+  <div class="opt-hd">
+    <div class="left">
+      <div class="num">02 / 05</div>
+      <div class="name">Switzer</div>
+      <div class="meta">Neogrotesque variable con autoridad. <b>6 weights · italic</b>.
+      Más "swiss" que Satoshi — más rígida en los contornos, más profesional. Display lee
+      como un periódico moderno. Para un studio que quiere transmitir seriedad.</div>
+    </div>
+    <div class="right">
+      Foundry: <b>Indian Type Foundry</b><br/>
+      Weights: <b>300–800 + italic</b><br/>
+      Use: display + body<br/>
+      <span class="lic">commercial free</span>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="left-col">
+      <div class="sample-block">
+        <div class="role">Display · 64px · wght 500</div>
+        <div class="display">Hola Gabriel, <em>buen sábado.</em></div>
+      </div>
+      <div class="sample-block">
+        <div class="role">H2 · 24px · wght 600</div>
+        <div class="h2">Urgente esta semana</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Body · 14px · wght 400</div>
+        <div class="body">El estudio tiene <b>24 proyectos activos</b> y <b>187 tareas</b> en curso.
+        Cerraste <b>$4.2M</b> el mes pasado — el mejor mes del trimestre.</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Lista</div>
+        <div class="mini-list">
+          <div class="row priority"><span class="n">01</span><span class="t">Aprobar guión final spot TV</span><span class="pill">hoy</span></div>
+          <div class="row"><span class="n">02</span><span class="t">Reservar locación exterior</span><span class="m">vie 6 jun</span></div>
+          <div class="row done"><span class="n">03</span><span class="t">Reunión con Ronda — kick-off</span><span class="m">28 may</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="sample-block">
+        <div class="role">Hero · 88px</div>
+        <div class="big-num">$4.2<span class="sub">M</span></div>
+        <div class="delta">+18% vs abril</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Numerales en grilla</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px">
+          <div>
+            <div style="font-family:'Switzer';font-size:36px;font-weight:400;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">24</div>
+            <div style="font:500 9px/1 var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-top:6px">Proyectos</div>
+          </div>
+          <div>
+            <div style="font-family:'Switzer';font-size:36px;font-weight:400;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">187</div>
+            <div style="font:500 9px/1 var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-top:6px">Tareas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- 3. CABINET GROTESK + SYNONYM (body)                              -->
+<!-- ============================================================== -->
+<section class="opt opt-cabinet">
+  <div class="opt-hd">
+    <div class="left">
+      <div class="num">03 / 05</div>
+      <div class="name">Cabinet Grotesk + Synonym</div>
+      <div class="meta">Pair: <b>Cabinet</b> para display (bold, character con dejo retro-moderno) +
+      <b>Synonym</b> para body (calma, refinement). Cabinet tiene presencia — sus titulares
+      pegan. Synonym deja respirar el texto largo.</div>
+    </div>
+    <div class="right">
+      Foundry: <b>Indian Type Foundry</b><br/>
+      Pair: <b>Cabinet 500-900 · Synonym 300-800</b><br/>
+      Use: display = Cabinet · body = Synonym<br/>
+      <span class="lic">commercial free</span>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="left-col">
+      <div class="sample-block">
+        <div class="role">Cabinet Display · 64px · wght 700</div>
+        <div class="display">Hola Gabriel, <em>buen sábado.</em></div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Cabinet H2 · 24px · wght 700</div>
+        <div class="h2">Urgente esta semana</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Synonym Body · 14px · wght 400</div>
+        <div class="body">El estudio tiene <b>24 proyectos activos</b> y <b>187 tareas</b> en curso.
+        Cerraste <b>$4.2M</b> el mes pasado — el mejor mes del trimestre.</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Lista · Synonym body</div>
+        <div class="mini-list">
+          <div class="row priority"><span class="n">01</span><span class="t">Aprobar guión final spot TV</span><span class="pill">hoy</span></div>
+          <div class="row"><span class="n">02</span><span class="t">Reservar locación exterior</span><span class="m">vie 6 jun</span></div>
+          <div class="row done"><span class="n">03</span><span class="t">Reunión con Ronda — kick-off</span><span class="m">28 may</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="sample-block">
+        <div class="role">Hero · Cabinet 88px</div>
+        <div class="big-num">$4.2<span class="sub">M</span></div>
+        <div class="delta">+18% vs abril</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Numerales en grilla · Cabinet</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px">
+          <div>
+            <div style="font-family:'Cabinet Grotesk';font-size:36px;font-weight:500;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">24</div>
+            <div style="font:500 9px/1 var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-top:6px">Proyectos</div>
+          </div>
+          <div>
+            <div style="font-family:'Cabinet Grotesk';font-size:36px;font-weight:500;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">187</div>
+            <div style="font:500 9px/1 var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-top:6px">Tareas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- 4. TANKER (display) + SATOSHI (body)                             -->
+<!-- ============================================================== -->
+<section class="opt opt-tanker">
+  <div class="opt-hd">
+    <div class="left">
+      <div class="num">04 / 05</div>
+      <div class="name">Tanker + Satoshi</div>
+      <div class="meta">Pair más expresivo: <b>Tanker</b> es condensed display con muchísima
+      presencia — sus titulares parecen un poster impreso. Pairing con Satoshi para body
+      (tranquila). El contraste es el punto. Para drops grandes.</div>
+    </div>
+    <div class="right">
+      Foundry: <b>Indian Type Foundry</b><br/>
+      Pair: <b>Tanker regular · Satoshi 300-900</b><br/>
+      Use: display = Tanker · body = Satoshi<br/>
+      <span class="lic">commercial free</span>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="left-col">
+      <div class="sample-block">
+        <div class="role">Tanker Display · 64px</div>
+        <div class="display">Hola Gabriel, <em>buen sábado.</em></div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Tanker H2 · 24px</div>
+        <div class="h2">Urgente esta semana</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Satoshi Body · 14px · wght 400</div>
+        <div class="body">El estudio tiene <b>24 proyectos activos</b> y <b>187 tareas</b> en curso.
+        Cerraste <b>$4.2M</b> el mes pasado — el mejor mes del trimestre.</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Lista · Satoshi body</div>
+        <div class="mini-list">
+          <div class="row priority"><span class="n">01</span><span class="t">Aprobar guión final spot TV</span><span class="pill">hoy</span></div>
+          <div class="row"><span class="n">02</span><span class="t">Reservar locación exterior</span><span class="m">vie 6 jun</span></div>
+          <div class="row done"><span class="n">03</span><span class="t">Reunión con Ronda — kick-off</span><span class="m">28 may</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="sample-block">
+        <div class="role">Hero · Tanker 88px</div>
+        <div class="big-num">$4.2<span class="sub">M</span></div>
+        <div class="delta">+18% vs abril</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Numerales en grilla · Tanker</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px">
+          <div>
+            <div style="font-family:'Tanker';font-size:42px;font-weight:400;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">24</div>
+            <div style="font:500 9px/1 var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-top:6px">Proyectos</div>
+          </div>
+          <div>
+            <div style="font-family:'Tanker';font-size:42px;font-weight:400;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">187</div>
+            <div style="font:500 9px/1 var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-top:6px">Tareas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- 5. SYNONYM                                                       -->
+<!-- ============================================================== -->
+<section class="opt opt-synonym">
+  <div class="opt-hd">
+    <div class="left">
+      <div class="num">05 / 05</div>
+      <div class="name">Synonym</div>
+      <div class="meta">La fuente más quieta y elegante del lote. <b>6 weights · italic</b>.
+      Tiene un aire de revista contemporánea sin pegar nada de "vintage". Sus titulares no
+      gritan — confían. Buena si querés sobriedad total.</div>
+    </div>
+    <div class="right">
+      Foundry: <b>Indian Type Foundry</b><br/>
+      Weights: <b>300–800 + italic</b><br/>
+      Use: display + body<br/>
+      <span class="lic">commercial free</span>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="left-col">
+      <div class="sample-block">
+        <div class="role">Display · 64px · wght 500</div>
+        <div class="display">Hola Gabriel, <em>buen sábado.</em></div>
+      </div>
+      <div class="sample-block">
+        <div class="role">H2 · 24px · wght 600</div>
+        <div class="h2">Urgente esta semana</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Body · 14px · wght 400</div>
+        <div class="body">El estudio tiene <b>24 proyectos activos</b> y <b>187 tareas</b> en curso.
+        Cerraste <b>$4.2M</b> el mes pasado — el mejor mes del trimestre.</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Lista</div>
+        <div class="mini-list">
+          <div class="row priority"><span class="n">01</span><span class="t">Aprobar guión final spot TV</span><span class="pill">hoy</span></div>
+          <div class="row"><span class="n">02</span><span class="t">Reservar locación exterior</span><span class="m">vie 6 jun</span></div>
+          <div class="row done"><span class="n">03</span><span class="t">Reunión con Ronda — kick-off</span><span class="m">28 may</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="sample-block">
+        <div class="role">Hero · 88px</div>
+        <div class="big-num">$4.2<span class="sub">M</span></div>
+        <div class="delta">+18% vs abril</div>
+      </div>
+      <div class="sample-block">
+        <div class="role">Numerales en grilla</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px">
+          <div>
+            <div style="font-family:'Synonym';font-size:36px;font-weight:400;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">24</div>
+            <div style="font:500 9px/1 var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-top:6px">Proyectos</div>
+          </div>
+          <div>
+            <div style="font-family:'Synonym';font-size:36px;font-weight:400;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">187</div>
+            <div style="font:500 9px/1 var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-top:6px">Tareas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <h3>Elegí una</h3>
+  <p>Las 5 son commercial-free verificadas. Implementación en Next.js: descargo los <code>.woff2</code>
+  desde Fontshare, los pongo en <code>/public/fonts/</code>, y los expongo con <code>next/font/local</code>.
+  Mismo flujo que tenemos hoy con Geist.</p>
+  <ul>
+    <li><code>01 Satoshi</code> — apuesta segura, default-pro</li>
+    <li><code>02 Switzer</code> — más autoritaria, swiss-feel</li>
+    <li><code>03 Cabinet + Synonym</code> — pair con character display</li>
+    <li><code>04 Tanker + Satoshi</code> — display más expresivo, condensed</li>
+    <li><code>05 Synonym</code> — la más quieta y elegante</li>
+    <li>O <code>combinar</code> (ej. Tanker display + Switzer body)</li>
+    <li>O <code>otras 5</code> — Fontshare tiene como 30 más que valen la pena</li>
+  </ul>
+</footer>
+
+</body>
+</html>
