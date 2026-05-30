@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -18,6 +17,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { useUser } from "@/lib/hooks/useUser";
 import { EntornoSwitcher } from "@/components/layout/EntornoSwitcher";
+import { useSidebarState } from "./SidebarStateContext";
 
 /**
  * Sidebar (Edition 04).
@@ -75,36 +75,14 @@ const sections: NavSection[] = [
   },
 ];
 
-const COLLAPSED_KEY = "pistachio-sidebar-collapsed";
-
 export function Sidebar() {
   const pathname = usePathname();
   const { profile } = useUser();
   const isAdmin = profile?.role === "admin";
 
-  const [collapsed, setCollapsed] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    try {
-      setCollapsed(localStorage.getItem(COLLAPSED_KEY) === "1");
-    } catch {
-      /* localStorage unavailable */
-    }
-    setHydrated(true);
-  }, []);
-
-  function toggle() {
-    setCollapsed((c) => {
-      const next = !c;
-      try {
-        localStorage.setItem(COLLAPSED_KEY, next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  }
+  // Estado collapsed levantado a context — compartido con SidebarToggle
+  // en el topbar y con keyboard shortcut ⌘B.
+  const { collapsed, toggle, hydrated } = useSidebarState();
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
