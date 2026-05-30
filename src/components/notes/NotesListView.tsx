@@ -3,14 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, StickyNote, Trash2, ChevronLeft } from "lucide-react";
+import { Plus, StickyNote, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import { createNote, deleteNote } from "@/lib/actions/notes";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Button } from "@/components/ui/Button";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { HairlineRule } from "@/components/shared/HairlineRule";
 
 interface Note {
   id: string;
@@ -60,23 +62,25 @@ export function NotesListView({
     }
   }
 
-  return (
-    <div className="animate-fade-in p-6 md:p-8">
-      <Link
-        href={`/projects/${project.id}`}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        {project.name}
-      </Link>
+  const parts = project.name.split(/\s+[—-]\s+/);
+  const titleText = parts[0] ?? project.name;
+  const subtitleText =
+    parts.length > 1 ? parts.slice(1).join(" — ") : "notas.";
 
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight text-text">Notas</h1>
-        <Button onClick={handleCreate} loading={creating}>
-          <Plus className="h-4 w-4" />
-          Nueva nota
-        </Button>
-      </div>
+  return (
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
+      <PageHeader
+        eyebrow={`/ proyectos / ${titleText.toLowerCase()} / notas`}
+        title={`${titleText},`}
+        subtitle={subtitleText}
+        issueLines={[`${notes.length} NOTAS`]}
+        actions={
+          <Button onClick={handleCreate} loading={creating} size="sm">
+            <Plus className="h-3.5 w-3.5" />
+            Nueva nota
+          </Button>
+        }
+      />
 
       <ProjectTabs projectId={project.id} />
 
@@ -92,50 +96,47 @@ export function NotesListView({
           }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {notes.map((note) => (
-            <div
-              key={note.id}
-              className="group relative rounded-xl border border-border bg-surface p-4 shadow-elev-1 transition-colors hover:border-primary/50"
-            >
-              <Link
-                href={`/projects/${project.id}/notes/${note.id}`}
-                className="block"
-              >
-                <h3 className="mb-2 line-clamp-1 font-semibold text-text">
-                  {note.title}
-                </h3>
-                {note.contentText && (
-                  <p className="mb-3 line-clamp-3 text-xs text-text-muted">
-                    {note.contentText}
-                  </p>
-                )}
-                <div className="flex items-center gap-1.5">
-                  {note.creator && (
-                    <UserAvatar
-                      name={note.creator.name}
-                      avatarUrl={note.creator.avatarUrl}
-                      size="xs"
-                    />
-                  )}
-                  <span className="text-xs text-text-tertiary">
-                    {note.updatedAt &&
-                      format(new Date(note.updatedAt), "dd/MM/yyyy")}
+        <section>
+          <HairlineRule label="Notas del proyecto" count={`${notes.length}`} />
+          <ul className="h-list mt-3">
+            {notes.map((note, i) => (
+              <li key={note.id} className="h-list-item group">
+                <span className="h-list-item-n">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <Link
+                  href={`/projects/${project.id}/notes/${note.id}`}
+                  className="flex min-w-0 flex-1 flex-col gap-0.5"
+                >
+                  <span className="truncate text-[14px] font-bold text-ink">
+                    {note.title}
                   </span>
+                  {note.contentText && (
+                    <span className="line-clamp-1 text-[12px] text-ink-soft">
+                      {note.contentText}
+                    </span>
+                  )}
+                </Link>
+                <div className="flex flex-shrink-0 items-center gap-3">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
+                    {note.updatedAt &&
+                      format(new Date(note.updatedAt), "dd MMM", {
+                        locale: es,
+                      })}
+                  </span>
+                  <button
+                    onClick={() => handleDelete(note.id)}
+                    aria-label={`Eliminar nota ${note.title}`}
+                    className="hidden rounded-md p-1 text-ink-faint transition-colors hover:bg-urgent-soft hover:text-urgent group-hover:block"
+                    title="Eliminar"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
-              </Link>
-
-              <button
-                onClick={() => handleDelete(note.id)}
-                aria-label={`Eliminar nota ${note.title}`}
-                className="absolute right-3 top-3 hidden rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger group-hover:block"
-                title="Eliminar"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

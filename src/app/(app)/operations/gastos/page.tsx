@@ -11,11 +11,16 @@ export default async function GastosPage() {
   const data = await listExpenses();
 
   return (
-    <div className="animate-fade-in p-6 md:p-8">
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <PageHeader
-        title="Gastos"
-        description="Inversión inicial, gastos fijos y punto de equilibrio"
+        eyebrow="/ operations / gastos"
+        title="Gastos,"
+        subtitle="inversión, fijos, equilibrio."
+        issueLines={[
+          `${data.investment.length + data.fixed.length} ÍTEMS`,
+          ws.name.toUpperCase(),
+        ]}
       />
       <ExpensesView data={data} canManage={can("expenses.manage")} />
     </div>

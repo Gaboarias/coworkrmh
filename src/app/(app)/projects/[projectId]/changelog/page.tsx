@@ -2,10 +2,9 @@ import { db } from "@/lib/db";
 import { projects, changelog, users } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { ChangelogFeed } from "@/components/changelog/ChangelogFeed";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 interface PageProps {
   params: { projectId: string };
@@ -50,18 +49,18 @@ export default async function ProjectChangelogPage({ params }: PageProps) {
     },
   }));
 
+  const parts = project.name.split(/\s+[—-]\s+/);
+  const titleText = parts[0] ?? project.name;
+  const subtitleText = parts.length > 1 ? parts.slice(1).join(" — ") : "historial.";
+
   return (
-    <div className="animate-fade-in p-6 md:p-8">
-      <Link
-        href={`/projects/${project.id}`}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        {project.name}
-      </Link>
-      <h1 className="mb-6 text-2xl font-bold tracking-tight text-text">
-        Historial de cambios
-      </h1>
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
+      <PageHeader
+        eyebrow={`/ proyectos / ${titleText.toLowerCase()} / historial`}
+        title={`${titleText},`}
+        subtitle={subtitleText}
+        issueLines={[`${entries.length} EVENTOS`]}
+      />
 
       <ProjectTabs projectId={project.id} />
 

@@ -11,11 +11,13 @@ export default async function CatalogoPage() {
   const products = await listProducts();
 
   return (
-    <div className="animate-fade-in p-6 md:p-8">
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <PageHeader
-        title="Catálogo"
-        description="Productos, costos y margen"
+        eyebrow="/ operations / catálogo"
+        title="Catálogo,"
+        subtitle="productos del estudio."
+        issueLines={[`${products.length} PRODUCTOS`, ws.name.toUpperCase()]}
       />
       <CatalogView products={products} canManage={can("catalog.manage")} />
     </div>

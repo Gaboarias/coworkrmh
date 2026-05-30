@@ -77,15 +77,19 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
   }
 
   return (
-    <div className="animate-fade-in mx-auto max-w-xl p-6 md:p-8">
+    <div className="animate-fade-in mx-auto max-w-xl px-8 py-10 md:px-12">
       <Link
         href="/projects"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
+        className="mb-6 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft transition-colors hover:text-ink"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-3 w-3" />
         Volver a proyectos
       </Link>
-      <PageHeader title="Nuevo proyecto" />
+      <PageHeader
+        eyebrow="/ proyectos / nuevo"
+        title="Nuevo proyecto,"
+        subtitle="del estudio."
+      />
 
       <Card>
         <CardContent className="p-6">

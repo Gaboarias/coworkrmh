@@ -16,8 +16,8 @@ export default async function CalendarPage() {
   const ws = await getActiveWorkspace();
   if (!ws) {
     return (
-      <div className="animate-fade-in p-6 md:p-8">
-        <PageHeader title="Calendario" />
+      <div className="animate-fade-in px-8 py-10 md:px-12">
+        <PageHeader eyebrow="/ calendario" title="Calendario." />
         <EmptyState
           icon={<Layers className="h-12 w-12" />}
           title="Sin entorno"

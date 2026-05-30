@@ -15,10 +15,15 @@ export default async function AdminPage() {
   ]);
 
   return (
-    <div className="animate-fade-in mx-auto max-w-3xl p-6 md:p-8">
+    <div className="animate-fade-in mx-auto max-w-4xl px-8 py-10 md:px-12">
       <PageHeader
-        title="Administración"
-        description="Usuarios y entornos. Cada entorno aísla sus proyectos y operaciones."
+        eyebrow="/ admin"
+        title="Administración,"
+        subtitle="usuarios y entornos."
+        issueLines={[
+          `${users.length} USUARIOS`,
+          `${workspaces.length} ENTORNOS`,
+        ]}
       />
       <AdminPanel
         users={users.map((u) => ({

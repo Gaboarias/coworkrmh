@@ -11,11 +11,13 @@ export default async function VentasPage() {
   const data = await listSales();
 
   return (
-    <div className="animate-fade-in p-6 md:p-8">
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <PageHeader
-        title="Ventas"
-        description="Registro de ventas y resumen por categoría"
+        eyebrow="/ operations / ventas"
+        title="Ventas,"
+        subtitle="registro y resumen."
+        issueLines={[`${data.rows.length} REGISTROS`, ws.name.toUpperCase()]}
       />
       <SalesView data={data} canManage={can("sales.manage")} />
     </div>

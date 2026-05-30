@@ -11,11 +11,16 @@ export default async function EquipoPage() {
   const { members, agreements } = await getTeam();
 
   return (
-    <div className="animate-fade-in p-6 md:p-8">
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <PageHeader
-        title="Equipo"
-        description="Roles, responsabilidades, compensación y acuerdos"
+        eyebrow="/ operations / equipo"
+        title="Equipo,"
+        subtitle="roles y acuerdos."
+        issueLines={[
+          `${members.length} INTEGRANTES`,
+          `${agreements.length} ACUERDOS`,
+        ]}
       />
       <TeamView
         members={members}

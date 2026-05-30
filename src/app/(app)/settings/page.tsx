@@ -19,10 +19,12 @@ export default async function SettingsPage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="animate-fade-in mx-auto max-w-2xl p-6 md:p-8">
+    <div className="animate-fade-in mx-auto max-w-2xl px-8 py-10 md:px-12">
       <PageHeader
-        title="Configuración"
-        description="Gestiona tu perfil y cuenta"
+        eyebrow="/ settings"
+        title="Configuración,"
+        subtitle="perfil y cuenta."
+        issueLines={[user.email ?? "", (user.role ?? "member").toUpperCase()]}
       />
       <UserSettingsForm
         profile={{

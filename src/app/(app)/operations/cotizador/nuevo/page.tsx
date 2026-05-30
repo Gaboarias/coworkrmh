@@ -12,16 +12,20 @@ export default async function NuevaCotizacionPage() {
   if (!ws) return <NoEntorno title="Nueva cotización" />;
   if (!can("quotes.manage")) redirect("/operations/cotizador");
   return (
-    <div className="animate-fade-in p-6 md:p-8">
+    <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <Link
         href="/operations/cotizador"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
+        className="mb-6 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft transition-colors hover:text-ink"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-3 w-3" />
         Cotizador
       </Link>
-      <PageHeader title="Nueva cotización" />
+      <PageHeader
+        eyebrow="/ operations / cotizador / nueva"
+        title="Nueva cotización,"
+        subtitle="pedido personalizado."
+      />
       <div className="max-w-3xl">
         <QuoteForm />
       </div>
