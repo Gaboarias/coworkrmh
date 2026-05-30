@@ -1,22 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FolderKanban,
   CheckSquare,
   Calendar,
   Settings,
-  LogOut,
   Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import { useUser } from "@/lib/hooks/useUser";
-import { UserAvatar } from "@/components/shared/UserAvatar";
 import { EntornoSwitcher } from "@/components/layout/EntornoSwitcher";
-import { signOut } from "next-auth/react";
-import { toast } from "sonner";
 
 const navItems = [
   {
@@ -34,17 +29,10 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { profile } = useUser();
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
     return pathname.startsWith(href);
-  }
-
-  async function handleLogout() {
-    toast.success("Sesión cerrada");
-    await signOut({ callbackUrl: "/login" });
   }
 
   const navActive =
@@ -90,7 +78,8 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      {/* Footer */}
+      {/* Footer: solo Configuración (user/logout viven en el AvatarDropdown
+          del Topbar; sin redundancia). */}
       <div className="border-t border-sidebar-border p-3">
         <Link
           href="/settings"
@@ -102,24 +91,6 @@ export function Sidebar() {
           <Settings className="h-4 w-4" />
           Configuración
         </Link>
-
-        {/* User profile */}
-        <div className="mt-2 flex items-center gap-3 rounded-lg px-3 py-2">
-          <UserAvatar name={profile?.name ?? undefined} avatarUrl={profile?.image ?? undefined} size="sm" />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-sidebar-foreground">
-              {profile?.name ?? "Usuario"}
-            </p>
-            <p className="truncate text-xs text-sidebar-muted">{profile?.email}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sidebar-muted transition-colors hover:text-danger"
-            title="Cerrar sesión"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
-        </div>
       </div>
     </aside>
   );
