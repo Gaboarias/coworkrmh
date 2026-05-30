@@ -66,9 +66,14 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
       if (!editorInstance) return;
       setSaving(true);
       try {
+        // Forzar objeto plano: tiptap getJSON() devuelve nodos con
+        // prototipo que Next.js Server Actions rechaza ("Only plain
+        // objects... can be passed"). El round-trip JSON.parse/stringify
+        // descarta cualquier prototype/clase y deja sólo POJOs.
+        const content = JSON.parse(JSON.stringify(editorInstance.getJSON()));
         await updateNote(note.id, project.id, {
           title,
-          content: editorInstance.getJSON(),
+          content,
           contentText: editorInstance.getText(),
         });
         setLastSaved(new Date());
