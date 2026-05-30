@@ -104,17 +104,40 @@ export default async function OperationsDashboard() {
       />
 
       <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3">
-        {kpis.map((k) => (
-          <Card key={k.label}>
-            <CardContent>
-              <p className="text-xs text-text-muted">{k.label}</p>
-              <p className="mt-1 text-xl font-semibold text-text">{k.value}</p>
+        {kpis.map((k, i) => {
+          // Cyclar triotone para variedad visual sin perder coherencia
+          const accents = [
+            { rgb: "255, 179, 71", color: "var(--amber)" },
+            { rgb: "255, 107, 107", color: "var(--coral)" },
+            { rgb: "255, 61, 139", color: "var(--magenta)" },
+          ];
+          const a = accents[i % accents.length];
+          return (
+            <div
+              key={k.label}
+              className="overflow-hidden rounded-xl border border-border-strong bg-surface p-4 shadow-elev-2"
+              style={{
+                backgroundImage: `radial-gradient(circle at 100% 0%, rgba(${a.rgb}, 0.12) 0%, transparent 55%)`,
+              }}
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-muted">
+                {k.label}
+              </p>
+              <p
+                className="mt-2 text-[26px] font-bold leading-none tabular-nums"
+                style={{
+                  color: a.color,
+                  textShadow: `0 0 14px rgba(${a.rgb}, 0.35)`,
+                }}
+              >
+                {k.value}
+              </p>
               {k.sub && (
-                <p className="mt-0.5 text-xs text-text-tertiary">{k.sub}</p>
+                <p className="mt-1.5 text-[11px] text-text-tertiary">{k.sub}</p>
               )}
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          );
+        })}
       </div>
 
       {isEmpty && (

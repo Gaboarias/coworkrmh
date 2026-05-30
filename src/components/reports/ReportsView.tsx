@@ -241,17 +241,43 @@ function Kpi({
     violet: "#a78bfa",
     danger: "var(--danger)",
   };
+  const accentRgb: Record<string, string> = {
+    amber: "255, 179, 71",
+    coral: "255, 107, 107",
+    magenta: "255, 61, 139",
+    violet: "167, 139, 250",
+    danger: "255, 77, 109",
+  };
   return (
-    <div className="rounded-xl border border-border bg-surface p-4">
-      <div className="flex items-center justify-between">
-        <span className="text-xs uppercase tracking-wider text-text-tertiary">
+    <div
+      className="group relative overflow-hidden rounded-xl border border-border-strong bg-surface p-4 transition-colors hover:border-[color-mix(in_oklab,var(--coral)_45%,var(--border))]"
+      style={{
+        // Sutil glow del color del KPI en la esquina superior derecha
+        backgroundImage: `radial-gradient(circle at 100% 0%, rgba(${accentRgb[accent]}, 0.12) 0%, transparent 55%)`,
+      }}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-muted">
           {label}
         </span>
-        <span style={{ color: accentMap[accent] }}>{icon}</span>
+        {/* Icon backplate con tint del accent */}
+        <span
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
+          style={{
+            background: `rgba(${accentRgb[accent]}, 0.16)`,
+            color: accentMap[accent],
+            boxShadow: `0 0 12px rgba(${accentRgb[accent]}, 0.22)`,
+          }}
+        >
+          {icon}
+        </span>
       </div>
       <p
-        className={`mt-2 font-bold tabular-nums ${large ? "text-2xl" : "text-3xl"}`}
-        style={{ color: accentMap[accent] }}
+        className={`mt-3 font-bold tabular-nums leading-none ${large ? "text-[28px]" : "text-[32px]"}`}
+        style={{
+          color: accentMap[accent],
+          textShadow: `0 0 16px rgba(${accentRgb[accent]}, 0.35)`,
+        }}
       >
         {value}
       </p>
