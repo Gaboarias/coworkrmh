@@ -11,7 +11,6 @@ import {
   Settings,
   Briefcase,
   BarChart3,
-  Bell,
   Shield,
   PanelLeftClose,
   PanelLeftOpen,
@@ -64,14 +63,14 @@ const sections: NavSection[] = [
     id: "analytics",
     label: "Analytics",
     items: [
-      { href: "/reports", label: "Reportes", icon: BarChart3, badge: "soon" },
+      { href: "/reports", label: "Reportes", icon: BarChart3 },
     ],
   },
   {
     id: "system",
     label: "Sistema",
     items: [
-      { href: "/notifications", label: "Notificaciones", icon: Bell, badge: "soon" },
+      // Notificaciones viven en la campana del topbar — sin entrada duplicada acá.
       { href: "/admin", label: "Admin", icon: Shield, adminOnly: true },
     ],
   },

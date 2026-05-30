@@ -134,6 +134,13 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           action: () => go("/calendar"),
         },
         {
+          id: "reports",
+          label: "Reportes",
+          icon: FileText,
+          keywords: "reports analytics analytics graficos kpis",
+          action: () => go("/reports"),
+        },
+        {
           id: "admin",
           label: "Administración",
           icon: Shield,
