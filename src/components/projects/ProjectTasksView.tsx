@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, FileText, StickyNote, History, Settings } from "lucide-react";
+import { Plus } from "lucide-react";
 import { TaskRow } from "@/components/tasks/TaskRow";
 import { TaskDetail } from "@/components/tasks/TaskDetail";
 import { CreateTaskModal } from "@/components/tasks/CreateTaskModal";
@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { ProjectTabs } from "@/components/projects/ProjectTabs";
 import { cn } from "@/lib/utils/cn";
 import type { TaskStatus, TaskPriority } from "@/lib/types";
 
@@ -76,14 +77,6 @@ export function ProjectTasksView({
     return true;
   });
 
-  const tabs = [
-    { href: `/projects/${project.id}`, label: "Tareas", icon: null, active: true },
-    { href: `/projects/${project.id}/documents`, label: "Documentos", icon: FileText },
-    { href: `/projects/${project.id}/notes`, label: "Notas", icon: StickyNote },
-    { href: `/projects/${project.id}/changelog`, label: "Historial", icon: History },
-    { href: `/projects/${project.id}/settings`, label: "Config.", icon: Settings },
-  ];
-
   return (
     <div className="animate-fade-in p-6 md:p-8">
       <PageHeader
@@ -99,23 +92,7 @@ export function ProjectTasksView({
         }
       />
 
-      <div className="mb-6 flex items-center gap-1 border-b border-border">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={cn(
-              "flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
-              tab.active
-                ? "border-primary text-primary"
-                : "border-transparent text-text-muted hover:text-text"
-            )}
-          >
-            {tab.icon && <tab.icon className="h-3.5 w-3.5" />}
-            {tab.label}
-          </Link>
-        ))}
-      </div>
+      <ProjectTabs projectId={project.id} />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <Input

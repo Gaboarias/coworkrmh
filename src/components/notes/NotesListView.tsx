@@ -10,7 +10,7 @@ import { createNote, deleteNote } from "@/lib/actions/notes";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/utils/cn";
+import { ProjectTabs } from "@/components/projects/ProjectTabs";
 
 interface Note {
   id: string;
@@ -24,14 +24,6 @@ interface NotesListViewProps {
   project: { id: string; name: string };
   notes: Note[];
 }
-
-const tabs = (projectId: string) => [
-  { href: `/projects/${projectId}`, label: "Tareas" },
-  { href: `/projects/${projectId}/documents`, label: "Documentos" },
-  { href: `/projects/${projectId}/notes`, label: "Notas", active: true },
-  { href: `/projects/${projectId}/changelog`, label: "Historial" },
-  { href: `/projects/${projectId}/settings`, label: "Config." },
-];
 
 export function NotesListView({
   project,
@@ -86,22 +78,7 @@ export function NotesListView({
         </Button>
       </div>
 
-      <div className="mb-6 flex items-center gap-1 border-b border-border">
-        {tabs(project.id).map((tab) => (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={cn(
-              "border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
-              tab.active
-                ? "border-primary text-primary"
-                : "border-transparent text-text-muted hover:text-text"
-            )}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </div>
+      <ProjectTabs projectId={project.id} />
 
       {notes.length === 0 ? (
         <EmptyState

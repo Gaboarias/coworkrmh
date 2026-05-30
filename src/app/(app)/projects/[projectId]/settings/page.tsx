@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { ProjectSettingsForm } from "@/components/projects/ProjectSettingsForm";
-import { cn } from "@/lib/utils/cn";
+import { ProjectTabs } from "@/components/projects/ProjectTabs";
 
 interface PageProps {
   params: { projectId: string };
@@ -62,18 +62,6 @@ export default async function ProjectSettingsPage({ params }: PageProps) {
     .from(buckets)
     .orderBy(asc(buckets.position));
 
-  const tabs = [
-    { href: `/projects/${project.id}`, label: "Tareas" },
-    { href: `/projects/${project.id}/documents`, label: "Documentos" },
-    { href: `/projects/${project.id}/notes`, label: "Notas" },
-    { href: `/projects/${project.id}/changelog`, label: "Historial" },
-    {
-      href: `/projects/${project.id}/settings`,
-      label: "Config.",
-      active: true,
-    },
-  ];
-
   return (
     <div className="animate-fade-in p-6 md:p-8">
       <Link
@@ -87,22 +75,7 @@ export default async function ProjectSettingsPage({ params }: PageProps) {
         Configuración
       </h1>
 
-      <div className="mb-6 flex items-center gap-1 border-b border-border">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={cn(
-              "border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-200 ease-out",
-              tab.active
-                ? "border-primary text-primary"
-                : "border-transparent text-text-muted hover:text-text"
-            )}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </div>
+      <ProjectTabs projectId={project.id} />
 
       <div className="mx-auto max-w-xl">
         <ProjectSettingsForm
