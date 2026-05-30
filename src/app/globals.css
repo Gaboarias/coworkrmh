@@ -80,19 +80,20 @@
 
 @layer base {
   * { @apply border-border; }
+  html, body {
+    /* IMPORTANTE: SIN background-color en html ni body.
+       El AuroraBackground (position:fixed, z-index:-1) DEBE estar
+       sobre el canvas raíz para verse. Si html o body tienen bg
+       sólido, lo tapan. El AuroraBackground trae su propio gradient
+       dark de fallback. */
+    background: transparent;
+  }
   html {
     font-size: 17px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Fallback dark detrás del AuroraBackground (que va en body con
-       position:fixed). Si el SVG no cargara, queda el dark base. */
-    background: var(--background);
   }
   body {
-    /* CRÍTICO: body con background TRANSPARENTE — si tiene un color
-       sólido (incluso var(--background)), tapa el AuroraBackground
-       que está fixed con z-index:-1. */
-    background: transparent;
     @apply text-text;
     font-weight: 500;
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "ss01" 1;
