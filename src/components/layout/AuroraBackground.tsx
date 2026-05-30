@@ -47,7 +47,7 @@ export function AuroraBackground() {
             <feGaussianBlur stdDeviation="60" />
           </filter>
         </defs>
-        <g filter="url(#aurora-blur)" opacity="0.85">
+        <g filter="url(#aurora-blur)" opacity="0.55">
           {/* Banda amber — alta, ondulada suave */}
           <path
             d="M -100 280 Q 350 150 800 320 T 1700 360"

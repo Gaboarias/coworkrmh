@@ -19,10 +19,13 @@
     /* La aurora SVG vive como capa fija en el body; los tokens son
        el dark base + glass overlays que dejan ver la aurora. */
     --background: #0a0408;
-    --surface: rgba(0, 0, 0, 0.36);
-    --surface-el: rgba(0, 0, 0, 0.5);
-    --border: rgba(255, 220, 200, 0.12);
-    --border-strong: rgba(255, 220, 200, 0.24);
+    /* Surfaces opacas (0.82-0.92) — la aurora vive en el background pero
+       NO se mete debajo del contenido. Tinte cálido sutil hacia el rojo
+       quemado para mantener cohesión con la paleta sin bleed-through. */
+    --surface: rgba(20, 10, 14, 0.86);
+    --surface-el: rgba(28, 14, 20, 0.94);
+    --border: rgba(255, 220, 200, 0.18);
+    --border-strong: rgba(255, 220, 200, 0.32);
 
     /* Acentos triotone cálidos: amber → coral → magenta */
     --amber: #ffb347;
@@ -39,19 +42,19 @@
     --secondary-foreground: #1a0813;
 
     --text: #fff8f0;          /* warm white, 14+:1 sobre dark */
-    --text-muted: #e0cebc;    /* 8+:1 sobre dark */
-    --text-tertiary: #b39c84; /* 5+:1 sobre dark */
+    --text-muted: #f0dfcc;    /* brighter, 10+:1 sobre dark */
+    --text-tertiary: #d4bea4; /* brighter, 7+:1 sobre dark, mantiene legibilidad incluso con strikethrough/opacity */
 
     --success: #34d399;       /* emerald, no choca con coral */
     --warning: #ffb347;
     --danger: #ff4d6d;
     --info: #a78bfa;
 
-    /* Sidebar = glass mismo que el resto (transluce la aurora) */
-    --sidebar: rgba(0, 0, 0, 0.4);
+    /* Sidebar — superficie opaca, NO glass. La aurora vive afuera. */
+    --sidebar: rgba(20, 10, 14, 0.92);
     --sidebar-foreground: #fff8f0;
-    --sidebar-muted: #b39c84;
-    --sidebar-border: rgba(255, 220, 200, 0.12);
+    --sidebar-muted: #d4bea4;
+    --sidebar-border: rgba(255, 220, 200, 0.18);
     --sidebar-active: #ffb347;
 
     /* Elevation: glow cálido en vez de sombra negra */
@@ -136,30 +139,30 @@
   height: 0;
 }
 
-/* Glass utility — superficies que dejan ver la aurora */
+/* Glass utility — sólo casos puntuales (drawers/overlays sobre la aurora).
+   Las superficies normales (bg-surface) son opacas. */
 .glass {
-  background: rgba(0, 0, 0, 0.36);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  background: rgba(20, 10, 14, 0.7);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 .glass-strong {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(36px) saturate(180%);
-  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  background: rgba(20, 10, 14, 0.85);
+  backdrop-filter: blur(32px) saturate(160%);
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
   border: 1px solid var(--border);
 }
 
-/* Auto-glass: cualquier elemento con bg-surface/bg-surface-el/bg-sidebar
-   recibe backdrop-blur automáticamente (los tokens son translúcidos sobre
-   la aurora). Evita tener que poner backdrop-blur-xl manualmente en cada
-   div con bg-surface. NO afecta hover:bg-* (selector distinto). */
+/* Auto-blur leve en superficies para softness, pero las superficies ya
+   son ~86-94% opacas → el blur es decorativo, no estructural. Si fuera
+   un browser viejo sin backdrop-filter, el contraste sigue OK. */
 .bg-surface,
 .bg-surface-el,
 .bg-sidebar {
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
 }
 
 /* Status badges — triotone cálido */
