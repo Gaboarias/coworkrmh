@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -82,24 +83,58 @@ export function Sidebar() {
 
   // Estado collapsed levantado a context — compartido con SidebarToggle
   // en el topbar y con keyboard shortcut ⌘B.
-  const { collapsed, toggle, hydrated } = useSidebarState();
+  const {
+    collapsed: collapsedDesktop,
+    toggle,
+    hydrated,
+    isMobile,
+    mobileOpen,
+    setMobileOpen,
+  } = useSidebarState();
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
     return pathname.startsWith(href);
   }
 
-  const w = collapsed ? "w-[56px]" : "w-[228px]";
+  // Close mobile drawer cuando navego a otra ruta (auto-close UX).
+  useEffect(() => {
+    if (isMobile && mobileOpen) setMobileOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  // Mobile + cerrado: no renderiza nada (drawer oculto).
+  if (isMobile && !mobileOpen) return null;
+
+  // En mobile abierto, ignoramos el flag de collapsed (siempre expandido
+  // en el overlay drawer). En desktop respetamos el valor del context.
+  const collapsed = isMobile ? false : collapsedDesktop;
+  const w = isMobile ? "w-[260px]" : collapsed ? "w-[56px]" : "w-[228px]";
+
+  // Wrap responsive — mobile vive como overlay fijo con backdrop, desktop
+  // vive como columna lateral del flex parent (AppShell).
+  const asideClasses = isMobile
+    ? "fixed left-0 top-0 z-50 h-full shadow-xl"
+    : "h-full transition-[width] duration-200 ease-out";
 
   return (
-    <aside
-      className={cn(
-        "flex h-full flex-col border-r border-rule bg-bg transition-[width] duration-200 ease-out",
-        w,
-        !hydrated && "opacity-0",
-        hydrated && "opacity-100"
+    <>
+      {isMobile && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden
+        />
       )}
-    >
+      <aside
+        className={cn(
+          "flex flex-col border-r border-rule bg-bg",
+          asideClasses,
+          w,
+          !hydrated && "opacity-0",
+          hydrated && "opacity-100"
+        )}
+      >
       {/* Brand block */}
       <div
         className={cn(
@@ -260,6 +295,7 @@ export function Sidebar() {
           )}
         </Link>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

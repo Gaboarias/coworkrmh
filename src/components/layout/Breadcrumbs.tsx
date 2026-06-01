@@ -86,38 +86,57 @@ export function Breadcrumbs({ overrideLast, className }: BreadcrumbsProps) {
   const last = segments[segments.length - 1];
   if (overrideLast && last) last.label = overrideLast;
 
+  // En mobile (< sm 640px) mostrar SOLO el último segmento (current page)
+  // para que no desborde. Desktop muestra el path completo.
+  // Implementación: el container del Topbar ya hace flex-1 min-w-0, acá
+  // controlamos qué partes son visibles según breakpoint.
   return (
     <nav
       aria-label="Breadcrumb"
       className={
-        "flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.14em] text-ink-faint " +
+        "flex min-w-0 items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint sm:text-[12px] " +
         (className ?? "")
       }
     >
-      <span aria-hidden className="text-ink-faint">
+      {/* Slash inicial — sólo desktop */}
+      <span aria-hidden className="hidden flex-shrink-0 text-ink-faint sm:inline">
         /
       </span>
-      {segments.map((s, i) => (
-        <span key={s.href} className="flex items-center gap-1.5">
-          {i > 0 && (
-            <span aria-hidden className="text-ink-faint">
-              /
-            </span>
-          )}
-          {s.isLast ? (
-            <span className="text-ink" aria-current="page">
-              {s.label}
-            </span>
-          ) : (
-            <Link
-              href={s.href}
-              className="transition-colors hover:text-ink"
-            >
-              {s.label}
-            </Link>
-          )}
-        </span>
-      ))}
+      {segments.map((s, i) => {
+        const isLast = s.isLast;
+        // Segmentos intermedios sólo se ven en sm+ (≥640px).
+        // El último se ve siempre.
+        return (
+          <span
+            key={s.href}
+            className={
+              "flex min-w-0 items-center gap-1.5 " +
+              (isLast ? "" : "hidden sm:flex flex-shrink-0")
+            }
+          >
+            {i > 0 && (
+              <span aria-hidden className="hidden flex-shrink-0 text-ink-faint sm:inline">
+                /
+              </span>
+            )}
+            {isLast ? (
+              <span
+                className="min-w-0 truncate text-ink"
+                aria-current="page"
+              >
+                {s.label}
+              </span>
+            ) : (
+              <Link
+                href={s.href}
+                className="truncate transition-colors hover:text-ink"
+              >
+                {s.label}
+              </Link>
+            )}
+          </span>
+        );
+      })}
     </nav>
   );
 }

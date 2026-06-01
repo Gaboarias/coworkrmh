@@ -57,8 +57,9 @@ export function PageHeader({
 
       {eyebrow && <div className="eyebrow-line mb-4">{eyebrow}</div>}
 
-      {/* Display title bumped: 60 mobile, 72 md, 84 lg — más presencia */}
-      <div className="title-drop text-[60px] md:text-[72px] lg:text-[84px]">
+      {/* Display title escalado responsive — 36px en mobile 320px (palabras
+          como "Operaciones," ahora caben), crece a 84px en desktop xl. */}
+      <div className="title-drop text-[36px] sm:text-[48px] md:text-[60px] lg:text-[72px] xl:text-[84px]">
         <span>{title}</span>
         {subtitle && <span className="l2">{subtitle}</span>}
       </div>

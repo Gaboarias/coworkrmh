@@ -63,7 +63,7 @@ export function ReportsView({ report }: Props) {
       {/* ── KPI Table ──────────────────────────────────────────── */}
       <section>
         <HairlineRule label="Resumen del mes" count={`/ ${kpis.activeProjects}p`} />
-        <dl className="mt-6 grid grid-cols-2 gap-x-12 gap-y-8 md:grid-cols-4">
+        <dl className="mt-6 grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-2 md:grid-cols-4">
           <Kpi
             label="Proyectos"
             value={String(kpis.activeProjects)}
