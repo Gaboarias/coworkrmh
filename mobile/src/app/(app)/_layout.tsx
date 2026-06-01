@@ -2,17 +2,21 @@ import { Redirect, Stack } from "expo-router";
 import { useAuth } from "@/lib/auth-context";
 
 /**
- * Layout del grupo (app) — todas las pantallas autenticadas.
+ * Layout del grupo (app) — Stack root para pantallas autenticadas.
  *
  * Guard: si no hay user (después de hydration), redirect a (auth)/login.
- * Si está cargando, deja que el root layout muestre splash.
  *
- * En M3 acá entra el TabBar bottom navigation. Por ahora un Stack simple.
+ * Estructura:
+ * - (tabs)/ → bottom tab bar (Inicio, Tareas, Proyectos, Más)
+ * - projects/[id] → detail screen pushed sobre tabs (M4)
+ * - notifications → modal/sheet (M3+)
+ *
+ * El Stack root permite pushear modals/details sobre los tabs.
  */
 export default function AppLayout() {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) return null; // splash gestionado por root
+  if (isLoading) return null;
   if (!user) return <Redirect href="/(auth)/login" />;
 
   return (
@@ -20,6 +24,9 @@ export default function AppLayout() {
       screenOptions={{
         headerShown: false,
       }}
-    />
+    >
+      <Stack.Screen name="(tabs)" />
+      {/* Future: <Stack.Screen name="projects/[id]" options={{ presentation: 'modal' }} /> */}
+    </Stack>
   );
 }
