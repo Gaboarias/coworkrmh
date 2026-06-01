@@ -7,6 +7,7 @@ import { projects, projectMembers, buckets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import type { ProjectStatus } from "@/lib/types";
 import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
+import { createNotification } from "@/lib/actions/notifications";
 
 async function requireUser() {
   const session = await auth();
@@ -98,7 +99,21 @@ export async function addProjectMember(
   userId: string,
   role: "admin" | "manager" | "member" = "member"
 ) {
-  await requireProjectsManage();
+  const { user: actor } = await requireProjectsManage();
+
+  // Detectar si era ya member (para no notificar en actualización de role).
+  const [existing] = await db
+    .select({ userId: projectMembers.userId })
+    .from(projectMembers)
+    .where(
+      and(
+        eq(projectMembers.projectId, projectId),
+        eq(projectMembers.userId, userId)
+      )
+    )
+    .limit(1);
+  const isNewMember = !existing;
+
   await db
     .insert(projectMembers)
     .values({ projectId, userId, role })
@@ -106,6 +121,28 @@ export async function addProjectMember(
       target: [projectMembers.projectId, projectMembers.userId],
       set: { role },
     });
+
+  // Notification trigger: nuevo miembro agregado (no actor mismo).
+  if (isNewMember && userId !== actor.id) {
+    const [project] = await db
+      .select({ name: projects.name })
+      .from(projects)
+      .where(eq(projects.id, projectId))
+      .limit(1);
+    await createNotification({
+      userId,
+      type: "project_member_added",
+      payload: {
+        title: "Te sumaron a un proyecto",
+        body: project?.name ?? "Nuevo proyecto",
+        actorId: actor.id,
+        actorName: actor.name ?? actor.email ?? undefined,
+        refs: { projectId },
+      },
+      href: `/projects/${projectId}`,
+    });
+  }
+
   revalidatePath(`/projects/${projectId}`);
 }
 
