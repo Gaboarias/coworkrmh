@@ -17,6 +17,7 @@ import {
   sanitizeRoleKey,
   type WsRolePermissions,
 } from "@/lib/constants/workspacePermissions";
+import { createNotification } from "@/lib/actions/notifications";
 
 const requireAdmin = async () => {
   const session = await auth();
@@ -174,7 +175,21 @@ export const addWorkspaceMember = async (
   userId: string,
   role: "admin" | "member" = "member"
 ) => {
-  await requireWorkspaceManage(workspaceId);
+  const actor = await requireWorkspaceManage(workspaceId);
+
+  // Detectar si era ya member (para no notificar en actualización de role).
+  const [existing] = await db
+    .select({ userId: workspaceMembers.userId })
+    .from(workspaceMembers)
+    .where(
+      and(
+        eq(workspaceMembers.workspaceId, workspaceId),
+        eq(workspaceMembers.userId, userId)
+      )
+    )
+    .limit(1);
+  const isNewMember = !existing;
+
   await db
     .insert(workspaceMembers)
     .values({ workspaceId, userId, role })
@@ -182,6 +197,33 @@ export const addWorkspaceMember = async (
       target: [workspaceMembers.workspaceId, workspaceMembers.userId],
       set: { role },
     });
+
+  // Notification trigger: nuevo miembro agregado al entorno (no self).
+  if (isNewMember && userId !== actor.userId) {
+    const [ws] = await db
+      .select({ name: workspaces.name })
+      .from(workspaces)
+      .where(eq(workspaces.id, workspaceId))
+      .limit(1);
+    const [actorRow] = await db
+      .select({ name: users.name, email: users.email })
+      .from(users)
+      .where(eq(users.id, actor.userId))
+      .limit(1);
+    await createNotification({
+      userId,
+      type: "workspace_member_added",
+      payload: {
+        title: "Te sumaron a un entorno",
+        body: ws?.name ?? "Nuevo entorno",
+        actorId: actor.userId,
+        actorName: actorRow?.name ?? actorRow?.email ?? undefined,
+        refs: { workspaceId },
+      },
+      href: "/dashboard",
+    });
+  }
+
   revalidatePath("/admin");
 };
 

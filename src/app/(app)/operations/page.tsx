@@ -124,7 +124,7 @@ export default async function OperationsDashboard() {
       {/* KPIs como objetos tipográficos */}
       <section>
         <HairlineRule label="Resumen del estudio" />
-        <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-8 md:grid-cols-3 lg:grid-cols-6">
+        <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           {kpis.map((k) => (
             <div key={k.label} className="flex flex-col gap-2">
               <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-ink-faint">

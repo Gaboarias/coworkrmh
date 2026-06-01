@@ -99,17 +99,29 @@ export async function updateTask(
       ? null
       : undefined;
 
-  // Capturar assignee anterior para detectar cambios (notification trigger)
+  // Capturar estado anterior para detectar cambios (notification triggers).
+  // Levantamos assigneeId + title siempre (los necesitamos para varios triggers),
+  // y status para el task_status_changed trigger.
+  const needsPrev =
+    updates.assigneeId !== undefined || updates.status !== undefined;
   let prevAssigneeId: string | null = null;
+  let prevStatus: string | null = null;
   let taskTitle: string | null = null;
-  if (updates.assigneeId !== undefined) {
+  let taskAssigneeId: string | null = null;
+  if (needsPrev) {
     const [prev] = await db
-      .select({ assigneeId: tasks.assigneeId, title: tasks.title })
+      .select({
+        assigneeId: tasks.assigneeId,
+        title: tasks.title,
+        status: tasks.status,
+      })
       .from(tasks)
       .where(eq(tasks.id, taskId))
       .limit(1);
     prevAssigneeId = prev?.assigneeId ?? null;
+    prevStatus = prev?.status ?? null;
     taskTitle = prev?.title ?? null;
+    taskAssigneeId = prev?.assigneeId ?? null;
   }
 
   await db
@@ -117,23 +129,60 @@ export async function updateTask(
     .set({ ...updates, ...(completedAt !== undefined ? { completedAt } : {}), updatedAt: new Date() })
     .where(eq(tasks.id, taskId));
 
-  // Notification trigger: assigneeId cambió a alguien distinto
-  if (
-    updates.assigneeId &&
-    updates.assigneeId !== prevAssigneeId &&
-    updates.assigneeId !== user.id
-  ) {
+  // Lazy-load project name (sólo si algún trigger lo necesita).
+  let projectName: string | null = null;
+  const getProjectName = async (): Promise<string> => {
+    if (projectName !== null) return projectName;
     const [project] = await db
       .select({ name: projects.name })
       .from(projects)
       .where(eq(projects.id, projectId))
       .limit(1);
+    projectName = project?.name ?? "proyecto";
+    return projectName;
+  };
+
+  // Trigger 1: task_assigned — assigneeId cambió a alguien distinto del actor.
+  if (
+    updates.assigneeId &&
+    updates.assigneeId !== prevAssigneeId &&
+    updates.assigneeId !== user.id
+  ) {
     await createNotification({
       userId: updates.assigneeId,
       type: "task_assigned",
       payload: {
         title: "Te asignaron una tarea",
-        body: `${updates.title ?? taskTitle ?? "Tarea"} — ${project?.name ?? "proyecto"}`,
+        body: `${updates.title ?? taskTitle ?? "Tarea"} — ${await getProjectName()}`,
+        actorId: user.id,
+        actorName: user.name ?? user.email ?? undefined,
+        refs: { taskId, projectId },
+      },
+      href: `/projects/${projectId}`,
+    });
+  }
+
+  // Trigger 2: task_status_changed — status cambió, notificar al assignee
+  // (si no es el actor). Útil para reflejar avance de tareas que asignaste.
+  if (
+    updates.status &&
+    prevStatus &&
+    updates.status !== prevStatus &&
+    taskAssigneeId &&
+    taskAssigneeId !== user.id
+  ) {
+    const statusLabels: Record<string, string> = {
+      todo: "Por hacer",
+      in_progress: "En curso",
+      review: "En revisión",
+      done: "Listo",
+    };
+    await createNotification({
+      userId: taskAssigneeId,
+      type: "task_status_changed",
+      payload: {
+        title: `Estado actualizado: ${statusLabels[updates.status] ?? updates.status}`,
+        body: `${taskTitle ?? "Tarea"} — ${await getProjectName()}`,
         actorId: user.id,
         actorName: user.name ?? user.email ?? undefined,
         refs: { taskId, projectId },
