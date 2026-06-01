@@ -7,6 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import { useColorScheme, View } from "react-native";
 
 import { useAppFonts } from "@/lib/useAppFonts";
+import { AuthProvider } from "@/lib/auth-context";
 import { COLORS } from "@/lib/theme";
 
 // Mantener el splash screen hasta que las fonts estén cargadas — evita
@@ -16,12 +17,13 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 /**
- * Root layout (Edition 04 mobile · M1).
+ * Root layout (Edition 04 mobile · M2).
  *
- * - Carga Satoshi + JetBrains Mono via useAppFonts.
- * - Mantiene splash hasta que fonts listas.
- * - Stack navigation simple (sin tabs todavía — eso entra en M3).
- * - Color scheme automático (light/dark según OS).
+ * - useAppFonts carga Satoshi + JetBrains Mono.
+ * - AuthProvider envuelve toda la app — los grupos (app) y (auth)
+ *   consumen `useAuth()` para guard/redirect logic.
+ * - Splash visible hasta que fonts ready.
+ * - Stack root sin headers; cada grupo define sus propios screenOptions.
  */
 export default function RootLayout() {
   const fontsLoaded = useAppFonts();
@@ -39,13 +41,16 @@ export default function RootLayout() {
   if (!fontsLoaded) {
     return (
       <View
-        style={{ flex: 1, backgroundColor: isDark ? COLORS.dark.bg : COLORS.light.bg }}
+        style={{
+          flex: 1,
+          backgroundColor: isDark ? COLORS.dark.bg : COLORS.light.bg,
+        }}
       />
     );
   }
 
   return (
-    <>
+    <AuthProvider>
       <StatusBar style={isDark ? "light" : "dark"} />
       <Stack
         screenOptions={{
@@ -54,7 +59,10 @@ export default function RootLayout() {
             backgroundColor: isDark ? COLORS.dark.bg : COLORS.light.bg,
           },
         }}
-      />
-    </>
+      >
+        <Stack.Screen name="(auth)" options={{ animation: "fade" }} />
+        <Stack.Screen name="(app)" options={{ animation: "fade" }} />
+      </Stack>
+    </AuthProvider>
   );
 }

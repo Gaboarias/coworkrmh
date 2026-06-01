@@ -1,24 +1,27 @@
-import { ScrollView, Text, View, useColorScheme } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  useColorScheme,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { COLORS, PROJECT_PALETTE } from "@/lib/theme";
+import { useAuth } from "@/lib/auth-context";
 
 /**
- * M1 Showcase — verifica que el design system Edition 04 carga correctamente
- * en native. Renderiza:
- *   - Drop-line title con Satoshi Bold + italic
- *   - Eyebrow + IssueNumber en JetBrains Mono small-caps
- *   - HairlineRule con label inline
- *   - Hanging numbers list
- *   - Palette swatches (8 project colors Edition 04)
- *   - KPI numeral grande
+ * M2 Home (era M1 Showcase) — verifica design system + auth context.
+ * Renderiza el showcase Edition 04 (drop-line, palette, hanging numbers,
+ * hero numeral) + user logueado + botón sign out.
  *
- * Este screen se reemplaza en M4 con el Dashboard real.
+ * Este screen se reemplaza en M4 con el Dashboard real consumiendo la API.
  */
 export default function Index() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const palette = isDark ? COLORS.dark : COLORS.light;
+  const { user, signOut } = useAuth();
 
   return (
     <SafeAreaView
@@ -31,10 +34,10 @@ export default function Index() {
       >
         {/* Eyebrow */}
         <Text className="font-mono text-[12px] uppercase tracking-[1.7px] text-ink-faint">
-          / m1 · foundation
+          / m2 · auth ok
         </Text>
 
-        {/* Drop-line title */}
+        {/* Drop-line title con nombre del user */}
         <View className="mt-4">
           <Text
             className="text-ink"
@@ -46,7 +49,7 @@ export default function Index() {
               fontWeight: "700",
             }}
           >
-            Pistachio,
+            Hola{user?.name ? `, ${user.name.split(" ")[0]}` : ""},
           </Text>
           <Text
             className="text-ink-soft"
@@ -60,7 +63,7 @@ export default function Index() {
               marginTop: -4,
             }}
           >
-            edition 04.
+            estás dentro.
           </Text>
         </View>
 
@@ -69,9 +72,12 @@ export default function Index() {
           className="mt-5 text-ink-soft"
           style={{ fontFamily: "Satoshi", fontSize: 16, lineHeight: 24 }}
         >
-          Foundation lista. Satoshi cargada de Fontshare TTF, JetBrains Mono
-          via Google Fonts, NativeWind transformando classes Edition 04.
-          Mismo design system que la web.
+          M2 auth listo. Logueado como{" "}
+          <Text style={{ fontWeight: "700", color: palette.ink }}>
+            {user?.email}
+          </Text>{" "}
+          ({user?.role}). El token JWT vive en SecureStore y se envía como
+          Bearer a la API. M3-M8 vienen con tabs + dashboard real + tasks.
         </Text>
 
         {/* HairlineRule simulation — Palette */}
@@ -209,17 +215,43 @@ export default function Index() {
           +18% vs abril — mejor mes del trimestre.
         </Text>
 
-        {/* M1 status footer */}
+        {/* M2 status footer + sign-out */}
         <View
           className="mt-12 border-t pt-6"
           style={{ borderColor: palette.rule }}
         >
           <Text className="font-mono text-[11px] uppercase tracking-[1.7px] text-ink-faint">
-            ✓ M1 · Foundation · Expo SDK 56 · NativeWind v4 · Satoshi + JBMono
+            ✓ M1 Foundation · ✓ M2 Auth · JWT Bearer · SecureStore
           </Text>
           <Text className="mt-2 font-mono text-[11px] tracking-[0.5px] text-ink-faint">
-            Próximo: M2 · Auth + login + API client.
+            Próximo: M3 · TabBar + primitives + dashboard real.
           </Text>
+
+          <Pressable
+            onPress={signOut}
+            style={({ pressed }) => ({
+              marginTop: 24,
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: palette.ruleStrong,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              borderRadius: 6,
+              alignSelf: "flex-start",
+              opacity: pressed ? 0.6 : 1,
+            })}
+          >
+            <Text
+              style={{
+                fontFamily: "Satoshi",
+                fontSize: 14,
+                fontWeight: "600",
+                color: palette.ink,
+              }}
+            >
+              Cerrar sesión
+            </Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>
