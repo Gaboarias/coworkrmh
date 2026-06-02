@@ -54,16 +54,22 @@ export const listWorkspacesAdmin = async () => {
 
 export const listAllUsers = async () => {
   await requireAdmin();
-  return db
+  // SELECT users LEFT JOIN COUNT(workspaceMembers) — para badge "Sin entorno"
+  // en /admin Usuarios tab. workspaceCount=0 → orphan, visible al admin.
+  const rows = await db
     .select({
       id: users.id,
       name: users.name,
       email: users.email,
       avatarUrl: users.avatarUrl,
       role: users.role,
+      workspaceCount: sql<number>`count(${workspaceMembers.workspaceId})::int`,
     })
     .from(users)
+    .leftJoin(workspaceMembers, eq(workspaceMembers.userId, users.id))
+    .groupBy(users.id, users.name, users.email, users.avatarUrl, users.role)
     .orderBy(asc(users.name));
+  return rows;
 };
 
 export const listWorkspaceMembers = async (workspaceId: string) => {

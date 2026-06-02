@@ -32,6 +32,7 @@ export default async function AdminPage() {
           email: u.email ?? "",
           avatarUrl: u.avatarUrl ?? null,
           role: u.role,
+          workspaceCount: u.workspaceCount,
         }))}
         workspaces={workspaces.map((w) => ({
           id: w.id,

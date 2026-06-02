@@ -51,6 +51,8 @@ interface UserRow {
   email: string;
   avatarUrl: string | null;
   role: Role;
+  /** Cantidad de workspaceMembers rows del user. 0 = orphan (badge rojo). */
+  workspaceCount?: number;
 }
 interface WsRow {
   id: string;
@@ -744,11 +746,13 @@ const UsersTab = ({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("member");
-  // Workspaces a los que el user invitado se agrega como member. Por
-  // default vacío — admin debe elegir. Sin esto, el user no puede ser
-  // asignado a tareas en ningún proyecto (Linear/Notion friction).
+  // Workspaces a los que el user invitado se agrega como member.
+  // DEFAULT: TODOS pre-seleccionados — el caso común es un studio con
+  // 1-3 workspaces donde el nuevo user debe trabajar en todos. Admin
+  // puede deseleccionar si no aplica. Sin esto, el user queda huérfano
+  // (sin acceso a ningún workspace) y no aparece en dropdowns de tareas.
   const [inviteWorkspaceIds, setInviteWorkspaceIds] = useState<Set<string>>(
-    new Set()
+    () => new Set(workspaces.map((w) => w.id))
   );
   const [inviting, setInviting] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -789,7 +793,8 @@ const UsersTab = ({
       setName("");
       setEmail("");
       setRole("member");
-      setInviteWorkspaceIds(new Set());
+      // Reset al default (todos los workspaces seleccionados) — no a vacío.
+      setInviteWorkspaceIds(new Set(workspaces.map((w) => w.id)));
       onChange();
     } catch (err) {
       toast.error((err as Error).message);
@@ -850,16 +855,15 @@ const UsersTab = ({
             </Button>
 
             {/* Workspaces multi-select — entornos a los que se agrega el user
-                como member al invitarlo. Sin esto, el user no aparece en
-                dropdowns de asignar tareas. */}
+                como member al invitarlo. Default: TODOS seleccionados (el
+                caso común). Admin puede deseleccionar si el user no
+                trabaja en algún entorno específico. */}
             <div className="sm:col-span-2 mt-2">
               <p className="mb-2 text-xs font-medium text-text-muted">
                 Entornos donde el usuario va a poder trabajar
-                {inviteWorkspaceIds.size > 0 && (
-                  <span className="ml-1 font-mono text-[11px] tracking-[0.08em] text-ink-faint">
-                    ({inviteWorkspaceIds.size} seleccionado{inviteWorkspaceIds.size !== 1 ? "s" : ""})
-                  </span>
-                )}
+                <span className="ml-1 font-mono text-[11px] tracking-[0.08em] text-ink-faint">
+                  ({inviteWorkspaceIds.size} de {workspaces.length})
+                </span>
               </p>
               {workspaces.length === 0 ? (
                 <p className="text-xs italic text-text-tertiary">
@@ -910,6 +914,11 @@ const UsersTab = ({
                   {u.name ?? "Sin nombre"}
                 </p>
                 <p className="truncate text-xs text-text-muted">{u.email}</p>
+                {u.workspaceCount === 0 && (
+                  <span className="mt-1 inline-flex items-center gap-1 rounded-sm bg-urgent-soft px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-urgent">
+                    Sin entorno
+                  </span>
+                )}
               </div>
               <Select
                 aria-label={`Rol de ${u.name ?? u.email}`}
