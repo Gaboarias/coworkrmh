@@ -18,8 +18,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 import { OperationsNav } from "@/components/operations/OperationsNav";
 import { NoEntorno } from "@/components/operations/NoEntorno";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatDateCR } from "@/lib/utils/datetime";
 
 /**
  * Operations dashboard (Edition 04).
@@ -106,7 +105,9 @@ export default async function OperationsDashboard() {
     },
   ];
 
-  const monthShort = format(new Date(), "MMM yyyy", { locale: es }).toUpperCase();
+  // MM/YYYY en CR (server-side Vercel = UTC; sin TZ podía mostrar el mes
+  // siguiente desde las 6pm CR del último día del mes).
+  const monthShort = formatDateCR(new Date(), { month: "2-digit", year: "numeric" });
 
   return (
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">

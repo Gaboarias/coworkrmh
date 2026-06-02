@@ -6,11 +6,10 @@ import { eq, and, asc, desc } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 import Link from "next/link";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { CheckSquare, Layers } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/workspace";
+import { formatDateCR, isPastDateCR } from "@/lib/utils/datetime";
 
 export default async function MyTasksPage() {
   const session = await auth();
@@ -81,11 +80,8 @@ export default async function MyTasksPage() {
               <HairlineRule label="Pendientes" count={`${pending.length}`} />
               <ul className="h-list mt-3">
                 {pending.map((task, i) => {
-                  const isOverdue =
-                    task.dueDate && new Date(task.dueDate) < new Date();
-                  const due = task.dueDate
-                    ? format(new Date(task.dueDate), "dd MMM", { locale: es })
-                    : null;
+                  const isOverdue = isPastDateCR(task.dueDate);
+                  const due = task.dueDate ? formatDateCR(task.dueDate) : null;
                   const isUrgent = task.priority === "urgent";
                   return (
                     <li key={task.id} className="h-list-item">

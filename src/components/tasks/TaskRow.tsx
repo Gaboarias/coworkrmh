@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CalendarDays, Trash2 } from "lucide-react";
-import { formatDateCR } from "@/lib/utils/datetime";
+import { formatDateCR, isPastDateCR } from "@/lib/utils/datetime";
 import { toast } from "sonner";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import { TaskPriorityBadge } from "./TaskPriorityBadge";
@@ -66,7 +66,7 @@ export function TaskRow({
   }
 
   const isOverdue =
-    task.dueDate && new Date(task.dueDate) < new Date() && status !== "done";
+    !!task.dueDate && isPastDateCR(task.dueDate) && status !== "done";
 
   return (
     <div

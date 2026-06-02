@@ -3,8 +3,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { BarChart3 } from "lucide-react";
 import { getWorkspaceReport } from "@/lib/actions/reports";
 import { ReportsView } from "@/components/reports/ReportsView";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatDateCR } from "@/lib/utils/datetime";
 
 /**
  * /reports (Edition 04).
@@ -29,9 +28,10 @@ export default async function ReportsPage() {
     );
   }
 
+  // En CR para no mostrar el mes siguiente desde las 6pm CR del último día.
   const now = new Date();
-  const monthName = format(now, "MMMM", { locale: es });
-  const monthShort = format(now, "MMM yyyy", { locale: es }).toUpperCase();
+  const monthName = formatDateCR(now, { month: "long" });
+  const monthShort = formatDateCR(now, { month: "2-digit", year: "numeric" });
   const monthCap = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
   return (

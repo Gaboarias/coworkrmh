@@ -12,12 +12,11 @@ import { eq, and, ne, asc, desc, inArray } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import Link from "next/link";
 import { Layers } from "lucide-react";
 import { formatMoney } from "@/lib/utils/money";
 import { getActiveWorkspace } from "@/lib/workspace";
+import { formatDateCR, isPastDateCR } from "@/lib/utils/datetime";
 
 /**
  * Dashboard (Edition 04).
@@ -102,12 +101,19 @@ export default async function DashboardPage() {
         .limit(5)
     : [];
 
-  const today = format(new Date(), "EEEE", { locale: es });
-  const todayLong = format(new Date(), "EEEE, d 'de' MMMM", { locale: es });
+  // IMPORTANTE: usar formatDateCR. `format(new Date(), ...)` corre en el
+  // server (Vercel = UTC) y desde las 6pm CR muestra el día siguiente.
+  const now = new Date();
+  const today = formatDateCR(now, { weekday: "long" });
+  const todayLong = formatDateCR(now, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
   const firstName = session.user.name?.split(" ")[0] ?? "equipo";
 
-  // Pad para issue numeration
-  const dateStamp = format(new Date(), "MMM dd", { locale: es }).toUpperCase();
+  // Pad para issue numeration — DD/MM en lugar de "MMM dd" para consistencia.
+  const dateStamp = formatDateCR(now, { day: "2-digit", month: "2-digit" });
 
   return (
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
@@ -138,9 +144,7 @@ export default async function DashboardPage() {
               {myTaskRows.map((task, i) => {
                 const isUrgent = task.priority === "urgent";
                 const isHigh = task.priority === "high";
-                const due = task.dueDate
-                  ? format(new Date(task.dueDate), "dd MMM", { locale: es })
-                  : null;
+                const due = task.dueDate ? formatDateCR(task.dueDate) : null;
                 return (
                   <li key={task.id} className="h-list-item">
                     <span className="h-list-item-n">
@@ -242,8 +246,7 @@ export default async function DashboardPage() {
                 {upcomingPaymentRows.map(({ payment, client }) => {
                   const isOverdue =
                     payment.status === "overdue" ||
-                    (payment.dueDate &&
-                      new Date(payment.dueDate) < new Date());
+                    isPastDateCR(payment.dueDate);
                   return (
                     <li
                       key={payment.id}
@@ -276,9 +279,7 @@ export default async function DashboardPage() {
                               (isOverdue ? "text-urgent" : "text-ink-faint")
                             }
                           >
-                            {format(new Date(payment.dueDate), "dd MMM", {
-                              locale: es,
-                            })}
+                            {formatDateCR(payment.dueDate)}
                           </span>
                         )}
                       </div>

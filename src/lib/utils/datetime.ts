@@ -56,3 +56,42 @@ export function formatDateTimeCR(value: string | Date | null | undefined): strin
 export function formatTimeCR(value: string | Date | null | undefined): string {
   return formatDateCR(value, { hour: "2-digit", minute: "2-digit", hour12: false });
 }
+
+/**
+ * Devuelve la fecha calendario "YYYY-MM-DD" del día corriente EN COSTA RICA.
+ *
+ * Por qué existe: `new Date()` en el server de Vercel (UTC) NO es el mismo
+ * día calendario que en CR. A las 6pm CR del lunes ya son las 00:00 UTC del
+ * martes — y `format(new Date(), "EEEE")` server-side decía "martes". Bug
+ * crítico observado en /dashboard y en `isOverdue`.
+ *
+ * Esta función reproyecta el `Date` instantáneo a CR vía Intl y devuelve
+ * solo la parte de fecha. Útil para comparar contra dueDates (también
+ * YYYY-MM-DD) por orden lexicográfico (ISO date format).
+ */
+export function todayYmdCR(): string {
+  // en-CA produce "YYYY-MM-DD" — el único locale estándar que lo formatea así.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: CR_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+/**
+ * ¿Es la fecha (YYYY-MM-DD) anterior al día calendario actual en CR?
+ *
+ * Usar para isOverdue de tareas/pagos. La comparación lexicográfica de
+ * ISO date strings funciona porque ambos lados son "YYYY-MM-DD".
+ */
+export function isPastDateCR(ymd: string | null | undefined): boolean {
+  if (!ymd) return false;
+  // Si la entrada es un timestamp, normalizar a YYYY-MM-DD en CR primero.
+  const onlyDate = ymd.length === 10 ? ymd : formatDateCR(ymd, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).split("/").reverse().join("-");
+  return onlyDate < todayYmdCR();
+}
