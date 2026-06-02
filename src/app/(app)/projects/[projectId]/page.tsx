@@ -4,6 +4,7 @@ import {
   projects,
   tasks,
   workspaceMembers,
+  projectMembers,
   users,
 } from "@/lib/db/schema";
 import { eq, and, isNull, asc } from "drizzle-orm";
@@ -83,11 +84,15 @@ export default async function ProjectPage({ params }: PageProps) {
       : null,
   }));
 
-  // Asignables = TODOS los miembros del workspace del proyecto, no solo
-  // los explícitamente agregados como project members. Si al asignar una
-  // tarea el assignee no está en projectMembers, el server lo auto-agrega
-  // (ver createTask/updateTask).
-  const memberRows = await db
+  // Asignables = UNION de (workspaceMembers del workspace del proyecto)
+  // ∪ (projectMembers del proyecto). El union resuelve 2 casos:
+  //   1. Workspace members nuevos aparecen sin agregarlos al proyecto
+  //      explícitamente (auto-magic). Si los asignás, ensureAssigneeIs
+  //      ProjectMember los materializa en projectMembers.
+  //   2. DATA LEGACY: users que fueron agregados directo a projectMembers
+  //      (sin pasar por workspace) — ej. Jorge Castillo en Midnight Trouble.
+  //      Si quedan solo en projectMembers, igual aparecen en el dropdown.
+  const wsMemberRows = await db
     .select({
       id: users.id,
       name: users.name,
@@ -95,17 +100,36 @@ export default async function ProjectPage({ params }: PageProps) {
       avatarUrl: users.avatarUrl,
     })
     .from(workspaceMembers)
-    .leftJoin(users, eq(workspaceMembers.userId, users.id))
+    .innerJoin(users, eq(workspaceMembers.userId, users.id))
     .where(eq(workspaceMembers.workspaceId, project.workspaceId));
 
-  const members = memberRows
-    .filter((m) => m.id != null)
-    .map((m) => ({
-      id: m.id as string,
-      name: m.name ?? null,
-      email: m.email ?? "",
-      avatarUrl: m.avatarUrl ?? null,
-    }));
+  const pjMemberRows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      avatarUrl: users.avatarUrl,
+    })
+    .from(projectMembers)
+    .innerJoin(users, eq(projectMembers.userId, users.id))
+    .where(eq(projectMembers.projectId, params.projectId));
+
+  // Dedup por user.id, priorizando wsMember (mismo id → mismo user, da igual).
+  const memberMap = new Map<
+    string,
+    { id: string; name: string | null; email: string; avatarUrl: string | null }
+  >();
+  for (const row of [...wsMemberRows, ...pjMemberRows]) {
+    if (row.id && !memberMap.has(row.id)) {
+      memberMap.set(row.id, {
+        id: row.id,
+        name: row.name ?? null,
+        email: row.email ?? "",
+        avatarUrl: row.avatarUrl ?? null,
+      });
+    }
+  }
+  const members = Array.from(memberMap.values());
 
   return (
     <ProjectTasksView
