@@ -3,7 +3,11 @@ import { NextResponse } from "next/server";
 import { randomBytes, createHash } from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { users, passwordResetTokens } from "@/lib/db/schema";
+import {
+  users,
+  passwordResetTokens,
+  workspaceMembers,
+} from "@/lib/db/schema";
 import { sendPasswordResetEmail } from "@/lib/email";
 
 function baseUrl(req: Request) {
@@ -22,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  const { name, email, role } = await request.json();
+  const { name, email, role, workspaceIds } = await request.json();
 
   const normalized =
     typeof email === "string" ? email.trim().toLowerCase() : "";
@@ -52,6 +56,30 @@ export async function POST(request: Request) {
       role: safeRole,
     })
     .returning({ id: users.id, email: users.email });
+
+  // Workspaces: si admin pasó workspaceIds[], agregar al user como member
+  // en cada uno. Esto hace que el user aparezca en dropdowns de asignación
+  // de tareas inmediatamente. Si no se pasan IDs, el user queda sin entornos
+  // (admin lo agrega después manualmente via /admin → Entornos).
+  if (Array.isArray(workspaceIds) && workspaceIds.length > 0) {
+    const validIds = workspaceIds.filter(
+      (id): id is string => typeof id === "string" && id.length > 0
+    );
+    if (validIds.length > 0) {
+      await db
+        .insert(workspaceMembers)
+        .values(
+          validIds.map((wsId) => ({
+            workspaceId: wsId,
+            userId: user.id,
+            role: "member" as const,
+          }))
+        )
+        .onConflictDoNothing({
+          target: [workspaceMembers.workspaceId, workspaceMembers.userId],
+        });
+    }
+  }
 
   // Invite token (reuses the password-reset flow as "set your password").
   const rawToken = randomBytes(32).toString("hex");

@@ -18,6 +18,7 @@ import { Select } from "@/components/ui/Select";
 import { SwatchPicker } from "@/components/ui/SwatchPicker";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { AdminUserPasswordActions } from "@/components/admin/AdminUserPasswordActions";
+import { AdminUserWorkspaces } from "@/components/admin/AdminUserWorkspaces";
 import { cn } from "@/lib/utils/cn";
 import { readableFg } from "@/lib/utils/color";
 import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
@@ -107,7 +108,11 @@ export const AdminPanel = ({
           onChange={() => router.refresh()}
         />
       ) : (
-        <UsersTab users={users} onChange={() => router.refresh()} />
+        <UsersTab
+          users={users}
+          workspaces={workspaces}
+          onChange={() => router.refresh()}
+        />
       )}
     </div>
   );
@@ -729,16 +734,33 @@ const GroupRows = ({
 
 const UsersTab = ({
   users,
+  workspaces,
   onChange,
 }: {
   users: UserRow[];
+  workspaces: WsRow[];
   onChange: () => void;
 }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("member");
+  // Workspaces a los que el user invitado se agrega como member. Por
+  // default vacío — admin debe elegir. Sin esto, el user no puede ser
+  // asignado a tareas en ningún proyecto (Linear/Notion friction).
+  const [inviteWorkspaceIds, setInviteWorkspaceIds] = useState<Set<string>>(
+    new Set()
+  );
   const [inviting, setInviting] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
+
+  const toggleInviteWorkspace = (id: string) => {
+    setInviteWorkspaceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const invite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -748,18 +770,26 @@ const UsersTab = ({
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, role }),
+        body: JSON.stringify({
+          name,
+          email,
+          role,
+          workspaceIds: [...inviteWorkspaceIds],
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error al invitar");
+      const wsCount = inviteWorkspaceIds.size;
+      const wsMsg = wsCount > 0 ? ` en ${wsCount} entorno${wsCount !== 1 ? "s" : ""}` : "";
       toast.success(
         data.emailSent
-          ? "Usuario invitado por correo"
-          : "Usuario creado — comparte el enlace"
+          ? `Usuario invitado por correo${wsMsg}`
+          : `Usuario creado${wsMsg} — comparte el enlace`
       );
       setName("");
       setEmail("");
       setRole("member");
+      setInviteWorkspaceIds(new Set());
       onChange();
     } catch (err) {
       toast.error((err as Error).message);
@@ -818,6 +848,50 @@ const UsersTab = ({
               <UserPlus className="h-4 w-4" />
               Invitar
             </Button>
+
+            {/* Workspaces multi-select — entornos a los que se agrega el user
+                como member al invitarlo. Sin esto, el user no aparece en
+                dropdowns de asignar tareas. */}
+            <div className="sm:col-span-2 mt-2">
+              <p className="mb-2 text-xs font-medium text-text-muted">
+                Entornos donde el usuario va a poder trabajar
+                {inviteWorkspaceIds.size > 0 && (
+                  <span className="ml-1 font-mono text-[11px] tracking-[0.08em] text-ink-faint">
+                    ({inviteWorkspaceIds.size} seleccionado{inviteWorkspaceIds.size !== 1 ? "s" : ""})
+                  </span>
+                )}
+              </p>
+              {workspaces.length === 0 ? (
+                <p className="text-xs italic text-text-tertiary">
+                  No hay entornos creados todavía.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {workspaces.map((ws) => {
+                    const isSelected = inviteWorkspaceIds.has(ws.id);
+                    return (
+                      <button
+                        type="button"
+                        key={ws.id}
+                        onClick={() => toggleInviteWorkspace(ws.id)}
+                        className={cn(
+                          "inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs transition-colors",
+                          isSelected
+                            ? "border-ink bg-accent-soft text-ink"
+                            : "border-rule bg-transparent text-ink-soft hover:border-rule-strong hover:text-ink"
+                        )}
+                      >
+                        <span
+                          className="h-2.5 w-2.5 rounded-sm"
+                          style={{ backgroundColor: ws.color }}
+                        />
+                        {ws.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </form>
         </CardContent>
       </Card>
@@ -848,6 +922,11 @@ const UsersTab = ({
                 <option value="manager">Manager</option>
                 <option value="admin">Admin</option>
               </Select>
+              <AdminUserWorkspaces
+                userId={u.id}
+                userName={u.name ?? u.email}
+                workspaces={workspaces}
+              />
               <AdminUserPasswordActions
                 userId={u.id}
                 userEmail={u.email}
