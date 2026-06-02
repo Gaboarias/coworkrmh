@@ -13,7 +13,7 @@ import type { ProjectStatus } from "@/lib/types";
 import { formatDateCR } from "@/lib/utils/datetime";
 
 function formatDate(d: string) {
-  return formatDateCR(d, { day: "2-digit", month: "short" });
+  return formatDateCR(d);
 }
 
 function durationDays(start: string, end: string) {

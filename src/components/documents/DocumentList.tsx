@@ -1,9 +1,9 @@
 "use client";
 
 import { File, Download, Trash2, Image, FileText, Film } from "lucide-react";
-import { format } from "date-fns";
 import { toast } from "sonner";
 import { deleteDocument } from "@/lib/actions/documents";
+import { formatDateCR } from "@/lib/utils/datetime";
 
 interface Document {
   id: string;
@@ -75,8 +75,7 @@ export function DocumentList({
             <p className="truncate text-sm font-medium text-text">{doc.name}</p>
             <p className="text-xs text-text-tertiary">
               {formatBytes(doc.sizeBytes)}
-              {doc.createdAt &&
-                ` · ${format(new Date(doc.createdAt), "dd/MM/yyyy")}`}
+              {doc.createdAt && ` · ${formatDateCR(doc.createdAt)}`}
             </p>
           </div>
 

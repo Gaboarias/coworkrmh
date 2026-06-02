@@ -4,10 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, StickyNote, Trash2 } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import { createNote, deleteNote } from "@/lib/actions/notes";
+import { formatDateCR } from "@/lib/utils/datetime";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
@@ -119,10 +118,7 @@ export function NotesListView({
                 </Link>
                 <div className="flex flex-shrink-0 items-center gap-3">
                   <span className="font-mono text-[12px] uppercase tracking-[0.08em] text-ink-faint">
-                    {note.updatedAt &&
-                      format(new Date(note.updatedAt), "dd MMM", {
-                        locale: es,
-                      })}
+                    {note.updatedAt && formatDateCR(note.updatedAt)}
                   </span>
                   <button
                     onClick={() => handleDelete(note.id)}

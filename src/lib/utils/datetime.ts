@@ -18,15 +18,16 @@ const CR_LOCALE = "es-CR";
 /**
  * Date YYYY-MM-DD (saleDate, dueDate) — render fecha calendario en CR.
  *
+ * Default = DD/MM/YYYY (formato único de la app, sin excepción).
+ *
  * IMPORTANTE: si la entrada es "2026-06-01" (string sin TZ), `new Date()` la
  * parsea como medianoche UTC. En CR son las 18:00 del día anterior. Para que
- * "2026-06-01" siga mostrándose como 1-jun en pantalla, dejamos que Intl
- * lo reproyecte a CR — al pasar de UTC midnight a CR (UTC-6), retrocede 6h
- * al día anterior. Mitigación: agregar T12:00:00 antes de parsear.
+ * "2026-06-01" siga mostrándose como 01/06/2026 en pantalla, anclamos los
+ * date-only a mediodía UTC antes de reproyectar a CR (UTC-6).
  */
 export function formatDateCR(
   value: string | Date | null | undefined,
-  opts: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "2-digit" }
+  opts: Intl.DateTimeFormatOptions = { day: "2-digit", month: "2-digit", year: "numeric" }
 ): string {
   if (value == null || value === "") return "";
   const d =
@@ -40,12 +41,12 @@ export function formatDateCR(
   return new Intl.DateTimeFormat(CR_LOCALE, { ...opts, timeZone: CR_TZ }).format(d);
 }
 
-/** Fecha + hora corta en CR. Usar para timestamps históricos. */
+/** Fecha + hora corta en CR: DD/MM/YYYY HH:mm. */
 export function formatDateTimeCR(value: string | Date | null | undefined): string {
   return formatDateCR(value, {
-    year: "numeric",
-    month: "short",
     day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -53,5 +54,5 @@ export function formatDateTimeCR(value: string | Date | null | undefined): strin
 
 /** Solo hora HH:mm en CR. */
 export function formatTimeCR(value: string | Date | null | undefined): string {
-  return formatDateCR(value, { hour: "2-digit", minute: "2-digit" });
+  return formatDateCR(value, { hour: "2-digit", minute: "2-digit", hour12: false });
 }

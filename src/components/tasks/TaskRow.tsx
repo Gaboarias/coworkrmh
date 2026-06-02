@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { CalendarDays, Trash2 } from "lucide-react";
+import { formatDateCR } from "@/lib/utils/datetime";
 import { toast } from "sonner";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import { TaskPriorityBadge } from "./TaskPriorityBadge";
@@ -112,7 +112,7 @@ export function TaskRow({
           }`}
         >
           <CalendarDays className="h-3 w-3" />
-          {format(new Date(task.dueDate), "dd/MM")}
+          {formatDateCR(task.dueDate)}
         </div>
       )}
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileUploadDropzone } from "./FileUploadDropzone";
 import { DocumentList } from "./DocumentList";
@@ -27,12 +26,16 @@ interface DocumentsViewProps {
 
 export function DocumentsView({
   project,
-  documents: initialDocs,
+  documents,
   userId,
   canDelete,
 }: DocumentsViewProps) {
   const router = useRouter();
-  const [documents, setDocuments] = useState(initialDocs);
+  // Antes había `useState(initialDocs)` acá: el upload llamaba a
+  // router.refresh() pero el state local quedaba congelado en initialDocs.
+  // Resultado: la lista no se actualizaba hasta navegar. Solución: leer
+  // `documents` directo de props — Next refetcha el server component al
+  // refresh y las nuevas props se reflejan automáticamente.
 
   const parts = project.name.split(/\s+[—-]\s+/);
   const titleText = parts[0] ?? project.name;

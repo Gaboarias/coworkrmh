@@ -20,6 +20,7 @@ import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, FileText, History } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
+import { formatDateCR } from "@/lib/utils/datetime";
 import type { TaskPriority } from "@/lib/types";
 
 interface CalendarTask {
@@ -240,13 +241,7 @@ export function CalendarView({
                         <Link
                           key={p.id}
                           href={`/projects/${p.id}`}
-                          title={`${p.name} · ${format(
-                            parseISO(p.startDate),
-                            "d MMM",
-                            { locale: es }
-                          )} – ${format(parseISO(p.endDate), "d MMM", {
-                            locale: es,
-                          })}`}
+                          title={`${p.name} · ${formatDateCR(p.startDate)} – ${formatDateCR(p.endDate)}`}
                           className={cn(
                             "block h-4 truncate px-1 text-[12px] font-medium leading-4 text-text/90 transition-opacity hover:opacity-80",
                             isStart ? "rounded-l-sm" : "",
