@@ -78,62 +78,94 @@ export const SalesView = ({
             Registrar venta
           </h3>
           <form onSubmit={add} className="grid gap-3 sm:grid-cols-2">
-            <Input
-              type="date"
-              value={f.saleDate}
-              onChange={(e) => set({ saleDate: e.target.value })}
-              aria-label="Fecha"
-            />
-            <Input
-              value={f.description}
-              onChange={(e) => set({ description: e.target.value })}
-              placeholder="Descripción"
-              aria-label="Descripción"
-            />
-            <Input
-              value={f.clientName}
-              onChange={(e) => set({ clientName: e.target.value })}
-              placeholder="Cliente"
-              aria-label="Cliente"
-            />
-            <Input
-              value={f.category}
-              onChange={(e) => set({ category: e.target.value })}
-              placeholder="Categoría"
-              aria-label="Categoría"
-            />
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={f.qty}
-              onChange={(e) => set({ qty: Number(e.target.value) || 0 })}
-              placeholder="Cant."
-              aria-label="Cantidad"
-            />
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={f.unitCost}
-              onChange={(e) => set({ unitCost: Number(e.target.value) || 0 })}
-              placeholder="Costo unit."
-              aria-label="Costo unitario"
-            />
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={f.unitPrice}
-              onChange={(e) => set({ unitPrice: Number(e.target.value) || 0 })}
-              placeholder="Precio unit."
-              aria-label="Precio unitario"
-            />
-            <Button type="submit" loading={saving}>
-              <Plus className="h-4 w-4" />
-              Registrar
-            </Button>
+            <FieldWithLabel label="Fecha">
+              <Input
+                type="date"
+                value={f.saleDate}
+                onChange={(e) => set({ saleDate: e.target.value })}
+                aria-label="Fecha"
+              />
+            </FieldWithLabel>
+            <FieldWithLabel label="Descripción">
+              <Input
+                value={f.description}
+                onChange={(e) => set({ description: e.target.value })}
+                placeholder="Ej. Reel para Instagram"
+                aria-label="Descripción"
+              />
+            </FieldWithLabel>
+            <FieldWithLabel label="Cliente">
+              <Input
+                value={f.clientName}
+                onChange={(e) => set({ clientName: e.target.value })}
+                placeholder="Nombre del cliente"
+                aria-label="Cliente"
+              />
+            </FieldWithLabel>
+            <FieldWithLabel label="Categoría">
+              <Input
+                value={f.category}
+                onChange={(e) => set({ category: e.target.value })}
+                placeholder="Ej. Producción, Edición"
+                aria-label="Categoría"
+              />
+            </FieldWithLabel>
+            <FieldWithLabel label="Cantidad" hint="unidades vendidas">
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={f.qty}
+                onChange={(e) => set({ qty: Number(e.target.value) || 0 })}
+                aria-label="Cantidad"
+              />
+            </FieldWithLabel>
+            <FieldWithLabel label="Costo unitario" hint="tu costo por unidad">
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={f.unitCost}
+                onChange={(e) => set({ unitCost: Number(e.target.value) || 0 })}
+                aria-label="Costo unitario"
+              />
+            </FieldWithLabel>
+            <FieldWithLabel label="Precio unitario" hint="lo que le cobrás al cliente">
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={f.unitPrice}
+                onChange={(e) => set({ unitPrice: Number(e.target.value) || 0 })}
+                aria-label="Precio unitario"
+              />
+            </FieldWithLabel>
+            <div className="flex items-end">
+              <Button type="submit" loading={saving} className="w-full">
+                <Plus className="h-4 w-4" />
+                Registrar
+              </Button>
+            </div>
           </form>
+
+          {/* Preview del cálculo — feedback inmediato al user antes de submit */}
+          {f.qty > 0 && f.unitPrice > 0 && (
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 rounded-md border border-rule bg-surface-el px-4 py-3">
+              <CalcStat
+                label="Venta total"
+                value={formatMoney(f.qty * f.unitPrice)}
+              />
+              <CalcStat
+                label="Costo total"
+                value={formatMoney(f.qty * f.unitCost)}
+              />
+              <CalcStat
+                label="Ganancia"
+                value={formatMoney(f.qty * (f.unitPrice - f.unitCost))}
+                positive={f.unitPrice > f.unitCost}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
       )}
@@ -235,3 +267,59 @@ export const SalesView = ({
     </div>
   );
 };
+
+// ── Helpers ──────────────────────────────────────────────────────
+
+function FieldWithLabel({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-medium text-text-muted">
+        {label}
+        {hint && (
+          <span className="ml-1 font-normal italic text-text-tertiary">
+            — {hint}
+          </span>
+        )}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function CalcStat({
+  label,
+  value,
+  positive,
+}: {
+  label: string;
+  value: string;
+  positive?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+        {label}
+      </span>
+      <span
+        className={
+          "text-[15px] font-bold tabular-nums " +
+          (positive === false
+            ? "text-urgent"
+            : positive === true
+              ? "text-done"
+              : "text-ink")
+        }
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
