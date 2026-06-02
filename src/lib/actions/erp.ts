@@ -12,7 +12,7 @@ import {
   erpTeam,
   workspaces,
 } from "@/lib/db/schema";
-import { eq, and, asc, desc } from "drizzle-orm";
+import { eq, and, asc, desc, inArray } from "drizzle-orm";
 import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
 import { toMoney, fromMoney, fromRate } from "@/lib/utils/money";
 
@@ -57,7 +57,8 @@ export const listProducts = async (): Promise<ProductRow[]> => {
     .select()
     .from(erpProducts)
     .where(eq(erpProducts.workspaceId, ws.id))
-    .orderBy(asc(erpProducts.category), asc(erpProducts.name));
+    .orderBy(asc(erpProducts.category), asc(erpProducts.name))
+    .limit(500);
   return rows.map((r) => {
     const materialsCost = toMoney(r.materialsCost);
     const laborCost = toMoney(r.laborCost);
@@ -192,25 +193,42 @@ const loadQuoteItems = async (quoteId: string): Promise<QuoteItemInput[]> => {
 
 export const listQuotes = async (): Promise<QuoteRow[]> => {
   const { ws } = await requireWs();
+  // 1 query para quotes + 1 query para TODOS los items (vs N+1 anterior).
   const rows = await db
     .select()
     .from(erpQuotes)
     .where(eq(erpQuotes.workspaceId, ws.id))
-    .orderBy(desc(erpQuotes.updatedAt));
-  const out: QuoteRow[] = [];
-  for (const q of rows) {
-    out.push({
-      id: q.id,
-      title: q.title,
-      customerName: q.customerName,
-      ivaRate: toMoney(q.ivaRate),
-      status: q.status,
-      notes: q.notes,
-      items: await loadQuoteItems(q.id),
-      createdAt: q.createdAt.toISOString(),
+    .orderBy(desc(erpQuotes.updatedAt))
+    .limit(500);
+  if (rows.length === 0) return [];
+  const quoteIds = rows.map((q) => q.id);
+  const allItems = await db
+    .select()
+    .from(erpQuoteItems)
+    .where(inArray(erpQuoteItems.quoteId, quoteIds))
+    .orderBy(asc(erpQuoteItems.sortOrder));
+  // Agrupar items por quoteId.
+  const byQuote = new Map<string, QuoteItemInput[]>();
+  for (const r of allItems) {
+    const arr = byQuote.get(r.quoteId) ?? [];
+    arr.push({
+      description: r.description,
+      qty: toMoney(r.qty),
+      unitCost: toMoney(r.unitCost),
+      unitPrice: toMoney(r.unitPrice),
     });
+    byQuote.set(r.quoteId, arr);
   }
-  return out;
+  return rows.map((q) => ({
+    id: q.id,
+    title: q.title,
+    customerName: q.customerName,
+    ivaRate: toMoney(q.ivaRate),
+    status: q.status,
+    notes: q.notes,
+    items: byQuote.get(q.id) ?? [],
+    createdAt: q.createdAt.toISOString(),
+  }));
 };
 
 export const getQuote = async (id: string): Promise<QuoteRow> => {
@@ -346,7 +364,8 @@ export const listSales = async (): Promise<SalesResult> => {
     .select()
     .from(erpSales)
     .where(eq(erpSales.workspaceId, ws.id))
-    .orderBy(desc(erpSales.saleDate));
+    .orderBy(desc(erpSales.saleDate))
+    .limit(500);
   const mapped: SaleRow[] = rows.map((r) => {
     const qty = toMoney(r.qty);
     const unitCost = toMoney(r.unitCost);
@@ -446,7 +465,8 @@ export const listExpenses = async (): Promise<ExpensesResult> => {
     .select()
     .from(erpExpenses)
     .where(eq(erpExpenses.workspaceId, ws.id))
-    .orderBy(asc(erpExpenses.createdAt));
+    .orderBy(asc(erpExpenses.createdAt))
+    .limit(500);
   const [wsRow] = await db
     .select({ m: workspaces.breakEvenMargin })
     .from(workspaces)
@@ -534,7 +554,8 @@ export const getTeam = async (): Promise<{
     .select()
     .from(erpTeam)
     .where(eq(erpTeam.workspaceId, ws.id))
-    .orderBy(asc(erpTeam.sortOrder), asc(erpTeam.name));
+    .orderBy(asc(erpTeam.sortOrder), asc(erpTeam.name))
+    .limit(500);
   const [wsRow] = await db
     .select({ a: workspaces.teamAgreements })
     .from(workspaces)
