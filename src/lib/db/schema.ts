@@ -104,6 +104,31 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// ─── Refresh tokens (mobile / bearer auth) ──────────────────────────────────
+// Antes: el access token mobile tenía TTL de 30 días sin forma de revocarlo.
+// Riesgo: si se filtraba, el atacante tenía 30 días.
+//
+// Ahora: access token TTL corto (24h) + refresh token (30d, single-use,
+// rotación). Logout / cambio de password puede revocar refresh tokens
+// puntuales sin invalidar a todo el universo.
+
+export const refreshTokens = pgTable(
+  "refresh_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at").notNull(),
+    revokedAt: timestamp("revoked_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    userIdx: index("refresh_tokens_user_idx").on(t.userId),
+  })
+);
+
 // ─── Rate limits (auth) ──────────────────────────────────────────────────────
 // Sin Upstash ni servicios pagos. Tracking simple en DB:
 //   - key = "mobile-token:email@x" o "signup:1.2.3.4"

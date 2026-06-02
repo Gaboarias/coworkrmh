@@ -32,6 +32,22 @@ const INDEXES: Array<{ name: string; ddl: string }> = [
       updated_at timestamp NOT NULL DEFAULT now()
     )`,
   },
+  // refresh_tokens — tabla nueva (S-09). Single-use rotation, revocable.
+  {
+    name: "refresh_tokens_table",
+    ddl: `CREATE TABLE IF NOT EXISTS refresh_tokens (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token_hash text NOT NULL UNIQUE,
+      expires_at timestamp NOT NULL,
+      revoked_at timestamp,
+      created_at timestamp NOT NULL DEFAULT now()
+    )`,
+  },
+  {
+    name: "refresh_tokens_user_idx",
+    ddl: `CREATE INDEX IF NOT EXISTS refresh_tokens_user_idx ON refresh_tokens (user_id)`,
+  },
   // tasks
   {
     name: "tasks_assignee_status_idx",

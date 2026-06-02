@@ -155,40 +155,28 @@ export async function getWorkspaceReport(): Promise<WorkspaceReport | null> {
     .groupBy(erpSales.category)
     .orderBy(desc(sql`SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric)`));
 
-  // Top contributors: assignees with most completed tasks in last 30 days
+  // Top contributors: assignees con más done tasks en 30 días. 1 query con
+  // INNER JOIN users (antes hacíamos 2: group-by + resolución de nombres).
+  const { users } = await import("@/lib/db/schema");
   const topContributorsRows = await db
     .select({
       userId: tasks.assigneeId,
+      name: users.name,
       completedTasks: sql<number>`count(*)::int`,
     })
     .from(tasks)
     .innerJoin(projects, eq(tasks.projectId, projects.id))
+    .innerJoin(users, eq(users.id, tasks.assigneeId))
     .where(
       and(
         eq(projects.workspaceId, ws.id),
         sql`${tasks.status} = 'done'`,
-        gte(tasks.completedAt, THIRTY_DAYS_AGO()),
-        sql`${tasks.assigneeId} IS NOT NULL`
+        gte(tasks.completedAt, THIRTY_DAYS_AGO())
       )
     )
-    .groupBy(tasks.assigneeId)
+    .groupBy(tasks.assigneeId, users.name)
     .orderBy(desc(sql`count(*)`))
     .limit(5);
-
-  // Resolver nombres de usuarios (join post-query, no afecta performance acá)
-  const userIds = topContributorsRows
-    .map((r) => r.userId)
-    .filter((id): id is string => !!id);
-  let userNameMap = new Map<string, string | null>();
-  if (userIds.length > 0) {
-    const { users } = await import("@/lib/db/schema");
-    const { inArray } = await import("drizzle-orm");
-    const userRows = await db
-      .select({ id: users.id, name: users.name })
-      .from(users)
-      .where(inArray(users.id, userIds));
-    userNameMap = new Map(userRows.map((u) => [u.id, u.name]));
-  }
 
   return {
     workspaceId: ws.id,
@@ -212,7 +200,7 @@ export async function getWorkspaceReport(): Promise<WorkspaceReport | null> {
     })),
     topContributors: topContributorsRows.map((r) => ({
       userId: r.userId as string,
-      name: userNameMap.get(r.userId as string) ?? "Usuario",
+      name: r.name ?? "Usuario",
       completedTasks: r.completedTasks,
     })),
   };

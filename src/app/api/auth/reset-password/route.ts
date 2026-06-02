@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/lib/db/schema";
 import { resetPasswordBodySchema, parseBody } from "@/lib/validation/auth";
+import { revokeAllRefreshTokensForUser } from "@/lib/auth-bearer";
 
 export async function POST(req: Request) {
   try {
@@ -43,6 +44,9 @@ export async function POST(req: Request) {
     await db
       .delete(passwordResetTokens)
       .where(eq(passwordResetTokens.userId, row.userId));
+
+    // Password cambió → cortar todas las sesiones mobile activas.
+    await revokeAllRefreshTokensForUser(row.userId);
 
     return NextResponse.json({ ok: true });
   } catch {

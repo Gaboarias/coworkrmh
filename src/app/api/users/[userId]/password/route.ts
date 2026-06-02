@@ -27,6 +27,7 @@ import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/lib/db/schema";
 import { setPasswordBodySchema, parseBody } from "@/lib/validation/auth";
 import { logAdminAction } from "@/lib/audit";
+import { revokeAllRefreshTokensForUser } from "@/lib/auth-bearer";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,10 @@ export async function POST(
   await db
     .delete(passwordResetTokens)
     .where(eq(passwordResetTokens.userId, params.userId));
+
+  // Cortar todas las sesiones mobile activas del user — password cambió,
+  // tokens viejos no deben seguir funcionando.
+  await revokeAllRefreshTokensForUser(params.userId);
 
   await logAdminAction({
     actorId: session.user.id,

@@ -2,14 +2,18 @@
  * POST /api/auth/mobile-token — login para mobile app.
  *
  * Body: { email: string, password: string }
- * Response 200: { token: string, user: { id, email, name, role, image } }
+ * Response 200: { token, refreshToken, user: { id, email, name, role, image } }
  * Response 400: { error: "..." } (validación Zod)
  * Response 401: { error: "Credenciales inválidas" }
  * Response 429: { error: "Demasiados intentos..." } (rate-limited)
  *
+ * Tokens:
+ *  - token (access): JWT firmado, TTL 24h. Bearer Authorization en cada API call.
+ *  - refreshToken: random 256-bit, hash en DB. TTL 30d, single-use rotation.
+ *    Usar en POST /api/auth/refresh cuando el access devuelva 401.
+ *
  * Valida con bcrypt contra users.passwordHash, mismo flujo que el
- * CredentialsProvider de NextAuth (src/lib/auth.ts). Si OK, firma JWT
- * con NEXTAUTH_SECRET (HS256), TTL 30 días.
+ * CredentialsProvider de NextAuth (src/lib/auth.ts).
  *
  * Rate limit: 5 fallos por 15min por email — previene brute force.
  */
@@ -19,7 +23,7 @@ import { compare } from "bcryptjs";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { signMobileToken } from "@/lib/auth-bearer";
+import { signMobileToken, issueRefreshToken } from "@/lib/auth-bearer";
 import { loginBodySchema, parseBody } from "@/lib/validation/auth";
 import {
   checkRateLimit,
@@ -80,9 +84,11 @@ export async function POST(request: Request) {
     role: user.role ?? "member",
     image: user.avatarUrl ?? null,
   });
+  const refreshToken = await issueRefreshToken(user.id);
 
   return NextResponse.json({
     token,
+    refreshToken,
     user: {
       id: user.id,
       email: user.email,
