@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { SwatchPicker } from "@/components/ui/SwatchPicker";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { AdminUserPasswordActions } from "@/components/admin/AdminUserPasswordActions";
 import { cn } from "@/lib/utils/cn";
 import { readableFg } from "@/lib/utils/color";
 import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
@@ -847,6 +848,11 @@ const UsersTab = ({
                 <option value="manager">Manager</option>
                 <option value="admin">Admin</option>
               </Select>
+              <AdminUserPasswordActions
+                userId={u.id}
+                userEmail={u.email}
+                userName={u.name}
+              />
             </div>
           ))}
         </div>
