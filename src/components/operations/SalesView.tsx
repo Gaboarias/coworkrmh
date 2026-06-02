@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { formatMoney } from "@/lib/utils/money";
 import { createSale, deleteSale, type SalesResult } from "@/lib/actions/erp";
+import { formatDateCR } from "@/lib/utils/datetime";
 
 export const SalesView = ({
   data,
@@ -213,7 +214,7 @@ export const SalesView = ({
                     {r.description}
                   </p>
                   <p className="truncate text-xs text-text-muted">
-                    {new Date(r.saleDate).toLocaleDateString("es-CR")} ·{" "}
+                    {formatDateCR(r.saleDate)} ·{" "}
                     {r.clientName ?? "—"} · {r.category ?? "Sin categoría"} · x
                     {r.qty}
                   </p>

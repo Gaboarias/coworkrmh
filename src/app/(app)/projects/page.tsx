@@ -10,12 +10,10 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { getActiveWorkspace } from "@/lib/workspace";
 import { PROJECT_STATUS_CONFIG } from "@/lib/constants/projectStatus";
 import type { ProjectStatus } from "@/lib/types";
+import { formatDateCR } from "@/lib/utils/datetime";
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("es", {
-    day: "2-digit",
-    month: "short",
-  });
+  return formatDateCR(d, { day: "2-digit", month: "short" });
 }
 
 function durationDays(start: string, end: string) {

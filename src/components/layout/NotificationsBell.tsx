@@ -13,6 +13,7 @@ import {
   type NotificationRow,
 } from "@/lib/actions/notifications";
 import { cn } from "@/lib/utils/cn";
+import { formatDateCR } from "@/lib/utils/datetime";
 
 /**
  * Bell + drawer slide-in (Sunset Aurora · N4).
@@ -33,7 +34,7 @@ function timeAgo(iso: string): string {
   if (h < 24) return `hace ${h} h`;
   const d = Math.floor(h / 24);
   if (d < 30) return `hace ${d} d`;
-  return new Date(iso).toLocaleDateString("es");
+  return formatDateCR(iso);
 }
 
 export function NotificationsBell() {

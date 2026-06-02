@@ -109,11 +109,12 @@ export async function getWorkspaceReport(): Promise<WorkspaceReport | null> {
       )
     );
 
-  // Sales last 30 days (toMoney = ROUND($1::numeric * 100, 0)::integer reversed in code)
-  // erpSales has qty, unitCost, unitPrice (numeric scaled). Use unitPrice * qty.
+  // Sales last 30 days. erpSales.{qty, unitPrice} son numeric(12,2) y guardan
+  // valores reales (no centavos escalados). Antes este SUM tenía /10000 — bug
+  // que mostraba ventas 10.000× más chicas. Lo mismo con gastos /100.
   const [salesAgg] = await db
     .select({
-      total: sql<string>`COALESCE(SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric / 10000), 0)::text`,
+      total: sql<string>`COALESCE(SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric), 0)::text`,
     })
     .from(erpSales)
     .where(
@@ -127,7 +128,7 @@ export async function getWorkspaceReport(): Promise<WorkspaceReport | null> {
   // Expenses last 30 days
   const [expAgg] = await db
     .select({
-      total: sql<string>`COALESCE(SUM(${erpExpenses.amount}::numeric / 100), 0)::text`,
+      total: sql<string>`COALESCE(SUM(${erpExpenses.amount}::numeric), 0)::text`,
     })
     .from(erpExpenses)
     .where(
@@ -142,7 +143,7 @@ export async function getWorkspaceReport(): Promise<WorkspaceReport | null> {
   const salesByCategoryRows = await db
     .select({
       category: erpSales.category,
-      total: sql<string>`COALESCE(SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric / 10000), 0)::text`,
+      total: sql<string>`COALESCE(SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric), 0)::text`,
     })
     .from(erpSales)
     .where(

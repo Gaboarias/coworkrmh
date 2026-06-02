@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { updateNote } from "@/lib/actions/notes";
+import { formatTimeCR } from "@/lib/utils/datetime";
 
 interface NoteEditorViewProps {
   note: {
@@ -265,7 +266,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
             {saving
               ? "Guardando..."
               : lastSaved
-                ? `Guardado ${lastSaved.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}`
+                ? `Guardado ${formatTimeCR(lastSaved)}`
                 : ""}
           </span>
           <button
