@@ -1,6 +1,11 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { projects, tasks, projectMembers, users } from "@/lib/db/schema";
+import {
+  projects,
+  tasks,
+  workspaceMembers,
+  users,
+} from "@/lib/db/schema";
 import { eq, and, isNull, asc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { ProjectTasksView } from "@/components/projects/ProjectTasksView";
@@ -78,6 +83,10 @@ export default async function ProjectPage({ params }: PageProps) {
       : null,
   }));
 
+  // Asignables = TODOS los miembros del workspace del proyecto, no solo
+  // los explícitamente agregados como project members. Si al asignar una
+  // tarea el assignee no está en projectMembers, el server lo auto-agrega
+  // (ver createTask/updateTask).
   const memberRows = await db
     .select({
       id: users.id,
@@ -85,9 +94,9 @@ export default async function ProjectPage({ params }: PageProps) {
       email: users.email,
       avatarUrl: users.avatarUrl,
     })
-    .from(projectMembers)
-    .leftJoin(users, eq(projectMembers.userId, users.id))
-    .where(eq(projectMembers.projectId, params.projectId));
+    .from(workspaceMembers)
+    .leftJoin(users, eq(workspaceMembers.userId, users.id))
+    .where(eq(workspaceMembers.workspaceId, project.workspaceId));
 
   const members = memberRows
     .filter((m) => m.id != null)

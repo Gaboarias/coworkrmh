@@ -3,10 +3,80 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { tasks, tags, taskTags, projects } from "@/lib/db/schema";
-import { eq, asc } from "drizzle-orm";
+import {
+  tasks,
+  tags,
+  taskTags,
+  projects,
+  projectMembers,
+  workspaceMembers,
+} from "@/lib/db/schema";
+import { and, eq, asc } from "drizzle-orm";
 import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
 import { createNotification } from "@/lib/actions/notifications";
+
+/**
+ * Asegura que el assignee es project member. Si no lo es (pero sí es
+ * workspace member del proyecto), lo agrega como `member`. Si no es
+ * workspace member tampoco, tira (no se puede asignar a un user fuera
+ * del entorno).
+ *
+ * Patrón "auto-magic": el UX no requiere agregar manualmente cada miembro
+ * al proyecto antes de asignar. Permite que cualquier miembro del workspace
+ * sea asignable, y se materializa la relación project ↔ user en el momento.
+ */
+async function ensureAssigneeIsProjectMember(
+  projectId: string,
+  assigneeId: string
+): Promise<void> {
+  // 1. ¿ya es project member? skip.
+  const [existing] = await db
+    .select({ userId: projectMembers.userId })
+    .from(projectMembers)
+    .where(
+      and(
+        eq(projectMembers.projectId, projectId),
+        eq(projectMembers.userId, assigneeId)
+      )
+    )
+    .limit(1);
+  if (existing) return;
+
+  // 2. ¿es workspace member del proyecto? si sí, auto-agregar.
+  const [project] = await db
+    .select({ workspaceId: projects.workspaceId })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+    .limit(1);
+  if (!project) {
+    throw new Error("Proyecto no encontrado");
+  }
+
+  const [wsMember] = await db
+    .select({ userId: workspaceMembers.userId })
+    .from(workspaceMembers)
+    .where(
+      and(
+        eq(workspaceMembers.workspaceId, project.workspaceId),
+        eq(workspaceMembers.userId, assigneeId)
+      )
+    )
+    .limit(1);
+
+  if (!wsMember) {
+    throw new Error(
+      "El usuario no pertenece al entorno de este proyecto"
+    );
+  }
+
+  // 3. Insert project member silently (onConflict do nothing — race safety).
+  await db
+    .insert(projectMembers)
+    .values({ projectId, userId: assigneeId, role: "member" })
+    .onConflictDoNothing({
+      target: [projectMembers.projectId, projectMembers.userId],
+    });
+}
 
 async function requireUser() {
   const session = await auth();
@@ -38,6 +108,15 @@ export async function createTask(formData: {
   parentTaskId?: string;
 }) {
   const user = await requireProjectsManage();
+
+  // Auto-add assignee como project member si es workspace member pero no
+  // project member todavía. Tira si no pertenece ni al workspace.
+  if (formData.assigneeId) {
+    await ensureAssigneeIsProjectMember(
+      formData.projectId,
+      formData.assigneeId
+    );
+  }
 
   const [task] = await db
     .insert(tasks)
@@ -122,6 +201,14 @@ export async function updateTask(
     prevStatus = prev?.status ?? null;
     taskTitle = prev?.title ?? null;
     taskAssigneeId = prev?.assigneeId ?? null;
+  }
+
+  // Auto-add assignee como project member si cambió y necesita ser materializado.
+  if (
+    updates.assigneeId &&
+    updates.assigneeId !== prevAssigneeId
+  ) {
+    await ensureAssigneeIsProjectMember(projectId, updates.assigneeId);
   }
 
   await db
