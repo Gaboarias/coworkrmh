@@ -4,6 +4,7 @@ import { compare, hash } from "bcryptjs";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { changeMyPasswordBodySchema, parseBody } from "@/lib/validation/auth";
 
 export async function PATCH(request: Request) {
   const session = await auth();
@@ -11,17 +12,9 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const { currentPassword, newPassword } = await request.json();
-
-  if (
-    typeof newPassword !== "string" ||
-    newPassword.length < 8
-  ) {
-    return NextResponse.json(
-      { error: "La nueva contraseña debe tener al menos 8 caracteres" },
-      { status: 400 }
-    );
-  }
+  const parsed = await parseBody(request, changeMyPasswordBodySchema);
+  if (!parsed.ok) return parsed.response;
+  const { currentPassword, newPassword } = parsed.data;
 
   const [user] = await db
     .select()
@@ -33,7 +26,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Usuario no válido" }, { status: 400 });
   }
 
-  const valid = await compare(currentPassword ?? "", user.passwordHash);
+  const valid = await compare(currentPassword, user.passwordHash);
   if (!valid) {
     return NextResponse.json(
       { error: "La contraseña actual es incorrecta" },
@@ -41,7 +34,8 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const newHash = await hash(newPassword, 10);
+  // Bcrypt cost 12 — consistente con signup + admin password set.
+  const newHash = await hash(newPassword, 12);
   await db
     .update(users)
     .set({ passwordHash: newHash, updatedAt: new Date() })

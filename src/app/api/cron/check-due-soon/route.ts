@@ -14,10 +14,19 @@
  */
 
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { db } from "@/lib/db";
 import { tasks, projects, notifications } from "@/lib/db/schema";
 import { and, eq, gte, isNotNull, lte, ne, sql } from "drizzle-orm";
 import { createNotification } from "@/lib/actions/notifications";
+
+/** Comparación de strings en tiempo constante para evitar timing attacks. */
+function safeEqual(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+  if (aBuf.length !== bBuf.length) return false;
+  return timingSafeEqual(aBuf, bBuf);
+}
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +44,7 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-  if (authHeader !== expected) {
+  if (!authHeader || !safeEqual(authHeader, expected)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

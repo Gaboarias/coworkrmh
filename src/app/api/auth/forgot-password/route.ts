@@ -4,6 +4,7 @@ import { eq, desc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/lib/db/schema";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { forgotPasswordBodySchema, parseBody } from "@/lib/validation/auth";
 
 const GENERIC = {
   message:
@@ -20,16 +21,16 @@ function baseUrl(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
-    if (!email || typeof email !== "string") {
-      return NextResponse.json(GENERIC);
-    }
+    const parsed = await parseBody(req, forgotPasswordBodySchema);
+    // Si la forma es inválida devolvemos GENERIC también — no queremos
+    // que un atacante distinga "email malformado" de "email no existe".
+    if (!parsed.ok) return NextResponse.json(GENERIC);
+    const { email } = parsed.data;
 
-    const normalized = email.trim().toLowerCase();
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.email, normalized))
+      .where(eq(users.email, email))
       .limit(1);
 
     // Always return the same response — no user enumeration.
@@ -65,9 +66,8 @@ export async function POST(req: Request) {
     await sendPasswordResetEmail(user.email, resetUrl);
 
     return NextResponse.json(GENERIC);
-  } catch (err) {
-    console.error("forgot-password error:", err);
-    // Still generic to the client; never leak internals.
+  } catch {
+    // No loguear stack — puede contener PII (email del request).
     return NextResponse.json(GENERIC);
   }
 }

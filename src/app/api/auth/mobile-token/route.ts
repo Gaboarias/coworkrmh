@@ -3,15 +3,15 @@
  *
  * Body: { email: string, password: string }
  * Response 200: { token: string, user: { id, email, name, role, image } }
- * Response 400: { error: "Email y contraseña son requeridos" }
+ * Response 400: { error: "..." } (validación Zod)
  * Response 401: { error: "Credenciales inválidas" }
+ * Response 429: { error: "Demasiados intentos..." } (rate-limited)
  *
  * Valida con bcrypt contra users.passwordHash, mismo flujo que el
  * CredentialsProvider de NextAuth (src/lib/auth.ts). Si OK, firma JWT
  * con NEXTAUTH_SECRET (HS256), TTL 30 días.
  *
- * Mobile guarda el token en expo-secure-store y lo envía como
- * `Authorization: Bearer <token>` en cada API call.
+ * Rate limit: 5 fallos por 15min por email — previene brute force.
  */
 
 import { NextResponse } from "next/server";
@@ -20,29 +20,31 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { signMobileToken } from "@/lib/auth-bearer";
+import { loginBodySchema, parseBody } from "@/lib/validation/auth";
+import {
+  checkRateLimit,
+  registerFailure,
+  clearRateLimit,
+} from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
-interface LoginBody {
-  email?: string;
-  password?: string;
-}
-
 export async function POST(request: Request) {
-  let body: LoginBody;
-  try {
-    body = (await request.json()) as LoginBody;
-  } catch {
-    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
-  }
+  const parsed = await parseBody(request, loginBodySchema);
+  if (!parsed.ok) return parsed.response;
+  const { email, password } = parsed.data;
 
-  const email = body.email?.trim().toLowerCase();
-  const password = body.password;
-
-  if (!email || !password) {
+  const rlKey = `mobile-token:${email}`;
+  const guard = await checkRateLimit(rlKey);
+  if (!guard.allowed) {
     return NextResponse.json(
-      { error: "Email y contraseña son requeridos" },
-      { status: 400 }
+      { error: guard.message ?? "Demasiados intentos" },
+      {
+        status: 429,
+        headers: guard.retryAfterSeconds
+          ? { "Retry-After": String(guard.retryAfterSeconds) }
+          : undefined,
+      }
     );
   }
 
@@ -53,6 +55,7 @@ export async function POST(request: Request) {
     .limit(1);
 
   if (!user || !user.passwordHash) {
+    await registerFailure(rlKey);
     return NextResponse.json(
       { error: "Credenciales inválidas" },
       { status: 401 }
@@ -61,11 +64,14 @@ export async function POST(request: Request) {
 
   const valid = await compare(password, user.passwordHash);
   if (!valid) {
+    await registerFailure(rlKey);
     return NextResponse.json(
       { error: "Credenciales inválidas" },
       { status: 401 }
     );
   }
+
+  await clearRateLimit(rlKey);
 
   const token = await signMobileToken({
     sub: user.id,

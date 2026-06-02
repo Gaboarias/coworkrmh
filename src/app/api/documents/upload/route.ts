@@ -19,6 +19,37 @@ export const maxDuration = 60;
 
 const MAX_BYTES = 4 * 1024 * 1024; // 4 MB (Vercel Function body cap)
 
+/**
+ * Allowlist de MIME types — bloquea ejecutables, scripts, HTML que podrían
+ * usarse para XSS si se sirvieran desde el mismo origen (no es el caso —
+ * Vercel Blob sirve desde *.public.blob.vercel-storage.com — pero queda como
+ * defensa en profundidad).
+ *
+ * Si necesitás soportar un tipo nuevo, agregalo acá. Patrón `category/*`
+ * para familias enteras (imágenes, video, audio).
+ */
+const ALLOWED_MIME_PATTERNS: RegExp[] = [
+  /^image\//, // png, jpg, gif, webp, svg, etc.
+  /^video\//, // mp4, mov, webm, etc.
+  /^audio\//, // mp3, wav, ogg, etc.
+  /^application\/pdf$/,
+  /^application\/zip$/,
+  /^application\/x-zip-compressed$/,
+  /^application\/vnd\.openxmlformats-officedocument\./, // docx, xlsx, pptx
+  /^application\/msword$/,
+  /^application\/vnd\.ms-excel$/,
+  /^application\/vnd\.ms-powerpoint$/,
+  /^text\/plain$/,
+  /^text\/csv$/,
+  /^text\/markdown$/,
+  /^application\/json$/,
+];
+
+function isMimeAllowed(mime: string): boolean {
+  if (!mime) return false;
+  return ALLOWED_MIME_PATTERNS.some((re) => re.test(mime));
+}
+
 export async function POST(request: Request): Promise<NextResponse> {
   try {
     const formData = await request.formData();
@@ -40,6 +71,14 @@ export async function POST(request: Request): Promise<NextResponse> {
           )} MB).`,
         },
         { status: 413 }
+      );
+    }
+    if (!isMimeAllowed(file.type)) {
+      return NextResponse.json(
+        {
+          error: `Tipo de archivo no permitido (${file.type || "desconocido"}).`,
+        },
+        { status: 415 }
       );
     }
 

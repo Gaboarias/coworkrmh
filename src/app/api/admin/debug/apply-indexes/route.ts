@@ -22,6 +22,16 @@ import { db } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 const INDEXES: Array<{ name: string; ddl: string }> = [
+  // rate_limits — tabla nueva (S+4). Idempotente con CREATE TABLE IF NOT EXISTS.
+  {
+    name: "rate_limits_table",
+    ddl: `CREATE TABLE IF NOT EXISTS rate_limits (
+      key text PRIMARY KEY,
+      count integer NOT NULL DEFAULT 0,
+      locked_until timestamp,
+      updated_at timestamp NOT NULL DEFAULT now()
+    )`,
+  },
   // tasks
   {
     name: "tasks_assignee_status_idx",

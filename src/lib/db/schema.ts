@@ -104,6 +104,22 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// ─── Rate limits (auth) ──────────────────────────────────────────────────────
+// Sin Upstash ni servicios pagos. Tracking simple en DB:
+//   - key = "mobile-token:email@x" o "signup:1.2.3.4"
+//   - count = intentos fallidos en la ventana actual
+//   - lockedUntil = si > now() → endpoint rechaza con 429
+//
+// Reset al login exitoso. Limpieza pasiva: filas viejas se ignoran y un cron
+// (futuro) puede DELETE WHERE updated_at < now() - 24h.
+
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").default(0).notNull(),
+  lockedUntil: timestamp("locked_until"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // ─── Buckets ──────────────────────────────────────────────────────────────────
 
 export const buckets = pgTable("buckets", {
