@@ -192,69 +192,99 @@ export const projectMembers = pgTable(
 
 // ─── Tasks ────────────────────────────────────────────────────────────────────
 
-export const tasks = pgTable("tasks", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
-  parentTaskId: uuid("parent_task_id"),
-  title: text("title").notNull(),
-  description: text("description"),
-  status: taskStatusEnum("status").default("todo").notNull(),
-  priority: taskPriorityEnum("priority").default("medium").notNull(),
-  assigneeId: uuid("assignee_id").references(() => users.id, { onDelete: "set null" }),
-  createdBy: uuid("created_by").notNull().references(() => users.id),
-  dueDate: date("due_date"),
-  completedAt: timestamp("completed_at"),
-  position: integer("position").default(0).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const tasks = pgTable(
+  "tasks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+    parentTaskId: uuid("parent_task_id"),
+    title: text("title").notNull(),
+    description: text("description"),
+    status: taskStatusEnum("status").default("todo").notNull(),
+    priority: taskPriorityEnum("priority").default("medium").notNull(),
+    assigneeId: uuid("assignee_id").references(() => users.id, { onDelete: "set null" }),
+    createdBy: uuid("created_by").notNull().references(() => users.id),
+    dueDate: date("due_date"),
+    completedAt: timestamp("completed_at"),
+    position: integer("position").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    // Hot paths: /dashboard (mis tareas), /projects/[id] (board), /reports.
+    assigneeStatusIdx: index("tasks_assignee_status_idx").on(t.assigneeId, t.status),
+    projectStatusIdx: index("tasks_project_status_idx").on(t.projectId, t.status),
+    parentIdx: index("tasks_parent_idx").on(t.parentTaskId),
+  })
+);
 
 // ─── Documents ────────────────────────────────────────────────────────────────
 
-export const documents = pgTable("documents", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
-  taskId: uuid("task_id").references(() => tasks.id, { onDelete: "set null" }),
-  name: text("name").notNull(),
-  blobUrl: text("blob_url").notNull(),
-  mimeType: text("mime_type").notNull(),
-  sizeBytes: integer("size_bytes").notNull(),
-  uploadedBy: uuid("uploaded_by").notNull().references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const documents = pgTable(
+  "documents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+    taskId: uuid("task_id").references(() => tasks.id, { onDelete: "set null" }),
+    name: text("name").notNull(),
+    blobUrl: text("blob_url").notNull(),
+    mimeType: text("mime_type").notNull(),
+    sizeBytes: integer("size_bytes").notNull(),
+    uploadedBy: uuid("uploaded_by").notNull().references(() => users.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    projectIdx: index("documents_project_idx").on(t.projectId),
+    taskIdx: index("documents_task_idx").on(t.taskId),
+  })
+);
 
 // ─── Notes ────────────────────────────────────────────────────────────────────
 
-export const notes = pgTable("notes", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
-  taskId: uuid("task_id").references(() => tasks.id, { onDelete: "set null" }),
-  title: text("title").notNull(),
-  content: json("content"),
-  contentText: text("content_text"),
-  createdBy: uuid("created_by").notNull().references(() => users.id),
-  updatedBy: uuid("updated_by").references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const notes = pgTable(
+  "notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+    taskId: uuid("task_id").references(() => tasks.id, { onDelete: "set null" }),
+    title: text("title").notNull(),
+    content: json("content"),
+    contentText: text("content_text"),
+    createdBy: uuid("created_by").notNull().references(() => users.id),
+    updatedBy: uuid("updated_by").references(() => users.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    projectIdx: index("notes_project_idx").on(t.projectId),
+    taskIdx: index("notes_task_idx").on(t.taskId),
+  })
+);
 
 // ─── Changelog ────────────────────────────────────────────────────────────────
 
-export const changelog = pgTable("changelog", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }),
-  taskId: uuid("task_id").references(() => tasks.id, { onDelete: "set null" }),
-  noteId: uuid("note_id").references(() => notes.id, { onDelete: "set null" }),
-  documentId: uuid("document_id").references(() => documents.id, { onDelete: "set null" }),
-  userId: uuid("user_id").notNull().references(() => users.id),
-  action: changelogActionEnum("action").notNull(),
-  entityType: text("entity_type").notNull(),
-  entityId: text("entity_id").notNull(),
-  oldValue: json("old_value"),
-  newValue: json("new_value"),
-  description: text("description").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const changelog = pgTable(
+  "changelog",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }),
+    taskId: uuid("task_id").references(() => tasks.id, { onDelete: "set null" }),
+    noteId: uuid("note_id").references(() => notes.id, { onDelete: "set null" }),
+    documentId: uuid("document_id").references(() => documents.id, { onDelete: "set null" }),
+    userId: uuid("user_id").notNull().references(() => users.id),
+    action: changelogActionEnum("action").notNull(),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    oldValue: json("old_value"),
+    newValue: json("new_value"),
+    description: text("description").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    projectIdx: index("changelog_project_idx").on(t.projectId),
+    userIdx: index("changelog_user_idx").on(t.userId),
+  })
+);
 
 // ─── Notifications (N4) ──────────────────────────────────────────────────────
 // Bell con badge en topbar + drawer slide-in. Polling cada 30s.
@@ -271,17 +301,25 @@ export interface NotificationPayload {
   refs?: Record<string, string>;
 }
 
-export const notifications = pgTable("notifications", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  type: notificationTypeEnum("type").notNull(),
-  payload: json("payload").$type<NotificationPayload>().notNull(),
-  href: text("href"), // URL para hacer click (opcional)
-  readAt: timestamp("read_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: notificationTypeEnum("type").notNull(),
+    payload: json("payload").$type<NotificationPayload>().notNull(),
+    href: text("href"), // URL para hacer click (opcional)
+    readAt: timestamp("read_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    // Polling cada 30s × N usuarios → estos índices son críticos.
+    userCreatedIdx: index("notifications_user_created_idx").on(t.userId, t.createdAt),
+    userUnreadIdx: index("notifications_user_unread_idx").on(t.userId, t.readAt),
+  })
+);
 
 // ─── CRM ──────────────────────────────────────────────────────────────────────
 
