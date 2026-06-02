@@ -25,6 +25,8 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/lib/db/schema";
+import { setPasswordBodySchema, parseBody } from "@/lib/validation/auth";
+import { logAdminAction } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -37,20 +39,9 @@ export async function POST(
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  let body: { password?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
-  }
-
-  const password = body.password;
-  if (!password || typeof password !== "string" || password.length < 8) {
-    return NextResponse.json(
-      { error: "La contraseña debe tener al menos 8 caracteres" },
-      { status: 400 }
-    );
-  }
+  const parsed = await parseBody(request, setPasswordBodySchema);
+  if (!parsed.ok) return parsed.response;
+  const { password } = parsed.data;
 
   // Verificar que el user existe.
   const [target] = await db
@@ -74,6 +65,15 @@ export async function POST(
   await db
     .delete(passwordResetTokens)
     .where(eq(passwordResetTokens.userId, params.userId));
+
+  await logAdminAction({
+    actorId: session.user.id,
+    entityType: "user",
+    entityId: params.userId,
+    action: "updated",
+    description: `Admin asignó contraseña directa a ${target.email ?? params.userId}`,
+    newValue: { passwordSet: true },
+  });
 
   return NextResponse.json({ ok: true });
 }

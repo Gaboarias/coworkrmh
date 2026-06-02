@@ -24,6 +24,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/lib/db/schema";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { logAdminAction } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -78,10 +79,20 @@ export async function POST(
     try {
       await sendPasswordResetEmail(target.email, resetUrl);
       emailSent = true;
-    } catch (err) {
-      console.error("admin reset-link: email send failed:", err);
+    } catch {
+      // No loguear err con detalles — el subject/body del email puede
+      // contener PII y el stack puede tener fragmentos del input.
     }
   }
+
+  await logAdminAction({
+    actorId: session.user.id,
+    entityType: "password_reset",
+    entityId: target.id,
+    action: "created",
+    description: `Admin generó link de reset para ${target.email ?? target.id}`,
+    newValue: { emailSent },
+  });
 
   return NextResponse.json({
     ok: true,

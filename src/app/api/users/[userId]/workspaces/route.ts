@@ -15,6 +15,8 @@ import { and, eq, ne, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users, workspaceMembers } from "@/lib/db/schema";
+import { setUserWorkspacesBodySchema, parseBody } from "@/lib/validation/auth";
+import { logAdminAction } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -47,22 +49,9 @@ export async function POST(
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  let body: { workspaceIds?: unknown };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
-  }
-
-  if (!Array.isArray(body.workspaceIds)) {
-    return NextResponse.json(
-      { error: "workspaceIds debe ser un array" },
-      { status: 400 }
-    );
-  }
-  const desiredIds = body.workspaceIds.filter(
-    (id): id is string => typeof id === "string" && id.length > 0
-  );
+  const parsed = await parseBody(request, setUserWorkspacesBodySchema);
+  if (!parsed.ok) return parsed.response;
+  const desiredIds = parsed.data.workspaceIds;
 
   // Verificar que el user existe.
   const [target] = await db
@@ -118,6 +107,18 @@ export async function POST(
           ne(workspaceMembers.role, "owner")
         )
       );
+  }
+
+  if (toAdd.length > 0 || toRemove.length > 0) {
+    await logAdminAction({
+      actorId: session.user.id,
+      entityType: "workspace_membership",
+      entityId: params.userId,
+      action: "updated",
+      description: `Admin actualizó workspaces de user ${params.userId}: +${toAdd.length} / -${toRemove.length}`,
+      oldValue: { workspaceIds: Array.from(currentIds) },
+      newValue: { added: toAdd, removed: toRemove },
+    });
   }
 
   return NextResponse.json({
