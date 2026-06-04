@@ -98,14 +98,47 @@ const insertWorkspaceWithOwner = async (
 ) => {
   const clean = name.trim();
   if (!clean) throw new Error("El nombre es obligatorio");
-  const [ws] = await db
-    .insert(workspaces)
-    .values({ name: clean, color: color ?? "#6B5FE4", createdBy: ownerId })
-    .returning();
-  await db
-    .insert(workspaceMembers)
-    .values({ workspaceId: ws.id, userId: ownerId, role: "owner" })
-    .onConflictDoNothing();
+
+  let ws: typeof workspaces.$inferSelect;
+  try {
+    const [inserted] = await db
+      .insert(workspaces)
+      .values({ name: clean, color: color ?? "#6B5FE4", createdBy: ownerId })
+      .returning();
+    ws = inserted;
+  } catch (err) {
+    console.error("[createWorkspace] INSERT workspaces failed:", {
+      name: clean,
+      color,
+      ownerId,
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    throw new Error(
+      `Falló crear el entorno: ${err instanceof Error ? err.message : "error desconocido"}`
+    );
+  }
+
+  try {
+    await db
+      .insert(workspaceMembers)
+      .values({ workspaceId: ws.id, userId: ownerId, role: "owner" })
+      .onConflictDoNothing();
+  } catch (err) {
+    console.error("[createWorkspace] INSERT workspaceMembers failed:", {
+      workspaceId: ws.id,
+      ownerId,
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    // Workspace ya quedó creado pero sin owner — devolver error para que el
+    // admin sepa, pero no rollback (no es bloqueante operativamente: puede
+    // agregarse manualmente).
+    throw new Error(
+      `Entorno creado pero falló asignar al owner: ${err instanceof Error ? err.message : "error desconocido"}`
+    );
+  }
+
   return ws;
 };
 
