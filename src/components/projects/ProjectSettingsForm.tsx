@@ -118,7 +118,7 @@ export function ProjectSettingsForm({
   async function handleArchiveToggle() {
     setArchiving(true);
     try {
-      const next: ProjectStatus = isArchived ? "prospecto" : "archived";
+      const next: ProjectStatus = isArchived ? "active" : "archived";
       await updateProject(project.id, { status: next });
       toast.success(isArchived ? "Proyecto reactivado" : "Proyecto archivado");
       router.refresh();

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ProjectSettingsForm } from "@/components/projects/ProjectSettingsForm";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
 import { PageHeader } from "@/components/shared/PageHeader";
+import type { ProjectStatus } from "@/lib/types";
 
 interface PageProps {
   params: { projectId: string };
@@ -84,7 +85,11 @@ export default async function ProjectSettingsPage({ params }: PageProps) {
             description: project.description ?? null,
             bucketId: project.bucketId ?? null,
             color: project.color ?? null,
-            status: project.status,
+            // Cast porque el enum DB tiene 12 valores (incluye 6 legacy del
+            // intento abortado de migrar a 'categorías') pero el tipo TS sólo
+            // expone los 6 oficiales. Si la DB devuelve uno de los 6 legacy,
+            // cae al fallback en PROJECT_STATUS_CONFIG.
+            status: project.status as ProjectStatus,
             startDate: project.startDate ?? null,
             endDate: project.endDate ?? null,
           }}

@@ -98,6 +98,7 @@ export default async function ProjectsPage() {
       description: row.project.description,
       color: row.project.color,
       status: row.project.status as ProjectStatus,
+      bucketId: row.project.bucketId ?? null,
       bucketName: row.bucket?.name ?? null,
       bucketColor: row.bucket?.color ?? null,
       startDate: row.project.startDate,
@@ -108,6 +109,12 @@ export default async function ProjectsPage() {
       activeTasks: agg.active,
     };
   });
+
+  const bucketTabs = bucketRows.map((b) => ({
+    id: b.id,
+    name: b.name,
+    color: b.color ?? null,
+  }));
 
   const newProjectButton = (
     <Link
@@ -140,7 +147,7 @@ export default async function ProjectsPage() {
           action={isManager ? newProjectButton : undefined}
         />
       ) : (
-        <ProjectsExplorer specimens={specimens} />
+        <ProjectsExplorer specimens={specimens} buckets={bucketTabs} />
       )}
     </div>
   );

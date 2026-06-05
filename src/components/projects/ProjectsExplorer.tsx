@@ -8,24 +8,14 @@ import { formatDateCR, todayYmdCR } from "@/lib/utils/datetime";
 import type { ProjectStatus } from "@/lib/types";
 
 /**
- * /projects — Explorer con tabs por status + specimens grandes.
+ * /projects — Explorer con tabs por CATEGORÍA (bucket) + specimens grandes.
  *
- * Layout:
- *   1. Status tabs (mono small-caps): TODOS · ACTIVO · EN PAUSA · …
- *      Cada uno con su count. El activo lleva un underline grueso del
- *      color status (urgent / done / info / warn / ink).
+ * Tabs derivados de los buckets reales de la DB. Click en un tab filtra los
+ * specimens a los proyectos de esa categoría. Tab "Todos" muestra todo.
+ * Tab "Sin categoría" agrupa proyectos sin bucket asignado (si hay).
  *
- *   2. Specimens — un proyecto por bloque a ancho completo:
- *      - Hanging number (01, 02, …) + bucket eyebrow + status pill
- *      - Mega-título Satoshi bold ~64-80px, color drop-line
- *      - Description italic ink-soft
- *      - Strip de 3 stats grandes: tareas activas, % completo, días
- *      - Hairline rule separator entre specimens
- *      - Color del proyecto como acento sutil (left border + bucket dot)
- *
- *   3. CTA "Ver detalle →" en cada specimen, link al proyecto.
- *
- * Reveal: stagger animation-delay por index para que entren en cascada.
+ * Specimens: 1 bloque por proyecto a ancho completo, mega-tipo Satoshi,
+ * stats grandes (tareas activas, % completo, días restantes).
  */
 
 export interface ProjectSpecimen {
@@ -35,6 +25,7 @@ export interface ProjectSpecimen {
   description: string | null;
   color: string | null;
   status: ProjectStatus;
+  bucketId: string | null;
   bucketName: string | null;
   bucketColor: string | null;
   startDate: string | null;
@@ -45,139 +36,98 @@ export interface ProjectSpecimen {
   activeTasks: number;
 }
 
-type StatusFilter = "all" | ProjectStatus;
+export interface BucketTab {
+  id: string;
+  name: string;
+  color: string | null;
+}
 
-const STATUS_LABEL: Record<StatusFilter, string> = {
-  all: "Todos",
-  prospecto: "Prospecto",
-  primer_contrato: "Primer Contrato",
-  firmado: "Firmado",
-  operaciones: "Operaciones",
-  retomar: "Retomar",
-  descartado: "Descartado",
-  archived: "Archivado",
-  // Legacy — sólo aparecen si la DB tiene data sin migrar.
-  active: "Prospecto",
-  paused: "Prospecto",
-  in_review: "Prospecto",
-  stopped: "Prospecto",
-  completed: "Prospecto",
-};
-
-const STATUS_COLOR: Record<ProjectStatus, string> = {
-  prospecto: "var(--ink-soft)",
-  primer_contrato: "var(--info)",
-  firmado: "var(--warn)",
-  operaciones: "var(--done)",
-  retomar: "var(--ink-faint)",
-  descartado: "var(--urgent)",
-  archived: "var(--ink-faint)",
-  // Legacy fallback (sin migrar)
-  active: "var(--ink-soft)",
-  paused: "var(--ink-soft)",
-  in_review: "var(--ink-soft)",
-  stopped: "var(--ink-soft)",
-  completed: "var(--ink-soft)",
-};
-
-const STATUS_ORDER: StatusFilter[] = [
-  "all",
-  "prospecto",
-  "primer_contrato",
-  "firmado",
-  "operaciones",
-  "retomar",
-  "descartado",
-];
+const UNCATEGORIZED_ID = "__uncategorized__";
+const ALL_ID = "__all__";
 
 const DEFAULT_PROJECT_COLOR = "var(--ink)";
 
 export function ProjectsExplorer({
   specimens,
+  buckets,
 }: {
   specimens: ProjectSpecimen[];
+  buckets: BucketTab[];
 }) {
-  const [filter, setFilter] = useState<StatusFilter>("all");
+  const [filter, setFilter] = useState<string>(ALL_ID);
 
-  const counts = useMemo(() => {
-    const c: Record<StatusFilter, number> = {
-      all: specimens.length,
-      prospecto: 0,
-      primer_contrato: 0,
-      firmado: 0,
-      operaciones: 0,
-      retomar: 0,
-      descartado: 0,
-      archived: 0,
-      // Legacy — sin migrar. Cuento bajo prospecto para que no se pierdan
-      // visualmente hasta que corras el migrate endpoint.
-      active: 0,
-      paused: 0,
-      in_review: 0,
-      stopped: 0,
-      completed: 0,
-    };
+  // Detectar si hay proyectos sin bucket → agregar tab "Sin categoría".
+  const hasUncategorized = specimens.some((s) => !s.bucketId);
+
+  const tabs: Array<BucketTab & { count: number }> = useMemo(() => {
+    const counts = new Map<string, number>();
     for (const s of specimens) {
-      const isLegacy =
-        s.status === "active" ||
-        s.status === "paused" ||
-        s.status === "in_review" ||
-        s.status === "stopped" ||
-        s.status === "completed";
-      c[isLegacy ? "prospecto" : s.status]++;
+      const key = s.bucketId ?? UNCATEGORIZED_ID;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
     }
-    return c;
-  }, [specimens]);
+    const bucketTabs = buckets.map((b) => ({
+      ...b,
+      count: counts.get(b.id) ?? 0,
+    }));
+    const all = [
+      { id: ALL_ID, name: "Todos", color: null, count: specimens.length },
+      ...bucketTabs,
+    ];
+    if (hasUncategorized) {
+      all.push({
+        id: UNCATEGORIZED_ID,
+        name: "Sin categoría",
+        color: null,
+        count: counts.get(UNCATEGORIZED_ID) ?? 0,
+      });
+    }
+    return all;
+  }, [specimens, buckets, hasUncategorized]);
 
   const visible = useMemo(() => {
-    if (filter === "all") return specimens;
-    if (filter === "prospecto") {
-      // Incluir legacy statuses (sin migrar) bajo prospecto.
-      return specimens.filter(
-        (s) =>
-          s.status === "prospecto" ||
-          s.status === "active" ||
-          s.status === "paused" ||
-          s.status === "in_review" ||
-          s.status === "stopped" ||
-          s.status === "completed"
-      );
+    if (filter === ALL_ID) return specimens;
+    if (filter === UNCATEGORIZED_ID) {
+      return specimens.filter((s) => !s.bucketId);
     }
-    return specimens.filter((s) => s.status === filter);
+    return specimens.filter((s) => s.bucketId === filter);
   }, [specimens, filter]);
 
   return (
     <div className="mt-2 space-y-12">
-      {/* ── Status tabs ─────────────────────────────────────── */}
+      {/* ── Bucket tabs ───────────────────────────────────────── */}
       <nav
-        aria-label="Filtrar por etapa"
+        aria-label="Filtrar por categoría"
         className="-mx-1 flex flex-wrap items-end gap-x-1 gap-y-2"
       >
-        {STATUS_ORDER.map((s) => {
-          const isActive = filter === s;
-          const accent =
-            s === "all" ? "var(--ink)" : STATUS_COLOR[s as ProjectStatus];
+        {tabs.map((t) => {
+          const isActive = filter === t.id;
+          const accent = t.color ?? "var(--ink)";
           return (
             <button
-              key={s}
+              key={t.id}
               type="button"
-              onClick={() => setFilter(s)}
+              onClick={() => setFilter(t.id)}
               aria-pressed={isActive}
               className={cn(
                 "group/tab relative flex items-baseline gap-2 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
-                isActive
-                  ? "text-ink"
-                  : "text-ink-faint hover:text-ink-soft"
+                isActive ? "text-ink" : "text-ink-faint hover:text-ink-soft"
               )}
             >
-              <span className="font-bold">{STATUS_LABEL[s]}</span>
+              {t.color && (
+                <span
+                  aria-hidden
+                  className="inline-block h-2 w-2 self-center rounded-full"
+                  style={{ backgroundColor: t.color }}
+                />
+              )}
+              <span className="font-bold">{t.name}</span>
               <span
                 className={cn(
                   "tabular-nums",
                   isActive ? "text-ink-soft" : "text-ink-faint"
                 )}
               >
-                {counts[s]}
+                {t.count}
               </span>
               {/* Hairline gruesa abajo del activo */}
               <span
@@ -196,7 +146,7 @@ export function ProjectsExplorer({
       {/* ── Specimens ────────────────────────────────────────── */}
       {visible.length === 0 ? (
         <p className="py-12 text-center text-sm italic text-ink-faint">
-          No hay proyectos en esta etapa.
+          No hay proyectos en esta categoría.
         </p>
       ) : (
         <div className="divide-y divide-rule">
@@ -219,34 +169,20 @@ function ProjectSpecimenBlock({
   order: number;
 }) {
   const accent = s.color ?? DEFAULT_PROJECT_COLOR;
-  const statusColor = STATUS_COLOR[s.status];
   const percentComplete =
     s.totalTasks > 0 ? Math.round((s.doneTasks / s.totalTasks) * 100) : null;
 
-  // Días restantes — calculado en CR para que no se desfase a UTC.
+  // Días restantes — calculado en CR.
   let daysRemaining: number | null = null;
   let isOverdue = false;
   const endRef = s.endDate ?? s.dueDate;
   if (endRef) {
     const today = todayYmdCR();
-    // YYYY-MM-DD lexicographic comparison gives a sign — fine for ordering,
-    // but for distance we need ms. Use noon-anchored Date in CR.
     const endMs = new Date(endRef + "T12:00:00Z").getTime();
     const todayMs = new Date(today + "T12:00:00Z").getTime();
     const diff = Math.round((endMs - todayMs) / 86_400_000);
     daysRemaining = diff;
-    // Overdue solo aplica a etapas operativas — no a retomar (pausa
-    // intencional) ni a descartado/archived (terminal).
-    const operationalStatuses: ProjectStatus[] = [
-      "prospecto",
-      "primer_contrato",
-      "firmado",
-      "operaciones",
-      "active",
-      "paused",
-      "in_review",
-    ];
-    isOverdue = diff < 0 && operationalStatuses.includes(s.status);
+    isOverdue = diff < 0 && s.status !== "completed" && s.status !== "archived";
   }
 
   return (
@@ -256,7 +192,7 @@ function ProjectSpecimenBlock({
       }}
       className="group/specimen relative animate-fade-in py-14 first:pt-6 last:pb-6 md:py-20"
     >
-      {/* Color band — left edge accent, sutil pero presente */}
+      {/* Color band — left edge accent del color del proyecto */}
       <span
         aria-hidden
         className="absolute left-0 top-1/2 hidden h-[60%] w-[3px] -translate-y-1/2 md:block"
@@ -264,7 +200,7 @@ function ProjectSpecimenBlock({
       />
 
       <div className="md:pl-8">
-        {/* Eyebrow row: hanging number + bucket + status pill */}
+        {/* Eyebrow row: hanging number + bucket */}
         <div className="mb-6 flex flex-wrap items-baseline gap-x-6 gap-y-2">
           <span className="font-mono text-[14px] font-bold tabular-nums text-ink-faint">
             {String(s.index).padStart(2, "0")}
@@ -283,17 +219,6 @@ function ProjectSpecimenBlock({
               </span>
             </span>
           )}
-          <span
-            className="ml-auto inline-flex items-baseline gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.18em]"
-            style={{ color: statusColor }}
-          >
-            <span
-              aria-hidden
-              className="inline-block h-1.5 w-1.5 self-center rounded-full"
-              style={{ backgroundColor: statusColor }}
-            />
-            {STATUS_LABEL[s.status]}
-          </span>
         </div>
 
         {/* Mega title — link al proyecto */}
@@ -373,11 +298,7 @@ function ProjectSpecimenBlock({
                   ? `${Math.abs(daysRemaining)}`
                   : `${daysRemaining}`
             }
-            sub={
-              endRef
-                ? formatDateCR(endRef)
-                : "sin fecha definida"
-            }
+            sub={endRef ? formatDateCR(endRef) : "sin fecha definida"}
             accent={isOverdue ? "urgent" : "ink"}
           />
         </dl>
@@ -399,7 +320,6 @@ function Stat({
   value: string;
   sub?: string;
   accent?: "ink" | "done" | "urgent" | "faint";
-  /** 0–100 si querés rendir una barra horizontal abajo del numeral. */
   progress?: number | null;
 }) {
   const numColor =
@@ -424,10 +344,7 @@ function Stat({
         {value}
       </dd>
       {progress !== undefined && progress !== null && (
-        <div
-          className="mt-1 h-[2px] w-full bg-rule"
-          aria-hidden
-        >
+        <div className="mt-1 h-[2px] w-full bg-rule" aria-hidden>
           <div
             className={cn(
               "h-full transition-all duration-700 ease-out",
