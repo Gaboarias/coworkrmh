@@ -17,10 +17,6 @@ import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils/cn";
 import type { ProjectStatus } from "@/lib/types";
-import {
-  PROJECT_STATUS_ORDER,
-  PROJECT_STATUS_CONFIG,
-} from "@/lib/constants/projectStatus";
 import { ENTORNO_SWATCHES } from "@/lib/constants/entornoColors";
 
 interface Profile {
@@ -194,7 +190,7 @@ export function ProjectSettingsForm({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div>
               <div>
                 <label
                   htmlFor="ps-bucket"
@@ -218,6 +214,19 @@ export function ProjectSettingsForm({
                       </option>
                     ))}
                   </Select>
+                  {form.bucketId && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setForm((p) => ({ ...p, bucketId: "" }))
+                      }
+                      title="Quitar categoría — el proyecto queda 'Sin categoría'"
+                    >
+                      Quitar
+                    </Button>
+                  )}
                   <Button
                     type="button"
                     variant="outline"
@@ -250,33 +259,12 @@ export function ProjectSettingsForm({
                 )}
               </div>
 
-              <div>
-                <label
-                  htmlFor="ps-status"
-                  className="mb-1.5 block text-sm font-medium text-text-muted"
-                >
-                  Estado
-                </label>
-                <Select
-                  id="ps-status"
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm((p) => ({
-                      ...p,
-                      status: e.target.value as ProjectStatus,
-                    }))
-                  }
-                >
-                  {PROJECT_STATUS_ORDER.map((s) => (
-                    <option key={s} value={s}>
-                      {PROJECT_STATUS_CONFIG[s].label}
-                    </option>
-                  ))}
-                  <option value="archived">
-                    {PROJECT_STATUS_CONFIG.archived.label}
-                  </option>
-                </Select>
-              </div>
+              {/*
+                Campo Estado escondido — la organización del proyecto ahora
+                pasa por la Categoría (bucket). El status queda en DB pero
+                no se edita desde acá; el botón Archivar/Reactivar de más
+                abajo cubre los únicos cambios de estado que hacen falta.
+              */}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
