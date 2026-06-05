@@ -1,34 +1,28 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { projects, buckets } from "@/lib/db/schema";
-import { eq, ne, and, asc, desc } from "drizzle-orm";
+import { projects, buckets, tasks } from "@/lib/db/schema";
+import { eq, ne, and, asc, desc, sql, inArray } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { HairlineRule } from "@/components/shared/HairlineRule";
 import Link from "next/link";
 import { Plus, FolderKanban, Layers } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { getActiveWorkspace } from "@/lib/workspace";
-import { PROJECT_STATUS_CONFIG } from "@/lib/constants/projectStatus";
+import { ProjectsExplorer } from "@/components/projects/ProjectsExplorer";
 import type { ProjectStatus } from "@/lib/types";
-import { formatDateCR } from "@/lib/utils/datetime";
-
-function formatDate(d: string) {
-  return formatDateCR(d);
-}
-
-function durationDays(start: string, end: string) {
-  const ms = new Date(end).getTime() - new Date(start).getTime();
-  return Math.max(0, Math.round(ms / 86_400_000)) + 1;
-}
 
 /**
- * /projects (Edition 04).
+ * /projects (Edition 04 — specimen layout).
  *
- * Estructura:
- *   - PageHeader drop-line "Proyectos," "del estudio"
- *   - Por bucket: HairlineRule + lista de proyectos como hanging-list
- *     con color dots de cada proyecto.
- *   - Sin card grid genérico.
+ * Server component que fetchea:
+ *  - Proyectos del workspace (excluyendo archivados).
+ *  - Buckets para nombrar la categoría de cada proyecto.
+ *  - Agregados de tareas por proyecto (totales + done) para calcular
+ *    % completo y "tareas activas" en cada specimen.
+ *
+ * UI viene del client component <ProjectsExplorer />:
+ *  - Tabs por status (Todos · Activo · En pausa · …) con count.
+ *  - Specimens grandes por proyecto: hanging number, mega título,
+ *    description, strip de 3 stats grandes.
  */
 export default async function ProjectsPage() {
   const session = await auth();
@@ -63,28 +57,57 @@ export default async function ProjectsPage() {
     )
     .orderBy(desc(projects.createdAt));
 
-  type ProjectRow = (typeof projectRows)[number];
-  const projectsByBucket: Record<string, ProjectRow[]> = {
-    uncategorized: [],
-  };
-  bucketRows.forEach((b) => {
-    projectsByBucket[b.id] = [];
-  });
-  projectRows.forEach((row) => {
-    const key = row.project.bucketId ?? "uncategorized";
-    if (!projectsByBucket[key]) projectsByBucket[key] = [];
-    projectsByBucket[key]!.push(row);
-  });
+  // Agregados de tareas por proyecto. 1 query con GROUP BY (no N+1).
+  const projectIds = projectRows.map((r) => r.project.id);
+  const taskAggregates =
+    projectIds.length === 0
+      ? []
+      : await db
+          .select({
+            projectId: tasks.projectId,
+            total: sql<number>`count(*)::int`,
+            done: sql<number>`count(*) FILTER (WHERE ${tasks.status} = 'done')::int`,
+            active: sql<number>`count(*) FILTER (WHERE ${tasks.status} != 'done')::int`,
+          })
+          .from(tasks)
+          .where(inArray(tasks.projectId, projectIds))
+          .groupBy(tasks.projectId);
 
-  const bucketList = [
-    ...bucketRows,
-    {
-      id: "uncategorized",
-      name: "Sin categoría",
-      color: "#8a8378",
-      position: 9999,
-    },
-  ];
+  const aggMap = new Map<
+    string,
+    { total: number; done: number; active: number }
+  >();
+  for (const a of taskAggregates) {
+    aggMap.set(a.projectId, {
+      total: a.total,
+      done: a.done,
+      active: a.active,
+    });
+  }
+
+  const specimens = projectRows.map((row, i) => {
+    const agg = aggMap.get(row.project.id) ?? {
+      total: 0,
+      done: 0,
+      active: 0,
+    };
+    return {
+      index: i + 1,
+      id: row.project.id,
+      name: row.project.name,
+      description: row.project.description,
+      color: row.project.color,
+      status: row.project.status as ProjectStatus,
+      bucketName: row.bucket?.name ?? null,
+      bucketColor: row.bucket?.color ?? null,
+      startDate: row.project.startDate,
+      endDate: row.project.endDate,
+      dueDate: row.project.dueDate,
+      totalTasks: agg.total,
+      doneTasks: agg.done,
+      activeTasks: agg.active,
+    };
+  });
 
   const newProjectButton = (
     <Link
@@ -103,13 +126,13 @@ export default async function ProjectsPage() {
         title="Proyectos,"
         subtitle="del estudio."
         issueLines={[
-          `${projectRows.length} ACTIVOS`,
+          `${specimens.length} ACTIVOS`,
           `${bucketRows.length} CATEGORÍAS`,
         ]}
         actions={isManager ? newProjectButton : undefined}
       />
 
-      {!projectRows.length ? (
+      {!specimens.length ? (
         <EmptyState
           icon={<FolderKanban className="h-12 w-12" />}
           title="Sin proyectos aún"
@@ -117,87 +140,7 @@ export default async function ProjectsPage() {
           action={isManager ? newProjectButton : undefined}
         />
       ) : (
-        <div className="space-y-12 mt-2">
-          {bucketList.map((bucket) => {
-            const bucketProjects = projectsByBucket[bucket.id] ?? [];
-            if (!bucketProjects.length) return null;
-
-            return (
-              <section key={bucket.id}>
-                <HairlineRule
-                  label={bucket.name}
-                  count={`${bucketProjects.length}`}
-                  labelColor={bucket.color ?? "var(--ink-soft)"}
-                />
-
-                <ul className="h-list mt-3">
-                  {bucketProjects.map(({ project }, i) => {
-                    const cfg =
-                      PROJECT_STATUS_CONFIG[
-                        project.status as ProjectStatus
-                      ] ?? PROJECT_STATUS_CONFIG.active;
-                    return (
-                      <li key={project.id} className="h-list-item">
-                        <span className="h-list-item-n">
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                        <Link
-                          href={`/projects/${project.id}`}
-                          className="flex min-w-0 flex-1 items-baseline gap-3"
-                        >
-                          <span
-                            className="h-2 w-2 flex-shrink-0 self-center rounded-full"
-                            style={{
-                              backgroundColor: project.color ?? "#161412",
-                            }}
-                          />
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[16px] font-bold text-ink">
-                              {project.name}
-                            </span>
-                            {project.description && (
-                              <span className="block truncate text-[14px] text-ink-soft">
-                                {project.description}
-                              </span>
-                            )}
-                          </span>
-                        </Link>
-                        <div className="flex flex-shrink-0 items-baseline gap-3">
-                          <span
-                            className="font-mono text-[11px] uppercase tracking-[0.16em]"
-                            style={{
-                              color:
-                                cfg.variant === "danger"
-                                  ? "var(--urgent)"
-                                  : cfg.variant === "success"
-                                    ? "var(--done)"
-                                    : "var(--ink-soft)",
-                            }}
-                          >
-                            {cfg.label}
-                          </span>
-                          {project.startDate && project.endDate ? (
-                            <span className="font-mono text-[12px] uppercase tracking-[0.06em] text-ink-faint">
-                              {durationDays(
-                                project.startDate,
-                                project.endDate
-                              )}{" "}
-                              días
-                            </span>
-                          ) : project.dueDate ? (
-                            <span className="font-mono text-[12px] uppercase tracking-[0.06em] text-ink-faint">
-                              {formatDate(project.dueDate)}
-                            </span>
-                          ) : null}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            );
-          })}
-        </div>
+        <ProjectsExplorer specimens={specimens} />
       )}
     </div>
   );
