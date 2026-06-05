@@ -26,6 +26,16 @@ export const userRoleEnum = pgEnum("user_role", ["admin", "manager", "member"]);
 // la matriz. La migración guarded convierte el column type y dropea el enum.
 export const taskStatusEnum = pgEnum("task_status", ["todo", "in_progress", "review", "done"]);
 export const taskPriorityEnum = pgEnum("task_priority", ["low", "medium", "high", "urgent"]);
+// Etapas del pipeline (orden de business flow):
+//   prospecto → primer_contrato → firmado → operaciones
+//   retomar = pausa con intención de reactivar
+//   descartado = perdido / cancelado
+//   archived = oculto del panel (no es etapa visible)
+//
+// Los valores viejos (active, paused, in_review, stopped, completed) quedan
+// en el enum por compat de Postgres (ADD VALUE no admite DROP). La migración
+// one-shot en /api/admin/debug/migrate-project-statuses los reescribe a
+// 'prospecto'. Nuevos proyectos arrancan con default 'prospecto'.
 export const projectStatusEnum = pgEnum("project_status", [
   "active",
   "paused",
@@ -33,6 +43,12 @@ export const projectStatusEnum = pgEnum("project_status", [
   "stopped",
   "completed",
   "archived",
+  "prospecto",
+  "primer_contrato",
+  "firmado",
+  "descartado",
+  "retomar",
+  "operaciones",
 ]);
 export const changelogActionEnum = pgEnum("changelog_action", [
   "created", "updated", "deleted", "status_changed", "assigned", "unassigned", "uploaded", "noted",
@@ -208,7 +224,7 @@ export const projects = pgTable("projects", {
   bucketId: uuid("bucket_id").references(() => buckets.id, { onDelete: "set null" }),
   name: text("name").notNull(),
   description: text("description"),
-  status: projectStatusEnum("status").default("active").notNull(),
+  status: projectStatusEnum("status").default("prospecto").notNull(),
   color: text("color"),
   startDate: date("start_date"),
   endDate: date("end_date"),

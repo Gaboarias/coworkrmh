@@ -49,30 +49,45 @@ type StatusFilter = "all" | ProjectStatus;
 
 const STATUS_LABEL: Record<StatusFilter, string> = {
   all: "Todos",
-  active: "Activo",
-  paused: "En pausa",
-  in_review: "En revisión",
-  stopped: "Detenido",
-  completed: "Completado",
+  prospecto: "Prospecto",
+  primer_contrato: "Primer Contrato",
+  firmado: "Firmado",
+  operaciones: "Operaciones",
+  retomar: "Retomar",
+  descartado: "Descartado",
   archived: "Archivado",
+  // Legacy — sólo aparecen si la DB tiene data sin migrar.
+  active: "Prospecto",
+  paused: "Prospecto",
+  in_review: "Prospecto",
+  stopped: "Prospecto",
+  completed: "Prospecto",
 };
 
 const STATUS_COLOR: Record<ProjectStatus, string> = {
-  active: "var(--done)",
-  paused: "var(--warn)",
-  in_review: "var(--info)",
-  stopped: "var(--urgent)",
-  completed: "var(--ink-soft)",
+  prospecto: "var(--ink-soft)",
+  primer_contrato: "var(--info)",
+  firmado: "var(--warn)",
+  operaciones: "var(--done)",
+  retomar: "var(--ink-faint)",
+  descartado: "var(--urgent)",
   archived: "var(--ink-faint)",
+  // Legacy fallback (sin migrar)
+  active: "var(--ink-soft)",
+  paused: "var(--ink-soft)",
+  in_review: "var(--ink-soft)",
+  stopped: "var(--ink-soft)",
+  completed: "var(--ink-soft)",
 };
 
 const STATUS_ORDER: StatusFilter[] = [
   "all",
-  "active",
-  "paused",
-  "in_review",
-  "stopped",
-  "completed",
+  "prospecto",
+  "primer_contrato",
+  "firmado",
+  "operaciones",
+  "retomar",
+  "descartado",
 ];
 
 const DEFAULT_PROJECT_COLOR = "var(--ink)";
@@ -87,19 +102,47 @@ export function ProjectsExplorer({
   const counts = useMemo(() => {
     const c: Record<StatusFilter, number> = {
       all: specimens.length,
+      prospecto: 0,
+      primer_contrato: 0,
+      firmado: 0,
+      operaciones: 0,
+      retomar: 0,
+      descartado: 0,
+      archived: 0,
+      // Legacy — sin migrar. Cuento bajo prospecto para que no se pierdan
+      // visualmente hasta que corras el migrate endpoint.
       active: 0,
       paused: 0,
       in_review: 0,
       stopped: 0,
       completed: 0,
-      archived: 0,
     };
-    for (const s of specimens) c[s.status]++;
+    for (const s of specimens) {
+      const isLegacy =
+        s.status === "active" ||
+        s.status === "paused" ||
+        s.status === "in_review" ||
+        s.status === "stopped" ||
+        s.status === "completed";
+      c[isLegacy ? "prospecto" : s.status]++;
+    }
     return c;
   }, [specimens]);
 
   const visible = useMemo(() => {
     if (filter === "all") return specimens;
+    if (filter === "prospecto") {
+      // Incluir legacy statuses (sin migrar) bajo prospecto.
+      return specimens.filter(
+        (s) =>
+          s.status === "prospecto" ||
+          s.status === "active" ||
+          s.status === "paused" ||
+          s.status === "in_review" ||
+          s.status === "stopped" ||
+          s.status === "completed"
+      );
+    }
     return specimens.filter((s) => s.status === filter);
   }, [specimens, filter]);
 
@@ -192,7 +235,18 @@ function ProjectSpecimenBlock({
     const todayMs = new Date(today + "T12:00:00Z").getTime();
     const diff = Math.round((endMs - todayMs) / 86_400_000);
     daysRemaining = diff;
-    isOverdue = diff < 0 && s.status !== "completed";
+    // Overdue solo aplica a etapas operativas — no a retomar (pausa
+    // intencional) ni a descartado/archived (terminal).
+    const operationalStatuses: ProjectStatus[] = [
+      "prospecto",
+      "primer_contrato",
+      "firmado",
+      "operaciones",
+      "active",
+      "paused",
+      "in_review",
+    ];
+    isOverdue = diff < 0 && operationalStatuses.includes(s.status);
   }
 
   return (

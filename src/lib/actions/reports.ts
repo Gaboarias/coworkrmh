@@ -60,7 +60,10 @@ export async function getWorkspaceReport(): Promise<WorkspaceReport | null> {
     .select({ activeProjects: sql<number>`count(*)::int` })
     .from(projects)
     .where(
-      and(eq(projects.workspaceId, ws.id), sql`${projects.status} = 'active'`)
+      and(
+        eq(projects.workspaceId, ws.id),
+        sql`${projects.status} NOT IN ('archived', 'descartado')`
+      )
     );
 
   // Active + completed tasks (this workspace's projects)
