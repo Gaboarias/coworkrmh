@@ -48,6 +48,22 @@ const INDEXES: Array<{ name: string; ddl: string }> = [
     name: "refresh_tokens_user_idx",
     ddl: `CREATE INDEX IF NOT EXISTS refresh_tokens_user_idx ON refresh_tokens (user_id)`,
   },
+  // task_comments — bitácora append-only por tarea
+  {
+    name: "task_comments_table",
+    ddl: `CREATE TABLE IF NOT EXISTS task_comments (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      task_id uuid NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+      project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      author_id uuid NOT NULL REFERENCES users(id),
+      body text NOT NULL,
+      created_at timestamp NOT NULL DEFAULT now()
+    )`,
+  },
+  {
+    name: "task_comments_task_created_idx",
+    ddl: `CREATE INDEX IF NOT EXISTS task_comments_task_created_idx ON task_comments (task_id, created_at)`,
+  },
   // tasks
   {
     name: "tasks_assignee_status_idx",

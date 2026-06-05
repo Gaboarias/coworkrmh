@@ -343,6 +343,36 @@ export const changelog = pgTable(
   })
 );
 
+// ─── Task comments (bitácora append-only) ──────────────────────────────────
+// Cada entrada queda con autor + timestamp y no se edita más después de
+// crearla. Borrar permitido sólo al autor en los primeros 5 min (typo fix).
+// Modelado como log inmutable separado de `notes` (que son docs editables a
+// nivel proyecto).
+
+export const taskComments = pgTable(
+  "task_comments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => tasks.id, { onDelete: "cascade" }),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    authorId: uuid("author_id")
+      .notNull()
+      .references(() => users.id),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    taskCreatedIdx: index("task_comments_task_created_idx").on(
+      t.taskId,
+      t.createdAt
+    ),
+  })
+);
+
 // ─── Notifications (N4) ──────────────────────────────────────────────────────
 // Bell con badge en topbar + drawer slide-in. Polling cada 30s.
 // Trigger desde server actions cuando algo "le pasa al usuario" (asignación,
