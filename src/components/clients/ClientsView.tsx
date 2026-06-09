@@ -333,7 +333,7 @@ function ClientCard({
 
         {/* Portal indicator */}
         {hasPortal && (
-          <Globe className="h-3.5 w-3.5 shrink-0 text-[oklch(0.62_0.17_145)]" title="Portal activo" />
+          <Globe className="h-3.5 w-3.5 shrink-0 text-[oklch(0.62_0.17_145)]" />
         )}
 
         {/* Expand toggle */}
