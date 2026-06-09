@@ -1,10 +1,10 @@
 /**
  * Layout del portal de clientes.
  *
- * Intencionalmente distinto al (app)/layout:
  * - Sin AppShell, sin sidebar, sin NextAuth requirement.
- * - Limpio, de solo lectura, orientado al cliente externo.
- * - Mismos tokens CSS (globals.css) y font Satoshi.
+ * - Siempre light mode — el portal es una superficie pública y de marca,
+ *   no hereda el tema del usuario de Pistachio.
+ * - Misma tipografía Satoshi via globals.css.
  */
 
 import type { Metadata } from "next";
@@ -20,8 +20,17 @@ export default function PortalLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Wrapping in a div that resets to light values via inline style so
+  // even if the root <html> has .dark applied (Pistachio user's theme),
+  // the portal surface stays clean and consistent for external clients.
   return (
-    <div className="min-h-screen bg-background text-text">
+    <div
+      style={{
+        colorScheme: "light",
+        background: "#f5f2eb",
+        minHeight: "100dvh",
+      }}
+    >
       {children}
     </div>
   );

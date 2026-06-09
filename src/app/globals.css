@@ -44,6 +44,9 @@
     --warn: #e89a0d;
     --warn-soft: rgba(232, 154, 13, 0.1);
 
+    /* Notificaciones — warm terracotta (dot + badge) */
+    --coral: #c96b35;
+
     /* Colores semánticos legacy (shadcn/ui compat) */
     --primary: var(--ink);
     --primary-hover: #2a2622;
@@ -113,6 +116,8 @@
     --info-soft: rgba(85, 119, 238, 0.14);
     --warn: #f5af2e;
     --warn-soft: rgba(245, 175, 46, 0.14);
+
+    --coral: #e07a4a;
 
     --primary: var(--ink);
     --primary-hover: #ffffff;

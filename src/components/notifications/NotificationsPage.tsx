@@ -37,12 +37,11 @@ function timeAgo(iso: string): string {
 }
 
 function getDateGroup(iso: string): string {
-  const now = new Date();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const date = new Date(iso);
-  const diffDays = Math.floor(
-    (now.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0)) /
-      (1000 * 60 * 60 * 24)
-  );
+  date.setHours(0, 0, 0, 0);
+  const diffDays = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
   if (diffDays === 0) return "Hoy";
   if (diffDays === 1) return "Ayer";
   if (diffDays <= 7) return "Esta semana";
