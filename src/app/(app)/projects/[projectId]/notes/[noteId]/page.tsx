@@ -12,27 +12,26 @@ interface PageProps {
 export default async function NoteEditorPage({ params }: PageProps) {
   const session = await auth();
 
-  // Fetch note and verify it belongs to this project
-  const [note] = await db
-    .select()
-    .from(notes)
-    .where(
-      and(
-        eq(notes.id, params.noteId),
-        eq(notes.projectId, params.projectId)
+  // Nota y proyecto son independientes — paralelizar.
+  const [[note], [project]] = await Promise.all([
+    db
+      .select()
+      .from(notes)
+      .where(
+        and(
+          eq(notes.id, params.noteId),
+          eq(notes.projectId, params.projectId)
+        )
       )
-    )
-    .limit(1);
+      .limit(1),
+    db
+      .select({ id: projects.id, name: projects.name })
+      .from(projects)
+      .where(eq(projects.id, params.projectId))
+      .limit(1),
+  ]);
 
   if (!note) notFound();
-
-  // Fetch project
-  const [project] = await db
-    .select({ id: projects.id, name: projects.name })
-    .from(projects)
-    .where(eq(projects.id, params.projectId))
-    .limit(1);
-
   if (!project) notFound();
 
   const userName = session?.user?.name ?? session?.user?.email ?? "";

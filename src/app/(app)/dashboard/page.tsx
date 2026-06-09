@@ -58,48 +58,49 @@ export default async function DashboardPage() {
     );
   }
 
-  const myTaskRows = await db
-    .select({
-      id: tasks.id,
-      title: tasks.title,
-      status: tasks.status,
-      priority: tasks.priority,
-      dueDate: tasks.dueDate,
-      projectId: tasks.projectId,
-      projectName: projects.name,
-      projectColor: projects.color,
-    })
-    .from(tasks)
-    .innerJoin(projects, eq(tasks.projectId, projects.id))
-    .where(
-      and(
-        eq(tasks.assigneeId, userId),
-        ne(tasks.status, "done"),
-        eq(projects.workspaceId, ws.id)
+  // Los tres queries son independientes entre sí — corren en paralelo.
+  const [myTaskRows, recentProjectRows, upcomingPaymentRows] = await Promise.all([
+    db
+      .select({
+        id: tasks.id,
+        title: tasks.title,
+        status: tasks.status,
+        priority: tasks.priority,
+        dueDate: tasks.dueDate,
+        projectId: tasks.projectId,
+        projectName: projects.name,
+        projectColor: projects.color,
+      })
+      .from(tasks)
+      .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .where(
+        and(
+          eq(tasks.assigneeId, userId),
+          ne(tasks.status, "done"),
+          eq(projects.workspaceId, ws.id)
+        )
       )
-    )
-    .orderBy(asc(tasks.dueDate))
-    .limit(6);
+      .orderBy(asc(tasks.dueDate))
+      .limit(6),
 
-  const recentProjectRows = await db
-    .select({ project: projects, bucket: buckets })
-    .from(projects)
-    .leftJoin(buckets, eq(projects.bucketId, buckets.id))
-    .where(
-      and(eq(projects.workspaceId, ws.id), ne(projects.status, "archived"))
-    )
-    .orderBy(desc(projects.createdAt))
-    .limit(6);
+    db
+      .select({ project: projects, bucket: buckets })
+      .from(projects)
+      .leftJoin(buckets, eq(projects.bucketId, buckets.id))
+      .where(and(eq(projects.workspaceId, ws.id), ne(projects.status, "archived")))
+      .orderBy(desc(projects.createdAt))
+      .limit(6),
 
-  const upcomingPaymentRows = isManager
-    ? await db
-        .select({ payment: payments, client: clients })
-        .from(payments)
-        .leftJoin(clients, eq(payments.clientId, clients.id))
-        .where(inArray(payments.status, ["pending", "overdue"]))
-        .orderBy(asc(payments.dueDate))
-        .limit(5)
-    : [];
+    isManager
+      ? db
+          .select({ payment: payments, client: clients })
+          .from(payments)
+          .leftJoin(clients, eq(payments.clientId, clients.id))
+          .where(inArray(payments.status, ["pending", "overdue"]))
+          .orderBy(asc(payments.dueDate))
+          .limit(5)
+      : Promise.resolve([]),
+  ]);
 
   // IMPORTANTE: usar formatDateCR. `format(new Date(), ...)` corre en el
   // server (Vercel = UTC) y desde las 6pm CR muestra el día siguiente.

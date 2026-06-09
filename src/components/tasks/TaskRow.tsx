@@ -75,6 +75,7 @@ export function TaskRow({
       style={{ cursor: onClick ? "pointer" : "default" }}
     >
       <button
+        type="button"
         onClick={(e) => {
           e.stopPropagation();
           cycleStatus();
@@ -118,6 +119,7 @@ export function TaskRow({
 
       {canEdit && (
         <button
+          type="button"
           onClick={handleDelete}
           aria-label="Eliminar tarea"
           className="hidden text-text-tertiary transition-colors hover:text-danger group-hover:block"

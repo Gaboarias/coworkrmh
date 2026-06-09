@@ -88,6 +88,7 @@ export function Modal({
               )}
             </div>
             <button
+              type="button"
               onClick={onClose}
               aria-label="Cerrar"
               className="rounded-md p-1 text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"

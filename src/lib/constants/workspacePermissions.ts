@@ -69,7 +69,6 @@ export type WsRolePermissions = Record<string, string[]>;
 
 // Roles built-in no eliminables. "owner" NO va en la matriz (es bypass total).
 export const BUILTIN_ROLE_KEYS = ["admin", "member"] as const;
-export type BuiltinRoleKey = (typeof BUILTIN_ROLE_KEYS)[number];
 
 // Etiquetas de display para roles built-in. Roles custom se muestran con su
 // propio key (el admin elige el nombre legible al crearlos).
@@ -86,9 +85,6 @@ export const DEFAULT_WS_ROLE_PERMISSIONS: WsRolePermissions = {
   admin: ALL_WS_PERMISSIONS,
   member: VIEW_KEYS,
 };
-
-export const isValidPermission = (k: string): boolean =>
-  ALL_WS_PERMISSIONS.includes(k);
 
 // Sanea un nombre de rol custom: no vacío, no "owner" (reservado), trim,
 // max 32 chars. Permite letras (incluido acentos), números, espacio, guion.

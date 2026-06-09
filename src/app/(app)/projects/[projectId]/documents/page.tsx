@@ -12,21 +12,21 @@ interface PageProps {
 export default async function ProjectDocumentsPage({ params }: PageProps) {
   const session = await auth();
 
-  // Fetch project
-  const [project] = await db
-    .select({ id: projects.id, name: projects.name })
-    .from(projects)
-    .where(eq(projects.id, params.projectId))
-    .limit(1);
+  // Proyecto y documentos son independientes — paralelizar.
+  const [[project], documentRows] = await Promise.all([
+    db
+      .select({ id: projects.id, name: projects.name })
+      .from(projects)
+      .where(eq(projects.id, params.projectId))
+      .limit(1),
+    db
+      .select()
+      .from(documents)
+      .where(eq(documents.projectId, params.projectId))
+      .orderBy(desc(documents.createdAt)),
+  ]);
 
   if (!project) notFound();
-
-  // Fetch documents
-  const documentRows = await db
-    .select()
-    .from(documents)
-    .where(eq(documents.projectId, params.projectId))
-    .orderBy(desc(documents.createdAt));
 
   const documentsData = documentRows.map((d) => ({
     id: d.id,

@@ -18,6 +18,7 @@ export function SidebarToggle() {
   if (!hydrated) {
     return (
       <button
+        type="button"
         aria-label="Toggle sidebar"
         className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-soft"
       >
@@ -28,6 +29,7 @@ export function SidebarToggle() {
 
   return (
     <button
+      type="button"
       onClick={toggle}
       aria-label={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
       title={collapsed ? "Expandir sidebar (⌘B)" : "Colapsar sidebar (⌘B)"}

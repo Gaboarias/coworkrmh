@@ -86,8 +86,7 @@ async function requireUser() {
 
 /** Usuario autenticado con la capacidad `projects.manage` en el entorno activo. */
 async function requireProjectsManage() {
-  const user = await requireUser();
-  const ws = await getActiveWorkspace();
+  const [user, ws] = await Promise.all([requireUser(), getActiveWorkspace()]);
   if (!ws) throw new Error("Selecciona un entorno");
   const { permissions } = await getWorkspacePermissions(ws.id);
   if (!permissions.has("projects.manage")) {
@@ -364,20 +363,4 @@ export async function setTaskTags(
       .values(tagIds.map((tagId) => ({ taskId, tagId })));
   }
   revalidatePath(`/projects/${projectId}`);
-}
-
-export async function getTaskTagsForProject(
-  projectId: string
-): Promise<Record<string, string[]>> {
-  await requireUser();
-  const rows = await db
-    .select({ taskId: taskTags.taskId, tagId: taskTags.tagId })
-    .from(taskTags)
-    .innerJoin(tasks, eq(taskTags.taskId, tasks.id))
-    .where(eq(tasks.projectId, projectId));
-  const map: Record<string, string[]> = {};
-  for (const r of rows) {
-    (map[r.taskId] ??= []).push(r.tagId);
-  }
-  return map;
 }

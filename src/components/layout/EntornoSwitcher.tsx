@@ -17,14 +17,14 @@ interface Ws {
   name: string;
   color: string;
 }
-interface WsData {
+export interface WsData {
   workspaces: Ws[];
   isAdmin: boolean;
   activeId: string | null;
 }
 
-export const EntornoSwitcher = () => {
-  const [data, setData] = useState<WsData | null>(null);
+export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
+  const data = initialData;
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -33,13 +33,6 @@ export const EntornoSwitcher = () => {
   const ref = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-
-  useEffect(() => {
-    fetch("/api/ws")
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => setData({ workspaces: [], isAdmin: false, activeId: null }));
-  }, []);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -148,12 +141,6 @@ export const EntornoSwitcher = () => {
       </form>
     </Modal>
   );
-
-  if (!data) {
-    return (
-      <div className="mx-3 mt-3 h-11 animate-pulse rounded-lg bg-[color-mix(in_oklab,var(--sidebar-foreground)_8%,transparent)]" />
-    );
-  }
 
   const active =
     data.workspaces.find((w) => w.id === data.activeId) ??

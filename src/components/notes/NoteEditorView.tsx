@@ -190,6 +190,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
       {/* Toolbar */}
       <div className="mb-4 flex items-center gap-1 rounded-lg border border-border bg-surface p-1.5">
         <button
+          type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={`${toolbarBtn} ${editor.isActive("bold") ? activeBtn : ""}`}
           title="Negrita"
@@ -197,6 +198,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
           <Bold className="h-4 w-4" />
         </button>
         <button
+          type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={`${toolbarBtn} ${editor.isActive("italic") ? activeBtn : ""}`}
           title="Cursiva"
@@ -204,6 +206,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
           <Italic className="h-4 w-4" />
         </button>
         <button
+          type="button"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           className={`${toolbarBtn} ${editor.isActive("underline") ? activeBtn : ""}`}
           title="Subrayado"
@@ -214,6 +217,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
         <div className="mx-1 h-5 w-px bg-border" />
 
         <button
+          type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={`${toolbarBtn} ${editor.isActive("bulletList") ? activeBtn : ""}`}
           title="Lista"
@@ -221,6 +225,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
           <List className="h-4 w-4" />
         </button>
         <button
+          type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={`${toolbarBtn} ${editor.isActive("orderedList") ? activeBtn : ""}`}
           title="Lista numerada"
@@ -228,6 +233,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
           <ListOrdered className="h-4 w-4" />
         </button>
         <button
+          type="button"
           onClick={() => editor.chain().focus().toggleTaskList().run()}
           className={`${toolbarBtn} ${editor.isActive("taskList") ? activeBtn : ""}`}
           title="Lista de tareas"
@@ -235,6 +241,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
           <CheckSquare className="h-4 w-4" />
         </button>
         <button
+          type="button"
           onClick={() => editor.chain().focus().toggleCode().run()}
           className={`${toolbarBtn} ${editor.isActive("code") ? activeBtn : ""}`}
           title="Código"
@@ -245,6 +252,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
         <div className="mx-1 h-5 w-px bg-border" />
 
         <button
+          type="button"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
           className={toolbarBtn}
@@ -253,6 +261,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
           <Undo className="h-4 w-4" />
         </button>
         <button
+          type="button"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
           className={toolbarBtn}
@@ -270,6 +279,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
                 : ""}
           </span>
           <button
+            type="button"
             onClick={() => save()}
             disabled={saving}
             className={`${toolbarBtn} ml-1`}
@@ -281,6 +291,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
           {/* Export dropdown */}
           <div className="relative">
             <button
+              type="button"
               onClick={handleExportPDF}
               className={`${toolbarBtn} w-auto gap-1 px-2 text-xs`}
               title="Exportar PDF"
@@ -290,6 +301,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
             </button>
           </div>
           <button
+            type="button"
             onClick={handleExportDocx}
             className={`${toolbarBtn} w-auto gap-1 px-2 text-xs`}
             title="Exportar Word"

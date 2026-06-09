@@ -86,8 +86,8 @@ export const createProduct = async (input: {
   laborCost: number;
   price: number;
 }) => {
-  const { ws } = await requireWsCan("catalog.manage");
   if (!input.name.trim()) throw new Error("El nombre es obligatorio");
+  const { ws } = await requireWsCan("catalog.manage");
   await db.insert(erpProducts).values({
     workspaceId: ws.id,
     name: input.name.trim(),
@@ -140,7 +140,7 @@ export interface QuoteItemInput {
   unitCost: number;
   unitPrice: number;
 }
-export interface QuoteTotals {
+interface QuoteTotals {
   productionCost: number;
   netSales: number;
   grossProfit: number;
@@ -274,10 +274,10 @@ export const createQuote = async (input: {
   notes?: string;
   items: QuoteItemInput[];
 }): Promise<{ id: string }> => {
-  const { ws, userId } = await requireWsCan("quotes.manage");
   if (!input.title.trim()) throw new Error("El título es obligatorio");
   const clean = input.items.filter((i) => i.description.trim());
   if (clean.length === 0) throw new Error("Agrega al menos un ítem");
+  const { ws, userId } = await requireWsCan("quotes.manage");
   const [q] = await db
     .insert(erpQuotes)
     .values({
@@ -340,7 +340,7 @@ export const deleteQuote = async (id: string) => {
 
 // ─── Ventas ───────────────────────────────────────────────────────────────────
 
-export interface SaleRow {
+interface SaleRow {
   id: string;
   saleDate: string;
   description: string;
@@ -415,9 +415,9 @@ export const createSale = async (input: {
   unitCost: number;
   unitPrice: number;
 }) => {
-  const { ws, userId } = await requireWsCan("sales.manage");
   if (!input.saleDate || !input.description.trim())
     throw new Error("Fecha y descripción son obligatorias");
+  const { ws, userId } = await requireWsCan("sales.manage");
   await db.insert(erpSales).values({
     workspaceId: ws.id,
     saleDate: input.saleDate,
@@ -442,7 +442,7 @@ export const deleteSale = async (id: string) => {
 
 // ─── Gastos ───────────────────────────────────────────────────────────────────
 
-export interface ExpenseRow {
+interface ExpenseRow {
   id: string;
   kind: "investment" | "fixed";
   concept: string;
@@ -461,17 +461,20 @@ export interface ExpensesResult {
 
 export const listExpenses = async (): Promise<ExpensesResult> => {
   const { ws } = await requireWs();
-  const rows = await db
-    .select()
-    .from(erpExpenses)
-    .where(eq(erpExpenses.workspaceId, ws.id))
-    .orderBy(asc(erpExpenses.createdAt))
-    .limit(500);
-  const [wsRow] = await db
-    .select({ m: workspaces.breakEvenMargin })
-    .from(workspaces)
-    .where(eq(workspaces.id, ws.id))
-    .limit(1);
+  // Paralelo: expenses + breakEvenMargin del workspace son independientes.
+  const [rows, [wsRow]] = await Promise.all([
+    db
+      .select()
+      .from(erpExpenses)
+      .where(eq(erpExpenses.workspaceId, ws.id))
+      .orderBy(asc(erpExpenses.createdAt))
+      .limit(500),
+    db
+      .select({ m: workspaces.breakEvenMargin })
+      .from(workspaces)
+      .where(eq(workspaces.id, ws.id))
+      .limit(1),
+  ]);
   const map = (r: (typeof rows)[number]): ExpenseRow => ({
     id: r.id,
     kind: r.kind,
@@ -502,8 +505,8 @@ export const createExpense = async (input: {
   category?: string;
   priority?: string;
 }) => {
-  const { ws, userId } = await requireWsCan("expenses.manage");
   if (!input.concept.trim()) throw new Error("El concepto es obligatorio");
+  const { ws, userId } = await requireWsCan("expenses.manage");
   await db.insert(erpExpenses).values({
     workspaceId: ws.id,
     kind: input.kind,
@@ -550,17 +553,20 @@ export const getTeam = async (): Promise<{
   agreements: string;
 }> => {
   const { ws } = await requireWs();
-  const members = await db
-    .select()
-    .from(erpTeam)
-    .where(eq(erpTeam.workspaceId, ws.id))
-    .orderBy(asc(erpTeam.sortOrder), asc(erpTeam.name))
-    .limit(500);
-  const [wsRow] = await db
-    .select({ a: workspaces.teamAgreements })
-    .from(workspaces)
-    .where(eq(workspaces.id, ws.id))
-    .limit(1);
+  // Paralelo: equipo + teamAgreements del workspace son independientes.
+  const [members, [wsRow]] = await Promise.all([
+    db
+      .select()
+      .from(erpTeam)
+      .where(eq(erpTeam.workspaceId, ws.id))
+      .orderBy(asc(erpTeam.sortOrder), asc(erpTeam.name))
+      .limit(500),
+    db
+      .select({ a: workspaces.teamAgreements })
+      .from(workspaces)
+      .where(eq(workspaces.id, ws.id))
+      .limit(1),
+  ]);
   return {
     members: members.map((m) => ({
       id: m.id,
@@ -581,8 +587,8 @@ export const createTeamMember = async (input: {
   compensation?: string;
   status?: string;
 }) => {
-  const { ws } = await requireWsCan("team.manage");
   if (!input.name.trim()) throw new Error("El nombre es obligatorio");
+  const { ws } = await requireWsCan("team.manage");
   await db.insert(erpTeam).values({
     workspaceId: ws.id,
     name: input.name.trim(),

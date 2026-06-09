@@ -397,6 +397,7 @@ export function ProjectSettingsForm({
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => handleRemoveMember(member.id)}
                   aria-label={`Remover a ${member.name ?? member.email}`}
                   className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface hover:text-danger"

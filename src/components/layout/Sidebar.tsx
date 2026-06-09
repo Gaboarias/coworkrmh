@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useUser } from "@/lib/hooks/useUser";
-import { EntornoSwitcher } from "@/components/layout/EntornoSwitcher";
+import { EntornoSwitcher, type WsData } from "@/components/layout/EntornoSwitcher";
 import { useSidebarState } from "./SidebarStateContext";
 
 /**
@@ -76,7 +76,7 @@ const sections: NavSection[] = [
   },
 ];
 
-export function Sidebar() {
+export function Sidebar({ wsData }: { wsData: WsData }) {
   const pathname = usePathname();
   const { profile } = useUser();
   const isAdmin = profile?.role === "admin";
@@ -98,10 +98,10 @@ export function Sidebar() {
   }
 
   // Close mobile drawer cuando navego a otra ruta (auto-close UX).
+  // Llamar setMobileOpen(false) en desktop es no-op.
   useEffect(() => {
-    if (isMobile && mobileOpen) setMobileOpen(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+    setMobileOpen(false);
+  }, [pathname, setMobileOpen]);
 
   // Mobile + cerrado: no renderiza nada (drawer oculto).
   if (isMobile && !mobileOpen) return null;
@@ -185,7 +185,7 @@ export function Sidebar() {
       )}
 
       {/* Entorno (collapsed lo oculta) */}
-      {!collapsed && <EntornoSwitcher />}
+      {!collapsed && <EntornoSwitcher initialData={wsData} />}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">

@@ -109,30 +109,27 @@ async function dispatchMentionNotifications(params: {
   const fresh = newMentions.filter((m) => !oldMentions.has(m));
   if (fresh.length === 0) return;
 
-  // Levantar todos los members del proyecto con sus user info para matching.
-  const members = await db
-    .select({
-      userId: users.id,
-      name: users.name,
-      email: users.email,
-    })
-    .from(projectMembers)
-    .innerJoin(users, eq(projectMembers.userId, users.id))
-    .where(eq(projectMembers.projectId, params.projectId));
+  // Las 3 queries de setup son independientes — paralelizar.
+  const [members, [project], [actor]] = await Promise.all([
+    db
+      .select({ userId: users.id, name: users.name, email: users.email })
+      .from(projectMembers)
+      .innerJoin(users, eq(projectMembers.userId, users.id))
+      .where(eq(projectMembers.projectId, params.projectId)),
+    db
+      .select({ name: projects.name })
+      .from(projects)
+      .where(eq(projects.id, params.projectId))
+      .limit(1),
+    db
+      .select({ name: users.name, email: users.email })
+      .from(users)
+      .where(eq(users.id, params.actorId))
+      .limit(1),
+  ]);
 
-  // Project name (para el body).
-  const [project] = await db
-    .select({ name: projects.name })
-    .from(projects)
-    .where(eq(projects.id, params.projectId))
-    .limit(1);
-  const [actor] = await db
-    .select({ name: users.name, email: users.email })
-    .from(users)
-    .where(eq(users.id, params.actorId))
-    .limit(1);
-
-  // Resolver cada mention a un userId (si match único).
+  // Resolver cada mention a un userId (sin await en el loop).
+  const toNotify: string[] = [];
   const notified = new Set<string>();
   for (const mention of fresh) {
     const m = mention.toLowerCase();
@@ -146,20 +143,26 @@ async function dispatchMentionNotifications(params: {
     if (target.userId === params.actorId) continue; // No self-notify.
     if (notified.has(target.userId)) continue; // Dedup por user.
     notified.add(target.userId);
-
-    await createNotification({
-      userId: target.userId,
-      type: "note_mentioned",
-      payload: {
-        title: "Te mencionaron en una nota",
-        body: `${params.noteTitle} — ${project?.name ?? "proyecto"}`,
-        actorId: params.actorId,
-        actorName: actor?.name ?? actor?.email ?? undefined,
-        refs: { noteId: params.noteId, projectId: params.projectId },
-      },
-      href: `/projects/${params.projectId}/notes/${params.noteId}`,
-    });
+    toNotify.push(target.userId);
   }
+
+  // Disparar todas las notificaciones en paralelo.
+  await Promise.all(
+    toNotify.map((userId) =>
+      createNotification({
+        userId,
+        type: "note_mentioned",
+        payload: {
+          title: "Te mencionaron en una nota",
+          body: `${params.noteTitle} — ${project?.name ?? "proyecto"}`,
+          actorId: params.actorId,
+          actorName: actor?.name ?? actor?.email ?? undefined,
+          refs: { noteId: params.noteId, projectId: params.projectId },
+        },
+        href: `/projects/${params.projectId}/notes/${params.noteId}`,
+      })
+    )
+  );
 }
 
 /**

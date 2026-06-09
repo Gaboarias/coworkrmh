@@ -7,6 +7,7 @@ import {
   erpSales,
   erpExpenses,
   erpQuotes,
+  users,
 } from "@/lib/db/schema";
 import { eq, and, gte, sql, desc } from "drizzle-orm";
 import { getActiveWorkspace } from "@/lib/workspace";
@@ -55,128 +56,117 @@ export async function getWorkspaceReport(): Promise<WorkspaceReport | null> {
   const ws = await getActiveWorkspace();
   if (!ws) return null;
 
-  // Active projects
-  const [{ activeProjects }] = await db
-    .select({ activeProjects: sql<number>`count(*)::int` })
-    .from(projects)
-    .where(
-      and(eq(projects.workspaceId, ws.id), sql`${projects.status} = 'active'`)
-    );
+  // Materializar las fechas una vez — evita que cada query llame THIRTY_DAYS_AGO()
+  // y cree Date objetos redundantes.
+  const thirtyDaysAgo = THIRTY_DAYS_AGO();
+  const thirtyDaysAgoStr = THIRTY_DAYS_AGO_DATE_STR();
 
-  // Active + completed tasks (this workspace's projects)
-  const [{ activeTasks }] = await db
-    .select({ activeTasks: sql<number>`count(*)::int` })
-    .from(tasks)
-    .innerJoin(projects, eq(tasks.projectId, projects.id))
-    .where(
-      and(
-        eq(projects.workspaceId, ws.id),
-        sql`${tasks.status} != 'done'`
+  // Todos los queries son independientes entre sí → corren en paralelo.
+  const [
+    [{ activeProjects }],
+    [{ activeTasks }],
+    [{ completedLast30 }],
+    tasksByStatusRows,
+    [{ pendingQuotes }],
+    [salesAgg],
+    [expAgg],
+    salesByCategoryRows,
+    topContributorsRows,
+  ] = await Promise.all([
+    // 1. Proyectos activos
+    db
+      .select({ activeProjects: sql<number>`count(*)::int` })
+      .from(projects)
+      .where(and(eq(projects.workspaceId, ws.id), sql`${projects.status} = 'active'`)),
+
+    // 2. Tareas activas (no done)
+    db
+      .select({ activeTasks: sql<number>`count(*)::int` })
+      .from(tasks)
+      .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .where(and(eq(projects.workspaceId, ws.id), sql`${tasks.status} != 'done'`)),
+
+    // 3. Tareas completadas últimos 30 días
+    db
+      .select({ completedLast30: sql<number>`count(*)::int` })
+      .from(tasks)
+      .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .where(
+        and(
+          eq(projects.workspaceId, ws.id),
+          sql`${tasks.status} = 'done'`,
+          gte(tasks.completedAt, thirtyDaysAgo)
+        )
+      ),
+
+    // 4. Tareas por estado
+    db
+      .select({ status: tasks.status, count: sql<number>`count(*)::int` })
+      .from(tasks)
+      .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .where(eq(projects.workspaceId, ws.id))
+      .groupBy(tasks.status),
+
+    // 5. Cotizaciones pendientes
+    db
+      .select({ pendingQuotes: sql<number>`count(*)::int` })
+      .from(erpQuotes)
+      .where(
+        and(eq(erpQuotes.workspaceId, ws.id), sql`${erpQuotes.status} IN ('draft','sent')`)
+      ),
+
+    // 6. Ventas últimos 30 días
+    // erpSales.{qty, unitPrice} son numeric(12,2) — valores reales, no centavos.
+    db
+      .select({
+        total: sql<string>`COALESCE(SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric), 0)::text`,
+      })
+      .from(erpSales)
+      .where(and(eq(erpSales.workspaceId, ws.id), gte(erpSales.saleDate, thirtyDaysAgoStr))),
+
+    // 7. Gastos últimos 30 días
+    db
+      .select({
+        total: sql<string>`COALESCE(SUM(${erpExpenses.amount}::numeric), 0)::text`,
+      })
+      .from(erpExpenses)
+      .where(and(eq(erpExpenses.workspaceId, ws.id), gte(erpExpenses.createdAt, thirtyDaysAgo))),
+
+    // 8. Ventas por categoría (últimos 30 días)
+    db
+      .select({
+        category: erpSales.category,
+        total: sql<string>`COALESCE(SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric), 0)::text`,
+      })
+      .from(erpSales)
+      .where(and(eq(erpSales.workspaceId, ws.id), gte(erpSales.saleDate, thirtyDaysAgoStr)))
+      .groupBy(erpSales.category)
+      .orderBy(desc(sql`SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric)`)),
+
+    // 9. Top contributors — 1 query con INNER JOIN users
+    db
+      .select({
+        userId: tasks.assigneeId,
+        name: users.name,
+        completedTasks: sql<number>`count(*)::int`,
+      })
+      .from(tasks)
+      .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .innerJoin(users, eq(users.id, tasks.assigneeId))
+      .where(
+        and(
+          eq(projects.workspaceId, ws.id),
+          sql`${tasks.status} = 'done'`,
+          gte(tasks.completedAt, thirtyDaysAgo)
+        )
       )
-    );
+      .groupBy(tasks.assigneeId, users.name)
+      .orderBy(desc(sql`count(*)`))
+      .limit(5),
+  ]);
 
-  const [{ completedLast30 }] = await db
-    .select({ completedLast30: sql<number>`count(*)::int` })
-    .from(tasks)
-    .innerJoin(projects, eq(tasks.projectId, projects.id))
-    .where(
-      and(
-        eq(projects.workspaceId, ws.id),
-        sql`${tasks.status} = 'done'`,
-        gte(tasks.completedAt, THIRTY_DAYS_AGO())
-      )
-    );
-
-  // Tasks by status
-  const tasksByStatusRows = await db
-    .select({
-      status: tasks.status,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(tasks)
-    .innerJoin(projects, eq(tasks.projectId, projects.id))
-    .where(eq(projects.workspaceId, ws.id))
-    .groupBy(tasks.status);
-
-  // Pending quotes (sent or draft)
-  const [{ pendingQuotes }] = await db
-    .select({ pendingQuotes: sql<number>`count(*)::int` })
-    .from(erpQuotes)
-    .where(
-      and(
-        eq(erpQuotes.workspaceId, ws.id),
-        sql`${erpQuotes.status} IN ('draft','sent')`
-      )
-    );
-
-  // Sales last 30 days. erpSales.{qty, unitPrice} son numeric(12,2) y guardan
-  // valores reales (no centavos escalados). Antes este SUM tenía /10000 — bug
-  // que mostraba ventas 10.000× más chicas. Lo mismo con gastos /100.
-  const [salesAgg] = await db
-    .select({
-      total: sql<string>`COALESCE(SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric), 0)::text`,
-    })
-    .from(erpSales)
-    .where(
-      and(
-        eq(erpSales.workspaceId, ws.id),
-        gte(erpSales.saleDate, THIRTY_DAYS_AGO_DATE_STR())
-      )
-    );
   const salesLast30 = Number(salesAgg?.total ?? 0);
-
-  // Expenses last 30 days
-  const [expAgg] = await db
-    .select({
-      total: sql<string>`COALESCE(SUM(${erpExpenses.amount}::numeric), 0)::text`,
-    })
-    .from(erpExpenses)
-    .where(
-      and(
-        eq(erpExpenses.workspaceId, ws.id),
-        gte(erpExpenses.createdAt, THIRTY_DAYS_AGO())
-      )
-    );
   const expensesLast30 = Number(expAgg?.total ?? 0);
-
-  // Sales by category (current month)
-  const salesByCategoryRows = await db
-    .select({
-      category: erpSales.category,
-      total: sql<string>`COALESCE(SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric), 0)::text`,
-    })
-    .from(erpSales)
-    .where(
-      and(
-        eq(erpSales.workspaceId, ws.id),
-        gte(erpSales.saleDate, THIRTY_DAYS_AGO_DATE_STR())
-      )
-    )
-    .groupBy(erpSales.category)
-    .orderBy(desc(sql`SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric)`));
-
-  // Top contributors: assignees con más done tasks en 30 días. 1 query con
-  // INNER JOIN users (antes hacíamos 2: group-by + resolución de nombres).
-  const { users } = await import("@/lib/db/schema");
-  const topContributorsRows = await db
-    .select({
-      userId: tasks.assigneeId,
-      name: users.name,
-      completedTasks: sql<number>`count(*)::int`,
-    })
-    .from(tasks)
-    .innerJoin(projects, eq(tasks.projectId, projects.id))
-    .innerJoin(users, eq(users.id, tasks.assigneeId))
-    .where(
-      and(
-        eq(projects.workspaceId, ws.id),
-        sql`${tasks.status} = 'done'`,
-        gte(tasks.completedAt, THIRTY_DAYS_AGO())
-      )
-    )
-    .groupBy(tasks.assigneeId, users.name)
-    .orderBy(desc(sql`count(*)`))
-    .limit(5);
 
   return {
     workspaceId: ws.id,

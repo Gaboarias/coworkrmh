@@ -20,6 +20,7 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <button
+        type="button"
         aria-label="Toggle theme"
         className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-soft"
       >
@@ -32,6 +33,7 @@ export function ThemeToggle() {
 
   return (
     <button
+      type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Activar light theme" : "Activar dark theme"}
       title={isDark ? "Light" : "Dark"}

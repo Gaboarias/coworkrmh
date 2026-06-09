@@ -97,20 +97,22 @@ export const QuoteForm = ({
       <Card>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
+            <label htmlFor="quote-title" className="mb-1.5 block text-sm font-medium text-text-muted">
               Título *
             </label>
             <Input
+              id="quote-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Pedido personalizado…"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
+            <label htmlFor="quote-customer" className="mb-1.5 block text-sm font-medium text-text-muted">
               Cliente
             </label>
             <Input
+              id="quote-customer"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Nombre del cliente"
@@ -195,10 +197,11 @@ export const QuoteForm = ({
       <Card>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-text-muted">
+            <label htmlFor="quote-iva" className="text-sm font-medium text-text-muted">
               Tasa IVA
             </label>
             <Input
+              id="quote-iva"
               type="number"
               step="0.01"
               min="0"
@@ -230,10 +233,11 @@ export const QuoteForm = ({
             </div>
           </dl>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-muted">
+            <label htmlFor="quote-notes" className="mb-1.5 block text-sm font-medium text-text-muted">
               Notas
             </label>
             <Textarea
+              id="quote-notes"
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

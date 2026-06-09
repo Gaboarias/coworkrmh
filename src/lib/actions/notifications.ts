@@ -3,8 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { notifications, type NotificationPayload } from "@/lib/db/schema";
+import { notifications, users, type NotificationPayload } from "@/lib/db/schema";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
+import {
+  getAppUrl,
+  sendTaskAssignedEmail,
+  sendProjectMemberAddedEmail,
+} from "@/lib/email";
 
 /** Tipo (string union) — espejo del enum DB. */
 export type NotificationType =
@@ -49,7 +54,57 @@ export async function createNotification(input: {
       href: input.href ?? null,
     })
     .returning();
+
+  // Dispatch email para tipos que lo requieren.
+  // Fire-and-forget: no bloqueamos la respuesta — si falla el email,
+  // la notificación in-app ya está creada y es lo que cuenta.
+  if (input.type === "task_assigned" || input.type === "project_member_added") {
+    void dispatchEmail(input);
+  }
+
   return row;
+}
+
+/** Envía el correo correspondiente según el tipo de notificación. */
+async function dispatchEmail(input: {
+  userId: string;
+  type: NotificationType;
+  payload: NotificationPayload;
+  href?: string;
+}) {
+  try {
+    const [recipient] = await db
+      .select({ email: users.email, name: users.name })
+      .from(users)
+      .where(eq(users.id, input.userId))
+      .limit(1);
+
+    if (!recipient?.email) return;
+
+    const base = getAppUrl();
+    const url = input.href ? `${base}${input.href}` : base;
+
+    if (input.type === "task_assigned") {
+      await sendTaskAssignedEmail({
+        to: recipient.email,
+        recipientName: recipient.name,
+        taskAndProject: input.payload.body ?? "Tarea nueva",
+        assignerName: input.payload.actorName,
+        taskUrl: url,
+      });
+    } else if (input.type === "project_member_added") {
+      await sendProjectMemberAddedEmail({
+        to: recipient.email,
+        recipientName: recipient.name,
+        projectName: input.payload.body ?? "Proyecto",
+        inviterName: input.payload.actorName,
+        projectUrl: url,
+      });
+    }
+  } catch {
+    // Email failure is non-fatal — log silently, don't surface to caller.
+    // Monitorear desde Resend dashboard si hay entregas fallidas.
+  }
 }
 
 /** Lista las notificaciones del usuario actual (más recientes primero). */
@@ -60,22 +115,24 @@ export async function listMyNotifications(): Promise<{
   const session = await auth();
   if (!session?.user) return { notifications: [], unreadCount: 0 };
 
-  const rows = await db
-    .select()
-    .from(notifications)
-    .where(eq(notifications.userId, session.user.id))
-    .orderBy(desc(notifications.createdAt))
-    .limit(50);
-
-  const [{ unread }] = await db
-    .select({ unread: sql<number>`count(*)::int` })
-    .from(notifications)
-    .where(
-      and(
-        eq(notifications.userId, session.user.id),
-        isNull(notifications.readAt)
-      )
-    );
+  // Filas de notificaciones y conteo unread son independientes — paralelizar.
+  const [rows, [{ unread }]] = await Promise.all([
+    db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, session.user.id))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50),
+    db
+      .select({ unread: sql<number>`count(*)::int` })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, session.user.id),
+          isNull(notifications.readAt)
+        )
+      ),
+  ]);
 
   return {
     notifications: rows.map((r) => ({

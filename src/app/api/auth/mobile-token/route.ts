@@ -77,14 +77,17 @@ export async function POST(request: Request) {
 
   await clearRateLimit(rlKey);
 
-  const token = await signMobileToken({
-    sub: user.id,
-    email: user.email ?? "",
-    name: user.name ?? null,
-    role: user.role ?? "member",
-    image: user.avatarUrl ?? null,
-  });
-  const refreshToken = await issueRefreshToken(user.id);
+  // Token de acceso y refresh son independientes — paralelizar.
+  const [token, refreshToken] = await Promise.all([
+    signMobileToken({
+      sub: user.id,
+      email: user.email ?? "",
+      name: user.name ?? null,
+      role: user.role ?? "member",
+      image: user.avatarUrl ?? null,
+    }),
+    issueRefreshToken(user.id),
+  ]);
 
   return NextResponse.json({
     token,

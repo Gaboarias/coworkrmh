@@ -15,6 +15,24 @@
 const CR_TZ = "America/Costa_Rica";
 const CR_LOCALE = "es-CR";
 
+// Cache de formateadores Intl — la construcción de cada instancia parsea
+// locale + TZ data y es costosa. Reusar instancias en vez de crearlas en
+// cada llamada a formatDateCR / todayYmdCR.
+const _fmtCache = new Map<string, Intl.DateTimeFormat>();
+function _fmt(locale: string, opts: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale}:${JSON.stringify(opts)}`;
+  let f = _fmtCache.get(key);
+  if (!f) {
+    f = new Intl.DateTimeFormat(locale, opts);
+    _fmtCache.set(key, f);
+  }
+  return f;
+}
+
+// Formateadores de uso frecuente pre-calentados al importar el módulo.
+const _dateFmt   = _fmt(CR_LOCALE, { day: "2-digit", month: "2-digit", year: "numeric", timeZone: CR_TZ });
+const _todayFmt  = _fmt("en-CA", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: CR_TZ });
+
 /**
  * Date YYYY-MM-DD (saleDate, dueDate) — render fecha calendario en CR.
  *
@@ -38,7 +56,12 @@ export function formatDateCR(
         : new Date(value)
       : value;
   if (Number.isNaN(d.getTime())) return "";
-  return new Intl.DateTimeFormat(CR_LOCALE, { ...opts, timeZone: CR_TZ }).format(d);
+  // Usar el formatter default pre-calentado cuando se llama con defaults,
+  // o buscar en cache para opciones custom.
+  const isDefault =
+    opts.day === "2-digit" && opts.month === "2-digit" && opts.year === "numeric" &&
+    !opts.hour && !opts.minute;
+  return (isDefault ? _dateFmt : _fmt(CR_LOCALE, { ...opts, timeZone: CR_TZ })).format(d);
 }
 
 /** Fecha + hora corta en CR: DD/MM/YYYY HH:mm. */
@@ -71,12 +94,8 @@ export function formatTimeCR(value: string | Date | null | undefined): string {
  */
 export function todayYmdCR(): string {
   // en-CA produce "YYYY-MM-DD" — el único locale estándar que lo formatea así.
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: CR_TZ,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  // Usa el formatter pre-calentado (_todayFmt) — nunca crea uno nuevo.
+  return _todayFmt.format(new Date());
 }
 
 /**

@@ -76,60 +76,51 @@ export async function GET(request: Request) {
       )
     );
 
-  const results: Array<{
-    taskId: string;
-    title: string;
-    assigneeId: string;
-    notified: boolean;
-    reason?: string;
-  }> = [];
+  // Filtrar tareas sin assignee antes de tocar la DB.
+  const assignedTasks = dueTasks.filter((t) => t.assigneeId);
 
-  for (const task of dueTasks) {
-    if (!task.assigneeId) continue;
-
-    // Dedup: verificar si ya hay una notification para este (user, taskId)
-    // en últimas DEDUP_WINDOW_HOURS.
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(notifications)
-      .where(
-        and(
-          eq(notifications.userId, task.assigneeId),
-          eq(notifications.type, "task_due_soon"),
-          gte(notifications.createdAt, dedupCutoff),
-          sql`(${notifications.payload}->'refs'->>'taskId') = ${task.id}`
+  // Paso 1 — dedup checks en paralelo (1 query por tarea, todas al mismo tiempo).
+  const dedupResults = await Promise.all(
+    assignedTasks.map((task) =>
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(notifications)
+        .where(
+          and(
+            eq(notifications.userId, task.assigneeId!),
+            eq(notifications.type, "task_due_soon"),
+            gte(notifications.createdAt, dedupCutoff),
+            sql`(${notifications.payload}->'refs'->>'taskId') = ${task.id}`
+          )
         )
-      );
+        .then(([{ count }]) => ({ task, alreadyNotified: count > 0 }))
+    )
+  );
 
-    if (count > 0) {
-      results.push({
-        taskId: task.id,
-        title: task.title,
-        assigneeId: task.assigneeId,
-        notified: false,
-        reason: "already-notified-24h",
-      });
-      continue;
-    }
+  // Paso 2 — crear notificaciones para las que pasaron el dedup, en paralelo.
+  const toNotify = dedupResults.filter((r) => !r.alreadyNotified).map((r) => r.task);
+  await Promise.all(
+    toNotify.map((task) =>
+      createNotification({
+        userId: task.assigneeId!,
+        type: "task_due_soon",
+        payload: {
+          title: "Tarea próxima a vencer",
+          body: `${task.title} — ${task.projectName ?? "proyecto"} · vence ${task.dueDate}`,
+          refs: { taskId: task.id, projectId: task.projectId ?? "" },
+        },
+        href: task.projectId ? `/projects/${task.projectId}` : "/my-tasks",
+      })
+    )
+  );
 
-    await createNotification({
-      userId: task.assigneeId,
-      type: "task_due_soon",
-      payload: {
-        title: "Tarea próxima a vencer",
-        body: `${task.title} — ${task.projectName ?? "proyecto"} · vence ${task.dueDate}`,
-        refs: { taskId: task.id, projectId: task.projectId ?? "" },
-      },
-      href: task.projectId ? `/projects/${task.projectId}` : "/my-tasks",
-    });
-
-    results.push({
-      taskId: task.id,
-      title: task.title,
-      assigneeId: task.assigneeId,
-      notified: true,
-    });
-  }
+  const results = dedupResults.map((r) => ({
+    taskId: r.task.id,
+    title: r.task.title,
+    assigneeId: r.task.assigneeId!,
+    notified: !r.alreadyNotified,
+    ...(r.alreadyNotified ? { reason: "already-notified-24h" as const } : {}),
+  }));
 
   return NextResponse.json({
     ok: true,

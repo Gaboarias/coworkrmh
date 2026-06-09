@@ -17,8 +17,9 @@ async function requireUser() {
 
 /** Usuario + entorno activo, exigiendo la capacidad `projects.manage`. */
 async function requireProjectsManage() {
-  const user = await requireUser();
-  const ws = await getActiveWorkspace();
+  // requireUser y getActiveWorkspace son independientes — corren en paralelo.
+  // Ambas llaman auth() internamente; Next.js 14 deduplica esa llamada.
+  const [user, ws] = await Promise.all([requireUser(), getActiveWorkspace()]);
   if (!ws) throw new Error("Selecciona un entorno");
   const { permissions } = await getWorkspacePermissions(ws.id);
   if (!permissions.has("projects.manage")) {

@@ -24,6 +24,9 @@ import { formatDateCR } from "@/lib/utils/datetime";
 import { Modal } from "@/components/ui/Modal";
 import type { TaskPriority } from "@/lib/types";
 
+// Constante de módulo — no recrear en cada render de CalendarView.
+const WEEK_DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"] as const;
+
 interface CalendarTask {
   id: string;
   title: string;
@@ -122,7 +125,6 @@ export function CalendarView({
     return changelog.filter((c) => isSameDay(parseISO(c.date), day));
   }
 
-  const weekDays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
   return (
     <div className="animate-fade-in p-6 md:p-8">
@@ -138,6 +140,7 @@ export function CalendarView({
 
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
             className={cn(
               "rounded-full px-3 py-1.5 text-xs font-medium transition-colors duration-200 ease-out",
@@ -151,6 +154,7 @@ export function CalendarView({
 
           <div className="flex items-center gap-1 rounded-lg border border-border bg-surface p-1">
             <button
+              type="button"
               onClick={() => setCurrentDate(subMonths(currentDate, 1))}
               aria-label="Mes anterior"
               className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-el hover:text-text"
@@ -158,12 +162,14 @@ export function CalendarView({
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
+              type="button"
               onClick={() => setCurrentDate(new Date())}
               className="px-2 text-xs font-medium text-text-muted transition-colors hover:text-text"
             >
               Hoy
             </button>
             <button
+              type="button"
               onClick={() => setCurrentDate(addMonths(currentDate, 1))}
               aria-label="Mes siguiente"
               className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-el hover:text-text"
@@ -191,7 +197,7 @@ export function CalendarView({
 
       <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-elev-1">
         <div className="grid grid-cols-7 border-b border-border">
-          {weekDays.map((day) => (
+          {WEEK_DAYS.map((day) => (
             <div
               key={day}
               className="px-3 py-2 text-center text-xs font-semibold text-text-tertiary"

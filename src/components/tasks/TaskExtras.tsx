@@ -122,6 +122,7 @@ export function TaskExtras({
             return (
               <button
                 key={t.id}
+                type="button"
                 onClick={() => toggleTag(t.id)}
                 className={cn(
                   "rounded-full border px-2 py-0.5 text-xs transition",

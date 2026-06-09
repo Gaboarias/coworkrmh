@@ -71,9 +71,11 @@ interface Member {
 export const AdminPanel = ({
   users,
   workspaces,
+  userWorkspaceIds,
 }: {
   users: UserRow[];
   workspaces: WsRow[];
+  userWorkspaceIds: Record<string, string[]>;
 }) => {
   const router = useRouter();
   const [tab, setTab] = useState<"users" | "workspaces">("workspaces");
@@ -89,6 +91,7 @@ export const AdminPanel = ({
         ).map(([key, label, Icon]) => (
           <button
             key={key}
+            type="button"
             onClick={() => setTab(key)}
             className={cn(
               "flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors",
@@ -113,6 +116,7 @@ export const AdminPanel = ({
         <UsersTab
           users={users}
           workspaces={workspaces}
+          userWorkspaceIds={userWorkspaceIds}
           onChange={() => router.refresh()}
         />
       )}
@@ -348,19 +352,20 @@ const WorkspacesTab = ({
             className="flex flex-wrap items-end gap-3"
           >
             <div className="min-w-[200px] flex-1">
-              <label className="mb-1.5 block text-xs font-medium text-text-muted">
+              <label htmlFor="ws-create-name" className="mb-1.5 block text-xs font-medium text-text-muted">
                 Nombre
               </label>
               <Input
+                id="ws-create-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ej. Azulejos & Colores"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-text-muted">
+              <span className="mb-1.5 block text-xs font-medium text-text-muted">
                 Color
-              </label>
+              </span>
               <div className="flex h-9 items-center">
                 <SwatchPicker
                   value={color}
@@ -391,6 +396,7 @@ const WorkspacesTab = ({
             return (
               <div key={w.id}>
                 <button
+                  type="button"
                   onClick={() => toggle(w)}
                   className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-el"
                 >
@@ -424,13 +430,13 @@ const WorkspacesTab = ({
                   <div className="space-y-3 border-t border-border bg-surface-el/40 px-4 py-4">
                     <div className="flex flex-wrap items-end gap-2 border-b border-border pb-3">
                       <div className="min-w-[180px] flex-1">
-                        <label className="mb-1.5 block text-xs font-medium text-text-muted">
+                        <label htmlFor={`ws-edit-name-${w.id}`} className="mb-1.5 block text-xs font-medium text-text-muted">
                           Nombre del entorno
                         </label>
                         <Input
+                          id={`ws-edit-name-${w.id}`}
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          aria-label="Nombre del entorno"
                         />
                       </div>
                       <div>
@@ -535,10 +541,11 @@ const WorkspacesTab = ({
                         </div>
                         <div className="flex flex-wrap items-end gap-2 pt-1">
                           <div className="min-w-[160px] flex-1">
-                            <label className="mb-1.5 block text-xs font-medium text-text-muted">
+                            <label htmlFor={`ws-create-role-${w.id}`} className="mb-1.5 block text-xs font-medium text-text-muted">
                               Crear rol custom
                             </label>
                             <Input
+                              id={`ws-create-role-${w.id}`}
                               value={newRoleName[w.id] ?? ""}
                               onChange={(e) =>
                                 setNewRoleName((p) => ({
@@ -566,11 +573,11 @@ const WorkspacesTab = ({
 
                     <div className="flex flex-wrap items-end gap-2">
                       <div className="min-w-[180px] flex-1">
-                        <label className="mb-1.5 block text-xs font-medium text-text-muted">
+                        <label htmlFor={`ws-add-user-${w.id}`} className="mb-1.5 block text-xs font-medium text-text-muted">
                           Agregar usuario
                         </label>
                         <Select
-                          aria-label="Usuario"
+                          id={`ws-add-user-${w.id}`}
                           value={addUserId}
                           onChange={(e) => setAddUserId(e.target.value)}
                         >
@@ -662,6 +669,7 @@ const WorkspacesTab = ({
                               </Select>
                             )}
                             <button
+                              type="button"
                               onClick={() => handleRemove(w.id, m.id)}
                               disabled={busy || m.role === "owner"}
                               aria-label={`Quitar a ${m.name ?? m.email}`}
@@ -737,10 +745,12 @@ const GroupRows = ({
 const UsersTab = ({
   users,
   workspaces,
+  userWorkspaceIds,
   onChange,
 }: {
   users: UserRow[];
   workspaces: WsRow[];
+  userWorkspaceIds: Record<string, string[]>;
   onChange: () => void;
 }) => {
   const [name, setName] = useState("");
@@ -935,6 +945,7 @@ const UsersTab = ({
                 userId={u.id}
                 userName={u.name ?? u.email}
                 workspaces={workspaces}
+                initialWorkspaceIds={userWorkspaceIds[u.id] ?? []}
               />
               <AdminUserPasswordActions
                 userId={u.id}

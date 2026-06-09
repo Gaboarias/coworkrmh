@@ -2,16 +2,21 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { AdminPanel } from "@/components/admin/AdminPanel";
-import { listAllUsers, listWorkspacesAdmin } from "@/lib/actions/workspaces";
+import {
+  listAllUsers,
+  listWorkspacesAdmin,
+  listAllUserWorkspaceIds,
+} from "@/lib/actions/workspaces";
 
 export default async function AdminPage() {
   const session = await auth();
   if (!session) redirect("/login");
   if ((session.user.role as string) !== "admin") redirect("/dashboard");
 
-  const [users, workspaces] = await Promise.all([
+  const [users, workspaces, userWorkspaceIds] = await Promise.all([
     listAllUsers(),
     listWorkspacesAdmin(),
+    listAllUserWorkspaceIds(),
   ]);
 
   return (
@@ -40,6 +45,7 @@ export default async function AdminPage() {
           color: w.color,
           memberCount: w.memberCount,
         }))}
+        userWorkspaceIds={userWorkspaceIds}
       />
     </div>
   );

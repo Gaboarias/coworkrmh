@@ -59,14 +59,6 @@ export const setUserWorkspacesBodySchema = z.object({
   workspaceIds: z.array(z.string().uuid()).max(100),
 });
 
-export const createUserBodySchema = z.object({
-  email: emailSchema,
-  name: z.string().trim().min(1).max(120).optional().nullable(),
-  password: passwordSchema.optional(),
-  role: z.enum(["admin", "manager", "member"]).optional(),
-  workspaceIds: z.array(z.string().uuid()).max(100).optional(),
-});
-
 // ─── Helper para devolver 400 limpio ────────────────────────────────────────
 
 import { NextResponse } from "next/server";
@@ -84,7 +76,7 @@ export async function parseBody<T extends z.ZodTypeAny>(
       response: NextResponse.json({ error: "JSON inválido" }, { status: 400 }),
     };
   }
-  const result = schema.safeParse(raw);
+  const result = z.safeParse(schema, raw);
   if (!result.success) {
     const firstIssue = result.error.issues[0];
     return {

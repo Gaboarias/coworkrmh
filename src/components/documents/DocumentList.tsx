@@ -94,6 +94,7 @@ export function DocumentList({
 
             {(canDelete || doc.uploadedBy === userId) && (
               <button
+                type="button"
                 onClick={() => handleDelete(doc)}
                 aria-label={`Eliminar ${doc.name}`}
                 className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-surface-el hover:text-danger"

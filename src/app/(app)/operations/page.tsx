@@ -20,6 +20,40 @@ import { OperationsNav } from "@/components/operations/OperationsNav";
 import { NoEntorno } from "@/components/operations/NoEntorno";
 import { formatDateCR } from "@/lib/utils/datetime";
 
+// Constante de módulo — los módulos de navegación son estáticos.
+const OPERATIONS_MODULES = [
+  {
+    href: "/operations/catalogo",
+    label: "Catálogo",
+    desc: "Productos, costos y margen",
+    icon: Package,
+  },
+  {
+    href: "/operations/cotizador",
+    label: "Cotizador",
+    desc: "Cotizaciones con IVA",
+    icon: Calculator,
+  },
+  {
+    href: "/operations/ventas",
+    label: "Ventas",
+    desc: "Registro y resumen por categoría",
+    icon: TrendingUp,
+  },
+  {
+    href: "/operations/gastos",
+    label: "Gastos",
+    desc: "Inversión, fijos y equilibrio",
+    icon: Wrench,
+  },
+  {
+    href: "/operations/equipo",
+    label: "Equipo",
+    desc: "Roles, responsabilidades, acuerdos",
+    icon: Users,
+  },
+] as const;
+
 /**
  * Operations dashboard (Edition 04).
  *
@@ -72,39 +106,6 @@ export default async function OperationsDashboard() {
     },
   ];
 
-  const modules = [
-    {
-      href: "/operations/catalogo",
-      label: "Catálogo",
-      desc: "Productos, costos y margen",
-      icon: Package,
-    },
-    {
-      href: "/operations/cotizador",
-      label: "Cotizador",
-      desc: "Cotizaciones con IVA",
-      icon: Calculator,
-    },
-    {
-      href: "/operations/ventas",
-      label: "Ventas",
-      desc: "Registro y resumen por categoría",
-      icon: TrendingUp,
-    },
-    {
-      href: "/operations/gastos",
-      label: "Gastos",
-      desc: "Inversión, fijos y equilibrio",
-      icon: Wrench,
-    },
-    {
-      href: "/operations/equipo",
-      label: "Equipo",
-      desc: "Roles, responsabilidades, acuerdos",
-      icon: Users,
-    },
-  ];
-
   // MM/YYYY en CR (server-side Vercel = UTC; sin TZ podía mostrar el mes
   // siguiente desde las 6pm CR del último día del mes).
   const monthShort = formatDateCR(new Date(), { month: "2-digit", year: "numeric" });
@@ -118,7 +119,7 @@ export default async function OperationsDashboard() {
         subtitle="del estudio."
         issueLines={[
           `Ed. 04 · ${monthShort}`,
-          `${kpis.length} KPIs · ${modules.length} módulos`,
+          `${kpis.length} KPIs · ${OPERATIONS_MODULES.length} módulos`,
         ]}
       />
 
@@ -161,9 +162,9 @@ export default async function OperationsDashboard() {
 
       {/* Módulos — lista (NO card grid genérico) */}
       <section className="mt-12">
-        <HairlineRule label="Módulos" count={`${modules.length}`} />
+        <HairlineRule label="Módulos" count={`${OPERATIONS_MODULES.length}`} />
         <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {modules.map((m) => (
+          {OPERATIONS_MODULES.map((m) => (
             <li key={m.href}>
               <Link
                 href={m.href}

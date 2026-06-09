@@ -16,6 +16,64 @@ import {
   type ExpensesResult,
 } from "@/lib/actions/erp";
 
+// ── Subcomponente de sección ──────────────────────────────────────────────────
+// Definido en scope de módulo para que React mantenga identidad estable entre
+// renders del padre y no fuerce un unmount/remount en cada actualización.
+function ExpensesSection({
+  title,
+  total,
+  rows,
+  canManage,
+  onRemove,
+}: {
+  title: string;
+  total: number;
+  rows: ExpensesResult["investment"];
+  canManage: boolean;
+  onRemove: (id: string) => void;
+}) {
+  return (
+    <Card>
+      <CardContent>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-text">{title}</h3>
+          <span className="text-sm font-semibold text-text">
+            {formatMoney(total)}
+          </span>
+        </div>
+        {rows.length === 0 ? (
+          <p className="text-sm text-text-muted">Sin registros.</p>
+        ) : (
+          <div className="divide-y divide-border">
+            {rows.map((e) => (
+              <div key={e.id} className="flex items-center gap-3 py-2 text-sm">
+                <span className="flex-1 text-text">{e.concept}</span>
+                <span className="text-xs text-text-tertiary">
+                  {e.category ?? "—"}
+                  {e.priority ? ` · ${e.priority}` : ""}
+                </span>
+                <span className="text-text">{formatMoney(e.amount)}</span>
+                {canManage && (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(e.id)}
+                    aria-label="Eliminar"
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Componente principal ──────────────────────────────────────────────────────
+
 export const ExpensesView = ({
   data,
   canManage = true,
@@ -84,52 +142,6 @@ export const ExpensesView = ({
     }
   };
 
-  const Section = ({
-    title,
-    total,
-    rows,
-  }: {
-    title: string;
-    total: number;
-    rows: ExpensesResult["investment"];
-  }) => (
-    <Card>
-      <CardContent>
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-text">{title}</h3>
-          <span className="text-sm font-semibold text-text">
-            {formatMoney(total)}
-          </span>
-        </div>
-        {rows.length === 0 ? (
-          <p className="text-sm text-text-muted">Sin registros.</p>
-        ) : (
-          <div className="divide-y divide-border">
-            {rows.map((e) => (
-              <div key={e.id} className="flex items-center gap-3 py-2 text-sm">
-                <span className="flex-1 text-text">{e.concept}</span>
-                <span className="text-xs text-text-tertiary">
-                  {e.category ?? "—"}
-                  {e.priority ? ` · ${e.priority}` : ""}
-                </span>
-                <span className="text-text">{formatMoney(e.amount)}</span>
-                {canManage && (
-                  <button
-                    onClick={() => remove(e.id)}
-                    aria-label="Eliminar"
-                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-
   return (
     <div className="space-y-5">
       {canManage && (
@@ -190,15 +202,19 @@ export const ExpensesView = ({
       </Card>
       )}
 
-      <Section
+      <ExpensesSection
         title="Inversión inicial"
         total={data.totalInvestment}
         rows={data.investment}
+        canManage={canManage}
+        onRemove={remove}
       />
-      <Section
+      <ExpensesSection
         title="Gastos fijos mensuales"
         total={data.totalFixed}
         rows={data.fixed}
+        canManage={canManage}
+        onRemove={remove}
       />
 
       <Card>
@@ -208,10 +224,11 @@ export const ExpensesView = ({
           </h3>
           <div className="flex flex-wrap items-end gap-3">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-text-muted">
+              <label htmlFor="expenses-margin" className="mb-1.5 block text-xs font-medium text-text-muted">
                 Margen promedio (0–1)
               </label>
               <Input
+                id="expenses-margin"
                 type="number"
                 step="0.01"
                 min="0"

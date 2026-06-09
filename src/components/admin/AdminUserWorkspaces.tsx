@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Layers, Check } from "lucide-react";
 
@@ -17,6 +17,8 @@ interface Props {
   userId: string;
   userName: string;
   workspaces: WorkspaceOption[];
+  /** IDs de los workspaces a los que el user ya pertenece — precargados desde el servidor. */
+  initialWorkspaceIds: string[];
 }
 
 /**
@@ -31,7 +33,12 @@ interface Props {
  * por este modal (server lo skipea). Para transferir ownership hay que
  * usar la tab Entornos.
  */
-export function AdminUserWorkspaces({ userId, userName, workspaces }: Props) {
+export function AdminUserWorkspaces({
+  userId,
+  userName,
+  workspaces,
+  initialWorkspaceIds,
+}: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -50,6 +57,7 @@ export function AdminUserWorkspaces({ userId, userName, workspaces }: Props) {
           userId={userId}
           userName={userName}
           workspaces={workspaces}
+          initialWorkspaceIds={initialWorkspaceIds}
           onClose={() => setOpen(false)}
         />
       )}
@@ -61,45 +69,20 @@ function WorkspacesModal({
   userId,
   userName,
   workspaces,
+  initialWorkspaceIds,
   onClose,
 }: {
   userId: string;
   userName: string;
   workspaces: WorkspaceOption[];
+  initialWorkspaceIds: string[];
   onClose: () => void;
 }) {
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [initial, setInitial] = useState<Set<string>>(new Set());
-
-  // Cargar memberships actuales del user al montar.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/users/${userId}/workspaces`);
-        const data = await res.json();
-        if (cancelled) return;
-        if (!res.ok) {
-          toast.error(data.error ?? "No se pudo cargar entornos del usuario");
-          return;
-        }
-        const ids = new Set<string>(
-          (data.workspaces ?? []).map((w: { workspaceId: string }) => w.workspaceId)
-        );
-        setSelected(ids);
-        setInitial(ids);
-      } catch (err) {
-        if (!cancelled) toast.error((err as Error).message);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(initialWorkspaceIds)
+  );
+  const initial = new Set(initialWorkspaceIds);
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -162,19 +145,14 @@ function WorkspacesModal({
           <Button
             onClick={handleSave}
             loading={saving}
-            disabled={!hasChanges || loading}
+            disabled={!hasChanges}
           >
             Guardar cambios
           </Button>
         </>
       }
     >
-      {loading ? (
-        <p className="py-4 text-sm italic text-text-tertiary">
-          Cargando entornos del usuario…
-        </p>
-      ) : (
-        <div className="space-y-3">
+      <div className="space-y-3">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -234,7 +212,6 @@ function WorkspacesModal({
             </ul>
           )}
         </div>
-      )}
     </Modal>
   );
 }

@@ -35,8 +35,14 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900,300i,400i,500i,700i,900i&display=swap"
         />
-        {/* Theme inicial sincronizado para evitar flash. next-themes lo
-            hidrata después con su propio script. */}
+        {/*
+          Theme inicial sincronizado para evitar flash (FOUC). next-themes
+          hidrata después con su propio script.
+          dangerouslySetInnerHTML es intencional: el string es un literal
+          hardcodeado — no contiene ni interpola datos de usuario, por lo
+          que no hay riesgo de XSS. Patrón estándar para inline scripts de
+          inicialización en Next.js App Router.
+        */}
         <script
           dangerouslySetInnerHTML={{
             __html: `try{var t=localStorage.getItem('pistachio-theme')||'light';if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}`,

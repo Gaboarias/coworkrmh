@@ -227,6 +227,7 @@ export const SalesView = ({
                 </div>
                 {canManage && (
                   <button
+                    type="button"
                     onClick={() => remove(r.id)}
                     aria-label="Eliminar venta"
                     className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"

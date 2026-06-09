@@ -127,10 +127,18 @@ export function TaskDetail({
     };
   }, [onClose]);
 
-  // Cargar bitácora al abrir.
+  // Inline adjustment — resetear loading/comments en el mismo render donde
+  // cambia task.id, evitando el flash de comentarios stale antes del fetch.
+  const [prevTaskId, setPrevTaskId] = useState(task.id);
+  if (task.id !== prevTaskId) {
+    setPrevTaskId(task.id);
+    setComments([]);
+    setCommentsLoading(true);
+  }
+
+  // Cargar bitácora cuando task.id cambia.
   useEffect(() => {
     let alive = true;
-    setCommentsLoading(true);
     listTaskComments(task.id)
       .then((c) => {
         if (alive) setComments(c);
@@ -255,6 +263,7 @@ export function TaskDetail({
             )}
           </div>
           <button
+            type="button"
             onClick={onClose}
             aria-label="Cerrar detalle"
             className="flex-shrink-0 rounded-md p-2 text-ink-faint transition-colors hover:bg-surface-el hover:text-ink"
@@ -480,6 +489,7 @@ export function TaskDetail({
                     </time>
                     {c.canDelete && (
                       <button
+                        type="button"
                         onClick={() => handleDeleteComment(c.id)}
                         aria-label="Borrar nota (5 min window)"
                         className="ml-auto rounded p-1 text-ink-faint transition-colors hover:bg-urgent/10 hover:text-urgent"

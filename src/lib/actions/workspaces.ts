@@ -72,6 +72,29 @@ export const listAllUsers = async () => {
   return rows;
 };
 
+/**
+ * Mapa userId → workspaceIds[] para todos los miembros activos.
+ * Usado por el admin panel para pre-cargar membresías y evitar un
+ * fetch por usuario en el modal de AdminUserWorkspaces (B4 fix).
+ */
+export const listAllUserWorkspaceIds = async (): Promise<
+  Record<string, string[]>
+> => {
+  await requireAdmin();
+  const rows = await db
+    .select({
+      userId: workspaceMembers.userId,
+      workspaceId: workspaceMembers.workspaceId,
+    })
+    .from(workspaceMembers);
+  const map: Record<string, string[]> = {};
+  for (const row of rows) {
+    if (!map[row.userId]) map[row.userId] = [];
+    map[row.userId].push(row.workspaceId);
+  }
+  return map;
+};
+
 export const listWorkspaceMembers = async (workspaceId: string) => {
   await requireWorkspaceManage(workspaceId);
   const rows = await db
@@ -239,16 +262,19 @@ export const addWorkspaceMember = async (
 
   // Notification trigger: nuevo miembro agregado al entorno (no self).
   if (isNewMember && userId !== actor.userId) {
-    const [ws] = await db
-      .select({ name: workspaces.name })
-      .from(workspaces)
-      .where(eq(workspaces.id, workspaceId))
-      .limit(1);
-    const [actorRow] = await db
-      .select({ name: users.name, email: users.email })
-      .from(users)
-      .where(eq(users.id, actor.userId))
-      .limit(1);
+    // Nombre del workspace y del actor son independientes — paralelizar.
+    const [[ws], [actorRow]] = await Promise.all([
+      db
+        .select({ name: workspaces.name })
+        .from(workspaces)
+        .where(eq(workspaces.id, workspaceId))
+        .limit(1),
+      db
+        .select({ name: users.name, email: users.email })
+        .from(users)
+        .where(eq(users.id, actor.userId))
+        .limit(1),
+    ]);
     await createNotification({
       userId,
       type: "workspace_member_added",
@@ -302,10 +328,10 @@ export const setMemberRole = async (
   userId: string,
   role: WorkspaceRole
 ) => {
-  await requireWorkspaceManage(workspaceId);
   if (role === "owner") {
     throw new Error("No se puede asignar el rol \"owner\"");
   }
+  await requireWorkspaceManage(workspaceId);
   // El rol debe existir: built-in o custom registrado en la matriz.
   const [wsRow] = await db
     .select({ rp: workspaces.rolePermissions })
@@ -439,10 +465,10 @@ export const deleteCustomWorkspaceRole = async (
   workspaceId: string,
   roleKey: string
 ) => {
-  await requireWorkspaceManage(workspaceId);
   if (BUILTIN_ROLE_KEYS.includes(roleKey as never) || roleKey === "owner") {
     throw new Error("No se puede eliminar un rol built-in");
   }
+  await requireWorkspaceManage(workspaceId);
   const [row] = await db
     .select({ rp: workspaces.rolePermissions })
     .from(workspaces)

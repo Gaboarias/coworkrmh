@@ -90,6 +90,7 @@ export function ProjectTasksView({
 
   const newButton = canEdit ? (
     <button
+      type="button"
       onClick={() => setShowCreateModal(true)}
       className="inline-flex items-center gap-2 rounded-md bg-ink px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft"
     >
@@ -134,6 +135,7 @@ export function ProjectTasksView({
           ).map((s) => (
             <button
               key={s}
+              type="button"
               onClick={() => setStatusFilter(s)}
               className={cn(
                 "rounded-md px-2.5 py-1 font-mono text-[12px] uppercase tracking-[0.14em] transition-colors duration-150",

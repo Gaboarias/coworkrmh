@@ -34,31 +34,59 @@ export default async function ProjectPage({ params }: PageProps) {
     `/projects/${params.projectId}`
   );
 
-  const taskRows = await db
-    .select({
-      id: tasks.id,
-      projectId: tasks.projectId,
-      parentTaskId: tasks.parentTaskId,
-      title: tasks.title,
-      description: tasks.description,
-      status: tasks.status,
-      priority: tasks.priority,
-      assigneeId: tasks.assigneeId,
-      dueDate: tasks.dueDate,
-      completedAt: tasks.completedAt,
-      position: tasks.position,
-      createdBy: tasks.createdBy,
-      createdAt: tasks.createdAt,
-      assigneeName: users.name,
-      assigneeEmail: users.email,
-      assigneeAvatarUrl: users.avatarUrl,
-    })
-    .from(tasks)
-    .leftJoin(users, eq(tasks.assigneeId, users.id))
-    .where(
-      and(eq(tasks.projectId, params.projectId), isNull(tasks.parentTaskId))
-    )
-    .orderBy(asc(tasks.position));
+  // Las 3 queries son independientes entre sí — paralelizar.
+  // Asignables = UNION de (workspaceMembers) ∪ (projectMembers). El union
+  // resuelve:
+  //   1. Workspace members nuevos aparecen sin agregarlos explícitamente.
+  //   2. DATA LEGACY: users agregados directo a projectMembers (sin pasar
+  //      por workspace) — ej. Jorge Castillo en Midnight Trouble.
+  const [taskRows, wsMemberRows, pjMemberRows] = await Promise.all([
+    db
+      .select({
+        id: tasks.id,
+        projectId: tasks.projectId,
+        parentTaskId: tasks.parentTaskId,
+        title: tasks.title,
+        description: tasks.description,
+        status: tasks.status,
+        priority: tasks.priority,
+        assigneeId: tasks.assigneeId,
+        dueDate: tasks.dueDate,
+        completedAt: tasks.completedAt,
+        position: tasks.position,
+        createdBy: tasks.createdBy,
+        createdAt: tasks.createdAt,
+        assigneeName: users.name,
+        assigneeEmail: users.email,
+        assigneeAvatarUrl: users.avatarUrl,
+      })
+      .from(tasks)
+      .leftJoin(users, eq(tasks.assigneeId, users.id))
+      .where(
+        and(eq(tasks.projectId, params.projectId), isNull(tasks.parentTaskId))
+      )
+      .orderBy(asc(tasks.position)),
+    db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(workspaceMembers)
+      .innerJoin(users, eq(workspaceMembers.userId, users.id))
+      .where(eq(workspaceMembers.workspaceId, project.workspaceId)),
+    db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(projectMembers)
+      .innerJoin(users, eq(projectMembers.userId, users.id))
+      .where(eq(projectMembers.projectId, params.projectId)),
+  ]);
 
   const tasksData = taskRows.map((t) => ({
     id: t.id,
@@ -83,36 +111,6 @@ export default async function ProjectPage({ params }: PageProps) {
         }
       : null,
   }));
-
-  // Asignables = UNION de (workspaceMembers del workspace del proyecto)
-  // ∪ (projectMembers del proyecto). El union resuelve 2 casos:
-  //   1. Workspace members nuevos aparecen sin agregarlos al proyecto
-  //      explícitamente (auto-magic). Si los asignás, ensureAssigneeIs
-  //      ProjectMember los materializa en projectMembers.
-  //   2. DATA LEGACY: users que fueron agregados directo a projectMembers
-  //      (sin pasar por workspace) — ej. Jorge Castillo en Midnight Trouble.
-  //      Si quedan solo en projectMembers, igual aparecen en el dropdown.
-  const wsMemberRows = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      avatarUrl: users.avatarUrl,
-    })
-    .from(workspaceMembers)
-    .innerJoin(users, eq(workspaceMembers.userId, users.id))
-    .where(eq(workspaceMembers.workspaceId, project.workspaceId));
-
-  const pjMemberRows = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      avatarUrl: users.avatarUrl,
-    })
-    .from(projectMembers)
-    .innerJoin(users, eq(projectMembers.userId, users.id))
-    .where(eq(projectMembers.projectId, params.projectId));
 
   // Dedup por user.id, priorizando wsMember (mismo id → mismo user, da igual).
   const memberMap = new Map<

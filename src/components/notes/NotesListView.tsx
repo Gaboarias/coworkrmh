@@ -121,6 +121,7 @@ export function NotesListView({
                     {note.updatedAt && formatDateCR(note.updatedAt)}
                   </span>
                   <button
+                    type="button"
                     onClick={() => handleDelete(note.id)}
                     aria-label={`Eliminar nota ${note.title}`}
                     className="hidden rounded-md p-1 text-ink-faint transition-colors hover:bg-urgent-soft hover:text-urgent group-hover:block"

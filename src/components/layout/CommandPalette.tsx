@@ -53,10 +53,13 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
-  // Reset query cuando se cierra (siguiente apertura empieza limpio)
-  useEffect(() => {
+  // Inline adjustment — evita el ciclo extra de render que causaría un useEffect.
+  // Cuando open pasa de true→false, reseteamos query en el mismo commit.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (!open) setQuery("");
-  }, [open]);
+  }
 
   // Esc para cerrar
   useEffect(() => {

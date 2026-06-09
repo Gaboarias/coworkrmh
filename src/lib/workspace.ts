@@ -15,7 +15,6 @@ export const WS_COOKIE = "ws";
 // roles custom definidos en workspaces.role_permissions. Owner es especial
 // (bypass total) y nunca se almacena en la matriz.
 export type WorkspaceRole = string;
-export const OWNER_ROLE: WorkspaceRole = "owner";
 
 export interface Workspace {
   id: string;
@@ -81,7 +80,7 @@ export const canAccessWorkspace = async (
  * Rol del usuario actual en un entorno. El admin global se trata como `owner`
  * (bypass total). `null` si no es miembro.
  */
-export const getWorkspaceRole = async (
+const getWorkspaceRole = async (
   workspaceId: string
 ): Promise<{
   userId: string;
@@ -215,15 +214,6 @@ export const getWorkspacePermissions = async (
     isGlobalAdmin,
     permissions: new Set(keys),
   };
-};
-
-/** True si el usuario actual tiene una capacidad concreta en el entorno. */
-export const workspaceCan = async (
-  workspaceId: string,
-  key: string
-): Promise<boolean> => {
-  const { permissions } = await getWorkspacePermissions(workspaceId);
-  return permissions.has(key);
 };
 
 /**

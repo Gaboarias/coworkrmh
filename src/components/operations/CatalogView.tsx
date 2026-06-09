@@ -237,6 +237,7 @@ export const CatalogView = ({
                   {canManage && (
                     <>
                       <button
+                        type="button"
                         onClick={() => startEdit(p)}
                         aria-label={`Editar ${p.name}`}
                         className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-text"
@@ -244,6 +245,7 @@ export const CatalogView = ({
                         <Pencil className="h-4 w-4" />
                       </button>
                       <button
+                        type="button"
                         onClick={() => remove(p.id)}
                         aria-label={`Eliminar ${p.name}`}
                         className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
