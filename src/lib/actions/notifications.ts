@@ -147,6 +147,58 @@ export async function listMyNotifications(): Promise<{
   };
 }
 
+/**
+ * Lista completa de notificaciones del usuario (para la página /notifications).
+ * Soporta paginación offset-limit; incluye total de registros.
+ */
+export async function listAllMyNotifications(
+  limit = 100,
+  offset = 0
+): Promise<{
+  notifications: NotificationRow[];
+  unreadCount: number;
+  total: number;
+}> {
+  const session = await auth();
+  if (!session?.user) return { notifications: [], unreadCount: 0, total: 0 };
+
+  const [rows, [{ unread }], [{ total }]] = await Promise.all([
+    db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, session.user.id))
+      .orderBy(desc(notifications.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ unread: sql<number>`count(*)::int` })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, session.user.id),
+          isNull(notifications.readAt)
+        )
+      ),
+    db
+      .select({ total: sql<number>`count(*)::int` })
+      .from(notifications)
+      .where(eq(notifications.userId, session.user.id)),
+  ]);
+
+  return {
+    notifications: rows.map((r) => ({
+      id: r.id,
+      type: r.type as NotificationType,
+      payload: r.payload,
+      href: r.href,
+      readAt: r.readAt?.toISOString() ?? null,
+      createdAt: r.createdAt.toISOString(),
+    })),
+    unreadCount: unread,
+    total,
+  };
+}
+
 /** Cuenta unread (endpoint barato para polling). */
 export async function getUnreadCount(): Promise<number> {
   const session = await auth();

@@ -12,6 +12,7 @@ import {
   Briefcase,
   BarChart3,
   Shield,
+  Building2,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
@@ -58,6 +59,7 @@ const sections: NavSection[] = [
       { href: "/my-tasks", label: "Mis tareas", icon: CheckSquare },
       { href: "/calendar", label: "Calendario", icon: Calendar },
       { href: "/operations", label: "Operaciones", icon: Briefcase },
+      { href: "/clients", label: "Clientes", icon: Building2, adminOnly: true },
     ],
   },
   {

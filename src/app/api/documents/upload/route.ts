@@ -1,121 +1,88 @@
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob";
-import { db } from "@/lib/db";
-import { documents } from "@/lib/db/schema";
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { requireProjectAccess } from "@/lib/workspace";
-import { revalidatePath } from "next/cache";
 
 /**
- * Upload server-side via @vercel/blob `put()`. Esta API funciona con el
- * modelo OIDC nuevo de Vercel Blob (la función obtiene credenciales con
- * su identidad runtime; no requiere BLOB_READ_WRITE_TOKEN estático).
+ * Upload client-side via @vercel/blob `handleUpload()`.
  *
- * Límite: ~4 MB por archivo (cap de body size de Vercel Functions).
- * Para archivos más grandes habría que usar client uploads, que requieren
- * un token estático que Vercel ya no genera con stores nuevos OIDC-only.
+ * Este patrón elimina el límite de 4 MB (cap de body de Vercel Functions)
+ * porque el browser sube el archivo directamente al CDN de Vercel Blob —
+ * la función solo genera el token de autorización y lo devuelve.
+ *
+ * Límite configurado: 500 MB por archivo.
+ *
+ * Flujo:
+ *  1. Cliente POST { type: "blob.generate-client-token", payload: { pathname, callbackUrl, clientPayload } }
+ *  2. onBeforeGenerateToken: valida auth + membresía → retorna token
+ *  3. Browser PUT el archivo directo a Vercel Blob CDN con el token
+ *  4. Cliente POST { type: "blob.upload-completed", ... } (auto, no-op acá)
+ *  5. Cliente llama a /api/documents/register para guardar el record en DB
+ *
+ * Nota: BLOB_READ_WRITE_TOKEN sigue inyectándose en runtime incluso con
+ * stores OIDC — handleUpload() lo lee automáticamente del env.
  */
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const MAX_BYTES = 4 * 1024 * 1024; // 4 MB (Vercel Function body cap)
-
 /**
- * Allowlist de MIME types — bloquea ejecutables, scripts, HTML que podrían
- * usarse para XSS si se sirvieran desde el mismo origen (no es el caso —
- * Vercel Blob sirve desde *.public.blob.vercel-storage.com — pero queda como
- * defensa en profundidad).
- *
- * Si necesitás soportar un tipo nuevo, agregalo acá. Patrón `category/*`
- * para familias enteras (imágenes, video, audio).
+ * Lista de MIME types para el campo allowedContentTypes de handleUpload.
+ * Vercel Blob rechaza uploads con tipos fuera de esta lista.
+ * Si necesitás soportar un tipo nuevo, agregalo acá.
  */
-const ALLOWED_MIME_PATTERNS: RegExp[] = [
-  /^image\//, // png, jpg, gif, webp, svg, etc.
-  /^video\//, // mp4, mov, webm, etc.
-  /^audio\//, // mp3, wav, ogg, etc.
-  /^application\/pdf$/,
-  /^application\/zip$/,
-  /^application\/x-zip-compressed$/,
-  /^application\/vnd\.openxmlformats-officedocument\./, // docx, xlsx, pptx
-  /^application\/msword$/,
-  /^application\/vnd\.ms-excel$/,
-  /^application\/vnd\.ms-powerpoint$/,
-  /^text\/plain$/,
-  /^text\/csv$/,
-  /^text\/markdown$/,
-  /^application\/json$/,
+// Lista plana para el campo allowedContentTypes de handleUpload.
+// "*/*" no es seguro — preferimos listar tipos explícitamente.
+const ALLOWED_CONTENT_TYPES: string[] = [
+  "image/*",
+  "video/*",
+  "audio/*",
+  "application/pdf",
+  "application/zip",
+  "application/x-zip-compressed",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/msword",
+  "application/vnd.ms-excel",
+  "application/vnd.ms-powerpoint",
+  "text/plain",
+  "text/csv",
+  "text/markdown",
+  "application/json",
 ];
-
-function isMimeAllowed(mime: string): boolean {
-  if (!mime) return false;
-  return ALLOWED_MIME_PATTERNS.some((re) => re.test(mime));
-}
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    const projectId = formData.get("projectId") as string | null;
-    const taskId = (formData.get("taskId") as string) || null;
+    const body = (await request.json()) as HandleUploadBody;
 
-    if (!file || !projectId) {
-      return NextResponse.json(
-        { error: "Faltan parámetros (file y projectId son obligatorios)" },
-        { status: 400 }
-      );
-    }
-    if (file.size > MAX_BYTES) {
-      return NextResponse.json(
-        {
-          error: `El archivo excede el límite de 4 MB (${Math.round(
-            file.size / 1024 / 1024
-          )} MB).`,
-        },
-        { status: 413 }
-      );
-    }
-    if (!isMimeAllowed(file.type)) {
-      return NextResponse.json(
-        {
-          error: `Tipo de archivo no permitido (${file.type || "desconocido"}).`,
-        },
-        { status: 415 }
-      );
-    }
+    const jsonResponse = await handleUpload({
+      body,
+      request,
+      onBeforeGenerateToken: async (pathname, clientPayload) => {
+        // Validar auth + membresía antes de generar el token de upload.
+        const { projectId } = JSON.parse(clientPayload || "{}") as {
+          projectId?: string;
+        };
+        if (!projectId) throw new Error("projectId requerido en clientPayload");
+        await requireProjectAccess(projectId);
 
-    // Verifica auth + membresía del entorno del proyecto.
-    const { userId } = await requireProjectAccess(projectId);
-
-    // Path única para evitar colisiones; el nombre original queda en DB.
-    const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
-    const safePath = `${projectId}/${Date.now()}-${Math.random()
-      .toString(36)
-      .slice(2)}.${ext}`;
-
-    const blob = await put(safePath, file, {
-      access: "public",
-      contentType: file.type || "application/octet-stream",
+        return {
+          allowedContentTypes: ALLOWED_CONTENT_TYPES,
+          maximumSizeInBytes: 500 * 1024 * 1024, // 500 MB
+          tokenPayload: clientPayload ?? "",
+        };
+      },
+      onUploadCompleted: async () => {
+        // no-op: el cliente guarda el record en DB vía /api/documents/register
+        // después de que upload() resuelve. Así funciona en local dev (sin túnel).
+      },
     });
 
-    const [doc] = await db
-      .insert(documents)
-      .values({
-        projectId,
-        taskId,
-        name: file.name,
-        blobUrl: blob.url,
-        mimeType: file.type || "application/octet-stream",
-        sizeBytes: file.size,
-        uploadedBy: userId,
-      })
-      .returning();
-
-    revalidatePath(`/projects/${projectId}/documents`);
-    return NextResponse.json({ document: doc });
+    return NextResponse.json(jsonResponse);
   } catch (err) {
     const e = err as Error;
     console.error(`UPL_FAIL: ${e.message?.slice(0, 100)}`);
     return NextResponse.json(
-      { error: e.message || "Error al subir el archivo" },
+      { error: e.message || "Error al procesar el upload" },
       { status: 400 }
     );
   }

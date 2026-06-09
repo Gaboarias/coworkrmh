@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Bell, Check, CheckCheck } from "lucide-react";
+import { Bell, Check, CheckCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -256,6 +256,18 @@ export function NotificationsBell() {
                 })}
               </ul>
             )}
+          </div>
+
+          {/* Footer — link a la página completa */}
+          <div className="border-t border-border px-4 py-2.5">
+            <Link
+              href="/notifications"
+              onClick={() => setOpen(false)}
+              className="inline-flex items-center gap-1 text-xs text-text-muted transition-colors hover:text-text"
+            >
+              Ver todas
+              <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
         </div>
       )}

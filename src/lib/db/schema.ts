@@ -413,6 +413,9 @@ export const clients = pgTable("clients", {
   address: text("address"),
   notes: text("notes"),
   status: clientStatusEnum("status").default("active").notNull(),
+  // Token UUID para acceso al portal del cliente (link secreto, sin cuenta).
+  // null = portal no activado. Se genera bajo demanda desde el admin.
+  portalToken: uuid("portal_token").unique(),
   createdBy: uuid("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -449,6 +452,30 @@ export const clientProjects = pgTable("client_projects", {
   clientId: uuid("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
   projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
 });
+
+/**
+ * Reportes entregables para clientes.
+ * Distintos de los /reports de analytics (KPIs internos).
+ * Se crean dentro de un proyecto, se publican para que el cliente los vea en su portal.
+ */
+export const clientReports = pgTable("client_reports", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  fileUrl: text("file_url"),   // URL Vercel Blob — nullable si es solo texto
+  mimeType: text("mime_type"),
+  sizeBytes: integer("size_bytes"),
+  reportDate: date("report_date"),
+  isPublished: boolean("is_published").default(false).notNull(),
+  createdBy: uuid("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (t) => ({
+  projectIdx: index("client_reports_project_idx").on(t.projectId),
+  clientIdx: index("client_reports_client_idx").on(t.clientId),
+}));
 
 // ─── Relations ────────────────────────────────────────────────────────────────
 

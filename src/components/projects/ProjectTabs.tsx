@@ -11,6 +11,7 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
     { href: `/projects/${projectId}`, label: "Tareas", exact: true },
     { href: `/projects/${projectId}/documents`, label: "Documentos" },
     { href: `/projects/${projectId}/notes`, label: "Notas" },
+    { href: `/projects/${projectId}/reports`, label: "Reportes" },
     { href: `/projects/${projectId}/changelog`, label: "Historial" },
     { href: `/projects/${projectId}/settings`, label: "Config." },
   ];

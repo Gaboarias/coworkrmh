@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
+import { upload } from "@vercel/blob/client";
 import { Upload, File, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,7 +19,8 @@ interface UploadingFile {
   error?: string;
 }
 
-const MAX_BYTES = 4 * 1024 * 1024; // 4 MB (Vercel Function body cap)
+// 500 MB — límite de Vercel Blob client upload.
+const MAX_BYTES = 500 * 1024 * 1024;
 
 export function FileUploadDropzone({
   projectId,
@@ -35,44 +37,43 @@ export function FileUploadDropzone({
       ]);
 
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("projectId", projectId);
-        if (taskId) formData.append("taskId", taskId);
+        // 1. Upload directo al CDN de Vercel Blob.
+        //    La ruta /api/documents/upload valida auth + membresía y genera el token.
+        const blob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/documents/upload",
+          clientPayload: JSON.stringify({ projectId, taskId: taskId ?? null }),
+          onUploadProgress: ({ percentage }) => {
+            setUploadingFiles((prev) =>
+              prev.map((f) =>
+                f.file === file ? { ...f, progress: percentage } : f
+              )
+            );
+          },
+        });
 
-        // XHR para reportar progreso (fetch no expone upload progress).
-        const result = await new Promise<{ ok: boolean; body: string }>(
-          (resolve) => {
-            const xhr = new XMLHttpRequest();
-            xhr.upload.onprogress = (e) => {
-              if (e.lengthComputable) {
-                const progress = Math.round((e.loaded / e.total) * 100);
-                setUploadingFiles((prev) =>
-                  prev.map((f) =>
-                    f.file === file ? { ...f, progress } : f
-                  )
-                );
-              }
-            };
-            xhr.onload = () =>
-              resolve({
-                ok: xhr.status >= 200 && xhr.status < 300,
-                body: xhr.responseText,
-              });
-            xhr.onerror = () =>
-              resolve({ ok: false, body: '{"error":"Error de red"}' });
-            xhr.open("POST", "/api/documents/upload");
-            xhr.send(formData);
-          }
-        );
+        // 2. Registrar el documento en DB vía endpoint dedicado.
+        //    Separado del upload para compatibilidad con local dev (sin túnel).
+        const res = await fetch("/api/documents/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            blobUrl: blob.url,
+            projectId,
+            taskId: taskId ?? null,
+            name: file.name,
+            mimeType: file.type || "application/octet-stream",
+            sizeBytes: file.size,
+          }),
+        });
 
-        if (!result.ok) {
-          let msg = "Error al subir";
+        if (!res.ok) {
+          let msg = "Error al registrar el documento";
           try {
-            msg = JSON.parse(result.body).error ?? msg;
+            const data = (await res.json()) as { error?: string };
+            msg = data.error ?? msg;
           } catch {
-            // body no es JSON; usar texto plano (truncado)
-            msg = result.body.slice(0, 150) || msg;
+            // respuesta no JSON
           }
           throw new Error(msg);
         }
@@ -133,7 +134,7 @@ export function FileUploadDropzone({
         <p className="text-sm font-medium text-text">
           {isDragActive ? "Suelta aquí" : "Arrastra archivos o haz clic"}
         </p>
-        <p className="mt-1 text-xs text-text-muted">Máximo 4 MB por archivo</p>
+        <p className="mt-1 text-xs text-text-muted">Máximo 500 MB por archivo</p>
       </div>
 
       {uploadingFiles.length > 0 && (

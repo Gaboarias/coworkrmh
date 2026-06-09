@@ -162,3 +162,49 @@ export async function sendProjectMemberAddedEmail(params: {
     `),
   });
 }
+
+/**
+ * Email de invitación al portal del cliente.
+ * Incluye el link directo (token-based) al portal.
+ */
+export async function sendPortalInviteEmail(params: {
+  to: string;
+  companyName: string;
+  portalUrl: string;
+}) {
+  const resend = getResend();
+  const { to, companyName, portalUrl } = params;
+
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `Acceso a tu portal — ${companyName}`,
+    text: [
+      `Hola,`,
+      "",
+      `Te compartimos acceso al portal de ${companyName} en Pistachio.`,
+      `Desde ahí podés ver el avance de tus proyectos, reportes y facturas.`,
+      "",
+      `Accedé acá: ${portalUrl}`,
+      "",
+      "— Pistachio · RMH Studio",
+    ].join("\n"),
+    html: htmlWrap(`
+      <h1 style="font-size:20px;font-weight:700;margin:0 0 12px;letter-spacing:-0.02em">
+        Tu portal está listo
+      </h1>
+      <p style="font-size:14px;line-height:1.6;color:#444;margin:0 0 24px">
+        Hola, te compartimos acceso al portal de <strong>${companyName}</strong>.
+        Desde acá podés ver el avance de tus proyectos, descargar reportes y revisar el estado de tus facturas.
+      </p>
+      <a href="${portalUrl}"
+         style="display:inline-block;background:#6B5FE4;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px">
+        Acceder al portal
+      </a>
+      <p style="font-size:12px;color:#9090a8;margin:20px 0 0">
+        Este link es personal y no requiere contraseña.<br>
+        Si tenés alguna consulta, respondé a este correo.
+      </p>
+    `),
+  });
+}
