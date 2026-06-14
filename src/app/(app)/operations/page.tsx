@@ -7,12 +7,10 @@ import {
   Users,
 } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/workspace";
-import {
-  listProducts,
-  listSales,
-  listExpenses,
-  listQuotes,
-} from "@/lib/actions/erp";
+import { listProducts } from "@/lib/actions/erpProducts";
+import { listSales } from "@/lib/actions/erpSales";
+import { listExpenses } from "@/lib/actions/erpExpenses";
+import { listQuotes } from "@/lib/actions/erpQuotes";
 import { formatMoney } from "@/lib/utils/money";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";

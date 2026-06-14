@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { formatMoney } from "@/lib/utils/money";
-import { createSale, deleteSale, type SalesResult } from "@/lib/actions/erp";
+import { createSale, deleteSale, type SalesResult } from "@/lib/actions/erpSales";
 import { formatDateCR } from "@/lib/utils/datetime";
 
 export const SalesView = ({

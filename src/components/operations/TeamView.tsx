@@ -15,7 +15,7 @@ import {
   deleteTeamMember,
   setAgreements,
   type TeamMemberRow,
-} from "@/lib/actions/erp";
+} from "@/lib/actions/erpTeam";
 
 interface Draft {
   name: string;

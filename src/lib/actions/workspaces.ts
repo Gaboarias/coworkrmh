@@ -11,6 +11,7 @@ import {
   type WorkspaceRole,
 } from "@/lib/workspace";
 import { createWorkspaceSchema, updateWorkspaceSchema } from "@/lib/validation/actions";
+import { logger } from "@/lib/logger";
 import {
   ALL_WS_PERMISSIONS,
   DEFAULT_WS_ROLE_PERMISSIONS,
@@ -131,12 +132,11 @@ const insertWorkspaceWithOwner = async (
       .returning();
     ws = inserted;
   } catch (err) {
-    console.error("[createWorkspace] INSERT workspaces failed:", {
+    logger.error("[createWorkspace] INSERT workspaces failed", {
       name: clean,
       color,
       ownerId,
       message: err instanceof Error ? err.message : String(err),
-      stack: err instanceof Error ? err.stack : undefined,
     });
     throw new Error(
       `Falló crear el entorno: ${err instanceof Error ? err.message : "error desconocido"}`
@@ -149,11 +149,10 @@ const insertWorkspaceWithOwner = async (
       .values({ workspaceId: ws.id, userId: ownerId, role: "owner" })
       .onConflictDoNothing();
   } catch (err) {
-    console.error("[createWorkspace] INSERT workspaceMembers failed:", {
+    logger.error("[createWorkspace] INSERT workspaceMembers failed", {
       workspaceId: ws.id,
       ownerId,
       message: err instanceof Error ? err.message : String(err),
-      stack: err instanceof Error ? err.stack : undefined,
     });
     // Workspace ya quedó creado pero sin owner — devolver error para que el
     // admin sepa, pero no rollback (no es bloqueante operativamente: puede

@@ -15,7 +15,7 @@ import {
   updateProduct,
   deleteProduct,
   type ProductRow,
-} from "@/lib/actions/erp";
+} from "@/lib/actions/erpProducts";
 
 interface Draft {
   name: string;

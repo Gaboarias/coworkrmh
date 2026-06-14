@@ -14,7 +14,7 @@ import {
   deleteExpense,
   setBreakEvenMargin,
   type ExpensesResult,
-} from "@/lib/actions/erp";
+} from "@/lib/actions/erpExpenses";
 
 // ── Subcomponente de sección ──────────────────────────────────────────────────
 // Definido en scope de módulo para que React mantenga identidad estable entre

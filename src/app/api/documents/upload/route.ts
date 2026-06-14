@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { requireProjectAccess } from "@/lib/workspace";
+import { logger } from "@/lib/logger";
 
 /**
  * Upload client-side via @vercel/blob `handleUpload()`.
@@ -80,7 +81,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json(jsonResponse);
   } catch (err) {
     const e = err as Error;
-    console.error(`UPL_FAIL: ${e.message?.slice(0, 100)}`);
+    logger.error("UPL_FAIL", { message: e.message?.slice(0, 100) });
     return NextResponse.json(
       { error: e.message || "Error al procesar el upload" },
       { status: 400 }

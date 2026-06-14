@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
 import { requireProjectAccess } from "@/lib/workspace";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/documents/register
@@ -62,7 +63,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ document: doc });
   } catch (err) {
     const e = err as Error;
-    console.error(`REG_FAIL: ${e.message?.slice(0, 100)}`);
+    logger.error("REG_FAIL", { message: e.message?.slice(0, 100) });
     return NextResponse.json(
       { error: e.message || "Error al registrar el documento" },
       { status: 400 }

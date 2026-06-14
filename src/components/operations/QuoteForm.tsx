@@ -13,7 +13,7 @@ import {
   updateQuote,
   type QuoteRow,
   type QuoteItemInput,
-} from "@/lib/actions/erp";
+} from "@/lib/actions/erpQuotes";
 
 const emptyItem: QuoteItemInput = {
   description: "",

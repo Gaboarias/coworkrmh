@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Plus, Calculator } from "lucide-react";
 import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
-import { listQuotes } from "@/lib/actions/erp";
+import { listQuotes } from "@/lib/actions/erpQuotes";
 import { formatMoney } from "@/lib/utils/money";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";

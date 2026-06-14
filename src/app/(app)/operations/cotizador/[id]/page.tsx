@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
-import { getQuote } from "@/lib/actions/erp";
+import { getQuote } from "@/lib/actions/erpQuotes";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { OperationsNav } from "@/components/operations/OperationsNav";
 import { NoEntorno } from "@/components/operations/NoEntorno";

@@ -1,0 +1,664 @@
+"use client";
+
+import { useState } from "react";
+import { toast } from "sonner";
+import { Plus, Trash2, ChevronDown, UserPlus, Layers } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { SwatchPicker } from "@/components/ui/SwatchPicker";
+import { UserAvatar } from "@/components/shared/UserAvatar";
+import { cn } from "@/lib/utils/cn";
+import { readableFg } from "@/lib/utils/color";
+import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
+import {
+  createWorkspace,
+  updateWorkspace,
+  deleteWorkspace,
+  addWorkspaceMember,
+  removeWorkspaceMember,
+  listWorkspaceMembers,
+  setMemberRole,
+  getWorkspacePermissionMatrix,
+  updateWorkspacePermissions,
+  createCustomWorkspaceRole,
+  deleteCustomWorkspaceRole,
+} from "@/lib/actions/workspaces";
+import {
+  WS_PERMISSION_GROUPS,
+  BUILTIN_ROLE_KEYS,
+  BUILTIN_ROLE_LABELS,
+  type WsRolePermissions,
+} from "@/lib/constants/workspacePermissions";
+
+interface WsRow {
+  id: string;
+  name: string;
+  color: string;
+  memberCount: number;
+}
+
+interface Member {
+  id: string;
+  name: string | null;
+  email: string;
+  avatarUrl: string | null;
+  role: string;
+}
+
+interface UserRow {
+  id: string;
+  name: string | null;
+  email: string;
+}
+
+export const AdminWorkspacesTab = ({
+  workspaces,
+  allUsers,
+  onChange,
+}: {
+  workspaces: WsRow[];
+  allUsers: UserRow[];
+  onChange: () => void;
+}) => {
+  const [name, setName] = useState("");
+  const [color, setColor] = useState<string>(DEFAULT_ENTORNO_COLOR);
+  const [creating, setCreating] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [members, setMembers] = useState<Record<string, Member[]>>({});
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [addUserId, setAddUserId] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editColor, setEditColor] = useState<string>(DEFAULT_ENTORNO_COLOR);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [matrix, setMatrix] = useState<Record<string, WsRolePermissions>>({});
+  const [savingMatrix, setSavingMatrix] = useState(false);
+  const [savingRoleFor, setSavingRoleFor] = useState<string | null>(null);
+
+  const togglePerm = (wsId: string, role: string, key: string) => {
+    setMatrix((p) => {
+      const cur = p[wsId] ?? { admin: [], member: [] };
+      const set = new Set(cur[role] ?? []);
+      if (set.has(key)) set.delete(key);
+      else set.add(key);
+      return { ...p, [wsId]: { ...cur, [role]: [...set] } };
+    });
+  };
+
+  const [newRoleName, setNewRoleName] = useState<Record<string, string>>({});
+  const [creatingRole, setCreatingRole] = useState(false);
+
+  const handleCreateCustomRole = async (id: string) => {
+    const name = (newRoleName[id] ?? "").trim();
+    if (!name) return;
+    setCreatingRole(true);
+    try {
+      const { key } = await createCustomWorkspaceRole(id, name);
+      toast.success(`Rol "${key}" creado`);
+      setNewRoleName((p) => ({ ...p, [id]: "" }));
+      const mx = await getWorkspacePermissionMatrix(id);
+      setMatrix((p) => ({ ...p, [id]: mx }));
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setCreatingRole(false);
+    }
+  };
+
+  const handleDeleteCustomRole = async (id: string, roleKey: string) => {
+    if (
+      !confirm(
+        `¿Eliminar el rol "${roleKey}"? Los miembros con ese rol pasarán a "Miembro".`
+      )
+    )
+      return;
+    try {
+      await deleteCustomWorkspaceRole(id, roleKey);
+      toast.success("Rol eliminado");
+      const mx = await getWorkspacePermissionMatrix(id);
+      setMatrix((p) => ({ ...p, [id]: mx }));
+      await refreshMembers(id);
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  const handleSaveMatrix = async (id: string) => {
+    const mx = matrix[id];
+    if (!mx) return;
+    setSavingMatrix(true);
+    try {
+      await updateWorkspacePermissions(id, mx);
+      toast.success("Permisos actualizados");
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSavingMatrix(false);
+    }
+  };
+
+  const handleChangeRole = async (
+    id: string,
+    userId: string,
+    role: string
+  ) => {
+    setSavingRoleFor(userId);
+    try {
+      await setMemberRole(id, userId, role);
+      toast.success("Rol actualizado");
+      await refreshMembers(id);
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSavingRoleFor(null);
+    }
+  };
+
+  const handleUpdate = async (id: string) => {
+    if (!editName.trim()) return;
+    setSavingEdit(true);
+    try {
+      await updateWorkspace(id, { name: editName.trim(), color: editColor });
+      toast.success("Entorno actualizado");
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setCreating(true);
+    try {
+      await createWorkspace({ name: name.trim(), color });
+      toast.success("Entorno creado");
+      setName("");
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const toggle = async (w: WsRow) => {
+    const id = w.id;
+    if (openId === id) {
+      setOpenId(null);
+      return;
+    }
+    setOpenId(id);
+    setAddUserId("");
+    setEditName(w.name);
+    setEditColor(w.color);
+    if (!members[id]) {
+      setLoadingMembers(true);
+      try {
+        const m = (await listWorkspaceMembers(id)) as Member[];
+        setMembers((p) => ({ ...p, [id]: m }));
+      } catch (err) {
+        toast.error((err as Error).message);
+      } finally {
+        setLoadingMembers(false);
+      }
+    }
+    if (!matrix[id]) {
+      try {
+        const mx = await getWorkspacePermissionMatrix(id);
+        setMatrix((p) => ({ ...p, [id]: mx }));
+      } catch {
+        /* sin permiso de gestión: matriz no editable */
+      }
+    }
+  };
+
+  const refreshMembers = async (id: string) => {
+    const m = (await listWorkspaceMembers(id)) as Member[];
+    setMembers((p) => ({ ...p, [id]: m }));
+  };
+
+  const handleAdd = async (id: string) => {
+    if (!addUserId) return;
+    setBusy(true);
+    try {
+      await addWorkspaceMember(id, addUserId);
+      toast.success("Miembro agregado");
+      setAddUserId("");
+      await refreshMembers(id);
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRemove = async (id: string, userId: string) => {
+    setBusy(true);
+    try {
+      await removeWorkspaceMember(id, userId);
+      toast.success("Miembro removido");
+      await refreshMembers(id);
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("¿Eliminar este entorno? (solo si no tiene proyectos)")) return;
+    try {
+      await deleteWorkspace(id);
+      toast.success("Entorno eliminado");
+      onChange();
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      <Card>
+        <CardContent>
+          <h3 className="mb-3 text-sm font-semibold text-text">
+            Nuevo entorno
+          </h3>
+          <form
+            onSubmit={handleCreate}
+            className="flex flex-wrap items-end gap-3"
+          >
+            <div className="min-w-[200px] flex-1">
+              <label htmlFor="ws-create-name" className="mb-1.5 block text-xs font-medium text-text-muted">
+                Nombre
+              </label>
+              <Input
+                id="ws-create-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ej. Azulejos & Colores"
+              />
+            </div>
+            <div>
+              <span className="mb-1.5 block text-xs font-medium text-text-muted">
+                Color
+              </span>
+              <div className="flex h-9 items-center">
+                <SwatchPicker
+                  value={color}
+                  onChange={setColor}
+                  label="Color del entorno"
+                />
+              </div>
+            </div>
+            <Button type="submit" loading={creating}>
+              <Plus className="h-4 w-4" />
+              Crear
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <div className="divide-y divide-border">
+          {workspaces.length === 0 && (
+            <p className="p-5 text-sm text-text-muted">
+              Sin entornos. Creá el primero arriba.
+            </p>
+          )}
+          {workspaces.map((w) => {
+            const memberIds = new Set((members[w.id] ?? []).map((m) => m.id));
+            const nonMembers = allUsers.filter((u) => !memberIds.has(u.id));
+            const isOpen = openId === w.id;
+            return (
+              <div key={w.id}>
+                <button
+                  type="button"
+                  onClick={() => toggle(w)}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-el"
+                >
+                  <span
+                    className="flex h-8 w-8 items-center justify-center rounded-lg"
+                    style={{
+                      backgroundColor: w.color,
+                      color: readableFg(w.color),
+                    }}
+                  >
+                    <Layers className="h-4 w-4" />
+                  </span>
+                  <span className="flex-1">
+                    <span className="block text-sm font-medium text-text">
+                      {w.name}
+                    </span>
+                    <span className="block text-xs text-text-muted">
+                      {w.memberCount} miembro
+                      {w.memberCount === 1 ? "" : "s"}
+                    </span>
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 text-text-tertiary transition-transform",
+                      isOpen && "rotate-180"
+                    )}
+                  />
+                </button>
+
+                {isOpen && (
+                  <div className="space-y-3 border-t border-border bg-surface-el/40 px-4 py-4">
+                    <div className="flex flex-wrap items-end gap-2 border-b border-border pb-3">
+                      <div className="min-w-[180px] flex-1">
+                        <label htmlFor={`ws-edit-name-${w.id}`} className="mb-1.5 block text-xs font-medium text-text-muted">
+                          Nombre del entorno
+                        </label>
+                        <Input
+                          id={`ws-edit-name-${w.id}`}
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <span className="mb-1.5 block text-xs font-medium text-text-muted">
+                          Color
+                        </span>
+                        <SwatchPicker
+                          value={editColor}
+                          onChange={setEditColor}
+                          label="Color del entorno"
+                        />
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleUpdate(w.id)}
+                        loading={savingEdit}
+                        disabled={!editName.trim()}
+                      >
+                        Guardar
+                      </Button>
+                    </div>
+
+                    {matrix[w.id] && (
+                      <div className="space-y-3 border-b border-border pb-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-xs font-semibold text-text">
+                              Permisos por rol
+                            </h4>
+                            <p className="text-[13px] text-text-muted">
+                              El propietario siempre tiene acceso total.
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveMatrix(w.id)}
+                            loading={savingMatrix}
+                          >
+                            Guardar permisos
+                          </Button>
+                        </div>
+                        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+                          {(() => {
+                            const roleKeys = Object.keys(matrix[w.id]).filter(
+                              (k) => k !== "owner"
+                            );
+                            return (
+                              <table className="w-full text-left text-sm">
+                                <thead>
+                                  <tr className="border-b border-border text-xs text-text-muted">
+                                    <th className="px-3 py-2 font-medium">
+                                      Capacidad
+                                    </th>
+                                    {roleKeys.map((rk) => {
+                                      const isBuiltin = BUILTIN_ROLE_KEYS.includes(
+                                        rk as never
+                                      );
+                                      return (
+                                        <th
+                                          key={rk}
+                                          className="w-24 px-2 py-2 text-center font-medium"
+                                        >
+                                          <div className="flex items-center justify-center gap-1">
+                                            <span className="truncate" title={rk}>
+                                              {BUILTIN_ROLE_LABELS[rk] ?? rk}
+                                            </span>
+                                            {!isBuiltin && (
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleDeleteCustomRole(w.id, rk)
+                                                }
+                                                aria-label={`Eliminar rol ${rk}`}
+                                                className="rounded p-0.5 text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger"
+                                              >
+                                                <Trash2 className="h-3 w-3" />
+                                              </button>
+                                            )}
+                                          </div>
+                                        </th>
+                                      );
+                                    })}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {WS_PERMISSION_GROUPS.map((g) => (
+                                    <GroupRows
+                                      key={g.group}
+                                      group={g.group}
+                                      keys={g.keys}
+                                      matrix={matrix[w.id]}
+                                      roleKeys={roleKeys}
+                                      onToggle={(role, key) =>
+                                        togglePerm(w.id, role, key)
+                                      }
+                                    />
+                                  ))}
+                                </tbody>
+                              </table>
+                            );
+                          })()}
+                        </div>
+                        <div className="flex flex-wrap items-end gap-2 pt-1">
+                          <div className="min-w-[160px] flex-1">
+                            <label htmlFor={`ws-create-role-${w.id}`} className="mb-1.5 block text-xs font-medium text-text-muted">
+                              Crear rol custom
+                            </label>
+                            <Input
+                              id={`ws-create-role-${w.id}`}
+                              value={newRoleName[w.id] ?? ""}
+                              onChange={(e) =>
+                                setNewRoleName((p) => ({
+                                  ...p,
+                                  [w.id]: e.target.value,
+                                }))
+                              }
+                              placeholder="Ej. Diseñadora, Cotizador…"
+                            />
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCreateCustomRole(w.id)}
+                            disabled={
+                              !(newRoleName[w.id] ?? "").trim() || creatingRole
+                            }
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            Crear rol
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap items-end gap-2">
+                      <div className="min-w-[180px] flex-1">
+                        <label htmlFor={`ws-add-user-${w.id}`} className="mb-1.5 block text-xs font-medium text-text-muted">
+                          Agregar usuario
+                        </label>
+                        <Select
+                          id={`ws-add-user-${w.id}`}
+                          value={addUserId}
+                          onChange={(e) => setAddUserId(e.target.value)}
+                        >
+                          <option value="">Seleccionar…</option>
+                          {nonMembers.map((u) => (
+                            <option key={u.id} value={u.id}>
+                              {u.name ?? u.email}
+                            </option>
+                          ))}
+                        </Select>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleAdd(w.id)}
+                        disabled={!addUserId || busy}
+                      >
+                        <UserPlus className="h-3.5 w-3.5" />
+                        Agregar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDelete(w.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Eliminar entorno
+                      </Button>
+                    </div>
+
+                    <div className="space-y-1">
+                      {loadingMembers && !members[w.id] ? (
+                        <p className="px-1 py-2 text-sm text-text-muted">
+                          Cargando…
+                        </p>
+                      ) : (members[w.id] ?? []).length === 0 ? (
+                        <p className="px-1 py-2 text-sm text-text-muted">
+                          Sin miembros todavía.
+                        </p>
+                      ) : (
+                        (members[w.id] ?? []).map((m) => (
+                          <div
+                            key={m.id}
+                            className="flex items-center gap-3 rounded-lg bg-surface p-2"
+                          >
+                            <UserAvatar
+                              name={m.name ?? undefined}
+                              avatarUrl={m.avatarUrl ?? undefined}
+                              size="sm"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-text">
+                                {m.name ?? m.email}
+                              </p>
+                              <p className="truncate text-xs text-text-muted">
+                                {m.email}
+                              </p>
+                            </div>
+                            {m.role === "owner" ? (
+                              <span className="rounded-md bg-surface-el px-2 py-1 text-xs font-medium text-text-muted">
+                                Propietario
+                              </span>
+                            ) : (
+                              <Select
+                                aria-label={`Rol de ${m.name ?? m.email}`}
+                                value={m.role}
+                                disabled={savingRoleFor === m.id}
+                                onChange={(e) =>
+                                  handleChangeRole(w.id, m.id, e.target.value)
+                                }
+                                className="w-32"
+                              >
+                                {(() => {
+                                  const matrixKeys = matrix[w.id]
+                                    ? Object.keys(matrix[w.id]).filter(
+                                        (k) => k !== "owner"
+                                      )
+                                    : ["admin", "member"];
+                                  const opts = matrixKeys.includes(m.role)
+                                    ? matrixKeys
+                                    : [...matrixKeys, m.role];
+                                  return opts.map((rk) => (
+                                    <option key={rk} value={rk}>
+                                      {BUILTIN_ROLE_LABELS[rk] ?? rk}
+                                    </option>
+                                  ));
+                                })()}
+                              </Select>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleRemove(w.id, m.id)}
+                              disabled={busy || m.role === "owner"}
+                              aria-label={`Quitar a ${m.name ?? m.email}`}
+                              className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+const GroupRows = ({
+  group,
+  keys,
+  matrix,
+  roleKeys,
+  onToggle,
+}: {
+  group: string;
+  keys: { key: string; label: string }[];
+  matrix: WsRolePermissions;
+  roleKeys: string[];
+  onToggle: (role: string, key: string) => void;
+}) => {
+  const setsByRole: Record<string, Set<string>> = Object.fromEntries(
+    roleKeys.map((rk) => [rk, new Set(matrix[rk] ?? [])])
+  );
+  return (
+    <>
+      <tr className="bg-surface-el/60">
+        <td
+          colSpan={roleKeys.length + 1}
+          className="px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-text-muted"
+        >
+          {group}
+        </td>
+      </tr>
+      {keys.map((k) => (
+        <tr key={k.key} className="border-b border-border last:border-0">
+          <td className="px-3 py-2 text-text">{k.label}</td>
+          {roleKeys.map((rk) => (
+            <td key={rk} className="px-2 py-2 text-center">
+              <input
+                type="checkbox"
+                aria-label={`${k.label} — ${BUILTIN_ROLE_LABELS[rk] ?? rk}`}
+                checked={setsByRole[rk]?.has(k.key) ?? false}
+                onChange={() => onToggle(rk, k.key)}
+                className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
+              />
+            </td>
+          ))}
+        </tr>
+      ))}
+    </>
+  );
+};

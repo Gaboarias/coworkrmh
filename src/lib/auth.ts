@@ -26,6 +26,7 @@ export const authOptions: NextAuthOptions = {
 
         const email = credentials.email.trim().toLowerCase();
 
+        try {
         const [user] = await db
           .select()
           .from(users)
@@ -44,6 +45,10 @@ export const authOptions: NextAuthOptions = {
           image: user.avatarUrl,
           role: user.role,
         };
+        } catch (err) {
+          console.error("[AUTH] authorize error:", err);
+          throw err;
+        }
       },
     }),
   ],

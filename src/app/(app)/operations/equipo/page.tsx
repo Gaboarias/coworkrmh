@@ -1,5 +1,5 @@
 import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
-import { getTeam } from "@/lib/actions/erp";
+import { getTeam } from "@/lib/actions/erpTeam";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { OperationsNav } from "@/components/operations/OperationsNav";
 import { NoEntorno } from "@/components/operations/NoEntorno";
