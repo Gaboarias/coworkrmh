@@ -14,6 +14,7 @@ import {
 import { and, eq, asc } from "drizzle-orm";
 import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
 import { createNotification } from "@/lib/actions/notifications";
+import { createTaskSchema, updateTaskSchema } from "@/lib/validation/actions";
 
 /**
  * Asegura que el assignee es project member. Si no lo es (pero sí es
@@ -106,6 +107,7 @@ export async function createTask(formData: {
   dueDate?: string;
   parentTaskId?: string;
 }) {
+  createTaskSchema.parse(formData);
   const user = await requireProjectsManage();
 
   // Auto-add assignee como project member si es workspace member pero no
@@ -169,6 +171,7 @@ export async function updateTask(
     dueDate?: string | null;
   }
 ) {
+  updateTaskSchema.parse(updates);
   const user = await requireProjectsManage();
   const completedAt =
     updates.status === "done"

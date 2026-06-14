@@ -6,8 +6,20 @@ import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/lib/db/schema";
 import { resetPasswordBodySchema, parseBody } from "@/lib/validation/auth";
 import { revokeAllRefreshTokensForUser } from "@/lib/auth-bearer";
+import { checkRateLimit, registerFailure, clientIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  // Rate limit: 5 intentos por IP cada 15 min — evita brute-force de tokens.
+  const ip = clientIp(req);
+  const rlKey = `reset-pw:${ip}`;
+  const guard = await checkRateLimit(rlKey, { maxAttempts: 5, windowMinutes: 15, lockMinutes: 15 });
+  if (!guard.allowed) {
+    return NextResponse.json(
+      { error: guard.message ?? "Demasiados intentos. Probá en 15 minutos." },
+      { status: 429 }
+    );
+  }
+
   try {
     const parsed = await parseBody(req, resetPasswordBodySchema);
     if (!parsed.ok) return parsed.response;
@@ -28,6 +40,7 @@ export async function POST(req: Request) {
           .delete(passwordResetTokens)
           .where(eq(passwordResetTokens.id, row.id));
       }
+      await registerFailure(rlKey, { maxAttempts: 5, windowMinutes: 15, lockMinutes: 15 });
       return NextResponse.json(
         { error: "El enlace expiró o no es válido. Solicita uno nuevo." },
         { status: 400 }

@@ -52,7 +52,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
     content: (note.content as object) ?? undefined,
     editorProps: {
       attributes: {
-        class: "tiptap-editor focus:outline-none min-h-[400px] prose prose-invert max-w-none",
+        class: "tiptap-editor focus:outline-none min-h-[400px] prose prose-stone max-w-none",
       },
     },
     onUpdate: () => {
@@ -109,7 +109,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
 
     try {
       const canvas = await html2canvas(element as HTMLElement, {
-        backgroundColor: "#0a0408",
+        backgroundColor: "#ffffff",
         scale: 2,
       });
       const imgData = canvas.toDataURL("image/png");

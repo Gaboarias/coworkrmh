@@ -30,6 +30,7 @@ import {
   verifyAndRotateRefreshToken,
 } from "@/lib/auth-bearer";
 import { parseBody } from "@/lib/validation/auth";
+import { checkRateLimit, registerFailure, clientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -38,12 +39,25 @@ const refreshBodySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  // Rate limit: 30 req/min por IP — previene DoS. El token ya es single-use
+  // (rotación), así que el riesgo principal es flooding, no brute-force.
+  const ip = clientIp(request);
+  const rlKey = `refresh:${ip}`;
+  const guard = await checkRateLimit(rlKey, { maxAttempts: 30, windowMinutes: 1, lockMinutes: 5 });
+  if (!guard.allowed) {
+    return NextResponse.json(
+      { error: guard.message ?? "Demasiadas solicitudes" },
+      { status: 429 }
+    );
+  }
+
   const parsed = await parseBody(request, refreshBodySchema);
   if (!parsed.ok) return parsed.response;
   const { refreshToken } = parsed.data;
 
   const rotated = await verifyAndRotateRefreshToken(refreshToken);
   if (!rotated) {
+    await registerFailure(rlKey, { maxAttempts: 30, windowMinutes: 1, lockMinutes: 5 });
     return NextResponse.json(
       { error: "Refresh token inválido o expirado" },
       { status: 401 }

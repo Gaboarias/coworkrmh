@@ -8,6 +8,7 @@ import { eq, and } from "drizzle-orm";
 import type { ProjectStatus } from "@/lib/types";
 import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
 import { createNotification } from "@/lib/actions/notifications";
+import { createProjectSchema } from "@/lib/validation/actions";
 
 async function requireUser() {
   const session = await auth();
@@ -39,19 +40,20 @@ export async function createProject(formData: {
   endDate?: string;
   dueDate?: string;
 }) {
+  const validated = createProjectSchema.parse(formData);
   const { user, ws } = await requireProjectsManage();
 
   const [project] = await db
     .insert(projects)
     .values({
       workspaceId: ws.id,
-      name: formData.name,
-      description: formData.description ?? null,
-      bucketId: formData.bucketId ?? null,
-      color: formData.color ?? null,
-      startDate: formData.startDate ?? null,
-      endDate: formData.endDate ?? null,
-      dueDate: formData.dueDate ?? null,
+      name: validated.name,
+      description: validated.description ?? null,
+      bucketId: validated.bucketId ?? null,
+      color: validated.color ?? null,
+      startDate: validated.startDate ?? null,
+      endDate: validated.endDate ?? null,
+      dueDate: validated.dueDate ?? null,
       createdBy: user.id,
     })
     .returning();

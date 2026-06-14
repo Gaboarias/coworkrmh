@@ -10,6 +10,7 @@ import {
   requireWorkspaceOwner,
   type WorkspaceRole,
 } from "@/lib/workspace";
+import { createWorkspaceSchema, updateWorkspaceSchema } from "@/lib/validation/actions";
 import {
   ALL_WS_PERMISSIONS,
   DEFAULT_WS_ROLE_PERMISSIONS,
@@ -186,6 +187,7 @@ export const createWorkspace = async (formData: {
   name: string;
   color?: string;
 }) => {
+  createWorkspaceSchema.parse(formData);
   const admin = await requireAdmin();
   const ws = await insertWorkspaceWithOwner(
     formData.name,
@@ -202,6 +204,7 @@ export const updateWorkspace = async (
   workspaceId: string,
   updates: { name?: string; color?: string }
 ) => {
+  updateWorkspaceSchema.parse(updates);
   await requireWorkspaceManage(workspaceId);
   await db
     .update(workspaces)

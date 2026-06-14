@@ -6,6 +6,7 @@ import { clients, clientProjects, payments, projects } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { getAppUrl, sendPortalInviteEmail } from "@/lib/email";
+import { createClientSchema } from "@/lib/validation/actions";
 
 // ─── Auth helpers ─────────────────────────────────────────────────────────────
 
@@ -210,6 +211,7 @@ export async function createClient(input: {
   phone?: string;
   notes?: string;
 }): Promise<ClientRow> {
+  createClientSchema.parse(input);
   const session = await auth();
   if (!session?.user) throw new Error("No autenticado");
 
