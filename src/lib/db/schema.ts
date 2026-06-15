@@ -205,6 +205,9 @@ export const workspaceMembers = pgTable(
   },
   (t) => ({
     pk: primaryKey({ columns: [t.workspaceId, t.userId] }),
+    // Hot path: "¿en qué workspaces está este user?" — usado en requireWs y APIs mobile.
+    // El PK (workspaceId, userId) no cubre queries WHERE user_id = ? solo.
+    userIdx: index("workspace_members_user_idx").on(t.userId),
   })
 );
 
