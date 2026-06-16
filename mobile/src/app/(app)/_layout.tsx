@@ -26,7 +26,7 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="(tabs)" />
-      {/* Future: <Stack.Screen name="projects/[id]" options={{ presentation: 'modal' }} /> */}
+      <Stack.Screen name="projects/[id]" />
     </Stack>
   );
 }
