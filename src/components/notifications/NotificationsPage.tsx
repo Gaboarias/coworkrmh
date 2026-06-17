@@ -11,6 +11,7 @@ import {
   type NotificationRow,
 } from "@/lib/actions/notifications";
 import { cn } from "@/lib/utils/cn";
+import { formatDateCR } from "@/lib/utils/datetime";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 
@@ -29,11 +30,7 @@ function timeAgo(iso: string): string {
   if (h < 24) return `hace ${h} h`;
   const d = Math.floor(h / 24);
   if (d < 30) return `hace ${d} d`;
-  return new Date(iso).toLocaleDateString("es", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  return formatDateCR(iso);
 }
 
 function getDateGroup(iso: string): string {
