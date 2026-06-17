@@ -20,6 +20,7 @@ export interface Workspace {
   id: string;
   name: string;
   color: string;
+  tier: "basic" | "premium";
 }
 
 /** Entornos a los que pertenece el usuario actual (admin → todos). */
@@ -36,7 +37,7 @@ export const getMemberWorkspaces = async (): Promise<{
 
   if (isAdmin) {
     const rows = await db
-      .select({ id: workspaces.id, name: workspaces.name, color: workspaces.color })
+      .select({ id: workspaces.id, name: workspaces.name, color: workspaces.color, tier: workspaces.tier })
       .from(workspaces)
       .orderBy(asc(workspaces.name));
     return { userId, isAdmin, workspaces: rows };
@@ -50,7 +51,7 @@ export const getMemberWorkspaces = async (): Promise<{
   if (ids.length === 0) return { userId, isAdmin, workspaces: [] };
 
   const rows = await db
-    .select({ id: workspaces.id, name: workspaces.name, color: workspaces.color })
+    .select({ id: workspaces.id, name: workspaces.name, color: workspaces.color, tier: workspaces.tier })
     .from(workspaces)
     .where(inArray(workspaces.id, ids))
     .orderBy(asc(workspaces.name));

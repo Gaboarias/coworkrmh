@@ -21,6 +21,9 @@ import { DEFAULT_WS_ROLE_PERMISSIONS } from "@/lib/constants/workspacePermission
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "manager", "member"]);
+// Tier de producto por entorno (modelo híbrido: interno = premium, tenants
+// vendidos = basic con upsell). Default premium → nada se oculta hoy.
+export const workspaceTierEnum = pgEnum("workspace_tier", ["basic", "premium"]);
 // workspace_role enum eliminado: workspace_members.role ahora es text para
 // soportar roles custom definidos por entorno en workspaces.role_permissions.
 // Built-in: owner / admin / member. Owner = bypass total, no se almacena en
@@ -177,6 +180,9 @@ export const workspaces = pgTable("workspaces", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   color: text("color").default("#6B5FE4").notNull(),
+  // Tier de producto (modelo híbrido). Default premium para no ocultar nada
+  // en los entornos actuales de RMH; tenants nuevos podrán arrancar en basic.
+  tier: workspaceTierEnum("tier").default("premium").notNull(),
   rolePermissions: json("role_permissions")
     .$type<Record<string, string[]>>()
     .default(DEFAULT_WS_ROLE_PERMISSIONS)
