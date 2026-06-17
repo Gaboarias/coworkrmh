@@ -13,6 +13,7 @@ import {
   BarChart3,
   Shield,
   Building2,
+  Mail,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
@@ -67,6 +68,7 @@ const sections: NavSection[] = [
     label: "Análisis",
     items: [
       { href: "/reports", label: "Reportes", icon: BarChart3 },
+      { href: "/marketing", label: "Campañas", icon: Mail, adminOnly: true },
     ],
   },
   {

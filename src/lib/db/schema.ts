@@ -10,6 +10,7 @@ import {
   numeric,
   date,
   json,
+  jsonb,
   primaryKey,
   index,
   uniqueIndex,
@@ -743,5 +744,142 @@ export const erpQuoteItemsRelations = relations(erpQuoteItems, ({ one }) => ({
   quote: one(erpQuotes, {
     fields: [erpQuoteItems.quoteId],
     references: [erpQuotes.id],
+  }),
+}));
+
+// ─── Email Blaster (campañas de marketing) ──────────────────────────────────────
+//
+// Sistema ADITIVO de envío masivo: cola en DB → Vercel Cron → Resend batch API.
+// NO toca el flujo transaccional (tareas/password en src/lib/email.ts). La
+// deliverability se aísla con RESEND_MARKETING_API_KEY + subdominio propio.
+//
+// `bucketId` = etiqueta de negocio (multi-business forward-compat). Hoy los
+// destinatarios salen de `clients` (CRM) filtrados por status; ver
+// src/lib/marketing/segment.ts.
+
+export const campaignStatusEnum = pgEnum("campaign_status", [
+  "draft",
+  "scheduled",
+  "sending",
+  "sent",
+  "paused",
+  "failed",
+]);
+
+export const sendStatusEnum = pgEnum("send_status", [
+  "queued",
+  "sending",
+  "sent",
+  "delivered",
+  "bounced",
+  "complained",
+  "failed",
+]);
+
+export const suppressionReasonEnum = pgEnum("suppression_reason", [
+  "unsubscribe",
+  "hard_bounce",
+  "complaint",
+  "manual",
+]);
+
+export const emailEventTypeEnum = pgEnum("email_event_type", [
+  "sent",
+  "delivered",
+  "delivery_delayed",
+  "opened",
+  "clicked",
+  "bounced",
+  "complained",
+]);
+
+export const campaigns = pgTable(
+  "campaigns",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bucketId: text("bucket_id").notNull(), // etiqueta de negocio (RMH | ...)
+    name: text("name").notNull(),
+    subject: text("subject").notNull(), // admite {{merge}} tags
+    fromName: text("from_name").notNull(),
+    fromEmail: text("from_email").notNull(),
+    replyTo: text("reply_to"),
+    html: text("html").notNull(), // plantilla con {{nombre}} {{empresa}} ...
+    segmentQuery: jsonb("segment_query"), // filtro usado (auditoría)
+    status: campaignStatusEnum("status").default("draft").notNull(),
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    bucketIdx: index("campaigns_bucket_idx").on(t.bucketId),
+    statusIdx: index("campaigns_status_idx").on(t.status),
+  })
+);
+
+export const campaignSends = pgTable(
+  "campaign_sends",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => campaigns.id, { onDelete: "cascade" }),
+    bucketId: text("bucket_id").notNull(),
+    contactId: text("contact_id"), // id del client del CRM (texto, no FK dura)
+    email: text("email").notNull(),
+    mergeData: jsonb("merge_data"), // { nombre, empresa, ... }
+    status: sendStatusEnum("status").default("queued").notNull(),
+    providerMessageId: text("provider_message_id"), // id de Resend
+    error: text("error"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    campaignIdx: index("sends_campaign_idx").on(t.campaignId),
+    statusIdx: index("sends_status_idx").on(t.status),
+    providerIdx: index("sends_provider_idx").on(t.providerMessageId),
+  })
+);
+
+export const emailEvents = pgTable(
+  "email_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sendId: uuid("send_id").references(() => campaignSends.id, { onDelete: "cascade" }),
+    campaignId: uuid("campaign_id"),
+    type: emailEventTypeEnum("type").notNull(),
+    email: text("email"),
+    metadata: jsonb("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    sendIdx: index("events_send_idx").on(t.sendId),
+    campaignIdx: index("events_campaign_idx").on(t.campaignId),
+    typeIdx: index("events_type_idx").on(t.type),
+  })
+);
+
+export const suppressions = pgTable(
+  "suppressions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bucketId: text("bucket_id").notNull(),
+    email: text("email").notNull(),
+    reason: suppressionReasonEnum("reason").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    // misma persona puede estar suprimida en un bucket y no en otro
+    uniq: uniqueIndex("suppressions_bucket_email_uniq").on(t.bucketId, t.email),
+  })
+);
+
+export const campaignsRelations = relations(campaigns, ({ many }) => ({
+  sends: many(campaignSends),
+}));
+
+export const campaignSendsRelations = relations(campaignSends, ({ one }) => ({
+  campaign: one(campaigns, {
+    fields: [campaignSends.campaignId],
+    references: [campaigns.id],
   }),
 }));
