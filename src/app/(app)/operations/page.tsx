@@ -121,7 +121,8 @@ export default async function OperationsDashboard() {
         ]}
       />
 
-      {/* KPIs como objetos tipográficos */}
+      {/* KPIs como objetos tipográficos (figuras ERP all-time). El análisis
+          mensual con tendencias y gráficos vive en /reports — fuente única. */}
       <section>
         <HairlineRule label="Resumen del estudio" />
         <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
@@ -141,6 +142,12 @@ export default async function OperationsDashboard() {
             </div>
           ))}
         </dl>
+        <Link
+          href="/reports"
+          className="mt-6 inline-block font-mono text-[12px] uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-ink"
+        >
+          Ver análisis del mes (tendencias, categorías) →
+        </Link>
       </section>
 
       {isEmpty && (

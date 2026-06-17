@@ -18,6 +18,7 @@ import {
 } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, FileText, History } from "lucide-react";
+import { TasksViewSwitch } from "@/components/tasks/TasksViewSwitch";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
 import { formatDateCR } from "@/lib/utils/datetime";
@@ -128,6 +129,7 @@ export function CalendarView({
 
   return (
     <div className="animate-fade-in p-6 md:p-8">
+      <TasksViewSwitch />
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-text">

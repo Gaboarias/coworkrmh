@@ -18,6 +18,8 @@ export interface TabItem {
   href: string;
   label: string;
   exact?: boolean;
+  /** Prefijos extra que también activan este tab (ej. "Contenido" cubre /notes). */
+  match?: string[];
 }
 
 export function TabNav({
@@ -29,7 +31,10 @@ export function TabNav({
 }) {
   const pathname = usePathname();
   const isActive = (t: TabItem) =>
-    t.exact ? pathname === t.href : pathname.startsWith(t.href);
+    t.exact
+      ? pathname === t.href
+      : pathname.startsWith(t.href) ||
+        (t.match?.some((m) => pathname.startsWith(m)) ?? false);
 
   return (
     <div

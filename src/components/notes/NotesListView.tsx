@@ -10,6 +10,7 @@ import { formatDateCR } from "@/lib/utils/datetime";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
+import { ContentSubNav } from "@/components/projects/ContentSubNav";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 
@@ -82,6 +83,7 @@ export function NotesListView({
       />
 
       <ProjectTabs projectId={project.id} />
+      <ContentSubNav projectId={project.id} />
 
       {notes.length === 0 ? (
         <EmptyState

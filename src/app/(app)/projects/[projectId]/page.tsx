@@ -10,6 +10,7 @@ import {
 import { eq, and, isNull, asc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { ProjectTasksView } from "@/components/projects/ProjectTasksView";
+import { RecentActivityPanel } from "@/components/changelog/RecentActivityPanel";
 import { ensureWorkspaceForResource } from "@/lib/workspace";
 
 interface PageProps {
@@ -130,15 +131,20 @@ export default async function ProjectPage({ params }: PageProps) {
   const members = Array.from(memberMap.values());
 
   return (
-    <ProjectTasksView
-      project={{
-        id: project.id,
-        name: project.name,
-        description: project.description,
-      }}
-      tasks={tasksData}
-      members={members}
-      canEdit={isManager}
-    />
+    <>
+      <ProjectTasksView
+        project={{
+          id: project.id,
+          name: project.name,
+          description: project.description,
+        }}
+        tasks={tasksData}
+        members={members}
+        canEdit={isManager}
+      />
+      <div className="px-8 pb-10 md:px-12 lg:px-14">
+        <RecentActivityPanel projectId={project.id} />
+      </div>
+    </>
   );
 }

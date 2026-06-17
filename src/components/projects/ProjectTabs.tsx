@@ -9,10 +9,12 @@ import { TabNav } from "@/components/shared/TabNav";
 export function ProjectTabs({ projectId }: { projectId: string }) {
   const tabs = [
     { href: `/projects/${projectId}`, label: "Tareas", exact: true },
-    { href: `/projects/${projectId}/documents`, label: "Documentos" },
-    { href: `/projects/${projectId}/notes`, label: "Notas" },
+    {
+      href: `/projects/${projectId}/documents`,
+      label: "Contenido",
+      match: [`/projects/${projectId}/notes`],
+    },
     { href: `/projects/${projectId}/reports`, label: "Reportes" },
-    { href: `/projects/${projectId}/changelog`, label: "Historial" },
     { href: `/projects/${projectId}/settings`, label: "Config." },
   ];
   return <TabNav tabs={tabs} />;

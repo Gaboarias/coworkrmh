@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { CheckSquare, Layers } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/workspace";
 import { formatDateCR, isPastDateCR } from "@/lib/utils/datetime";
+import { TasksViewSwitch } from "@/components/tasks/TasksViewSwitch";
 
 export default async function MyTasksPage() {
   const session = await auth();
@@ -66,6 +67,8 @@ export default async function MyTasksPage() {
           `${done.length} COMPLETADAS`,
         ]}
       />
+
+      <TasksViewSwitch />
 
       {!taskRows.length ? (
         <EmptyState

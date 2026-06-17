@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   FolderKanban,
   CheckSquare,
-  Calendar,
   Settings,
   Briefcase,
   BarChart3,
@@ -68,7 +67,8 @@ const sections: NavSection[] = [
       { href: "/dashboard", label: "Resumen", icon: LayoutDashboard, exact: true },
       { href: "/projects", label: "Proyectos", icon: FolderKanban, feature: "projects" },
       { href: "/my-tasks", label: "Mis tareas", icon: CheckSquare, feature: "tasks" },
-      { href: "/calendar", label: "Calendario", icon: Calendar, feature: "calendar" },
+      // Calendario ya no es ítem top-level: vive como vista dentro de Mis tareas
+      // (switch Lista | Calendario). Reduce saturación del sidebar.
     ],
   },
   {

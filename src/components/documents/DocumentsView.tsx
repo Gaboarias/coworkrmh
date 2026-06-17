@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FileUploadDropzone } from "./FileUploadDropzone";
 import { DocumentList } from "./DocumentList";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
+import { ContentSubNav } from "@/components/projects/ContentSubNav";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 
@@ -52,6 +53,7 @@ export function DocumentsView({
       />
 
       <ProjectTabs projectId={project.id} />
+      <ContentSubNav projectId={project.id} />
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-14">
         <div>
