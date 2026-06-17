@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 import { CampaignMetrics } from "@/components/marketing/CampaignMetrics";
 import { formatDateCR } from "@/lib/utils/datetime";
+import { requireFeature } from "@/lib/workspace";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ export default async function CampaignDetailPage({
   const session = await auth();
   if (!session?.user) redirect("/login");
   if (session.user.role !== "admin") redirect("/dashboard");
+  await requireFeature("blaster");
 
   const [campaign] = await db
     .select()

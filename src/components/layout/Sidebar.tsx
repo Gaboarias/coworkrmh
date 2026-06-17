@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils/cn";
 import { useUser } from "@/lib/hooks/useUser";
 import { EntornoSwitcher, type WsData } from "@/components/layout/EntornoSwitcher";
 import { useSidebarState } from "./SidebarStateContext";
+import { hasFeature, type Feature, type Tier } from "@/lib/entitlements";
 
 /**
  * Sidebar (Edition 04).
@@ -42,6 +43,8 @@ interface NavItem {
   exact?: boolean;
   badge?: number | "soon";
   adminOnly?: boolean;
+  /** Si está, el item solo aparece si el tier del entorno activo lo habilita. */
+  feature?: Feature;
 }
 
 interface NavSection {
@@ -50,25 +53,38 @@ interface NavSection {
   items: NavItem[];
 }
 
+/**
+ * IA por modo mental (reorg agresivo):
+ *  TRABAJO     → hacer el día a día
+ *  NEGOCIO     → operar el estudio
+ *  CRECIMIENTO → analítica + marketing (premium)
+ *  SISTEMA     → administración
+ */
 const sections: NavSection[] = [
   {
     id: "work",
     label: "Trabajo",
     items: [
       { href: "/dashboard", label: "Resumen", icon: LayoutDashboard, exact: true },
-      { href: "/projects", label: "Proyectos", icon: FolderKanban },
-      { href: "/my-tasks", label: "Mis tareas", icon: CheckSquare },
-      { href: "/calendar", label: "Calendario", icon: Calendar },
-      { href: "/operations", label: "Operaciones", icon: Briefcase },
-      { href: "/clients", label: "Clientes", icon: Building2, adminOnly: true },
+      { href: "/projects", label: "Proyectos", icon: FolderKanban, feature: "projects" },
+      { href: "/my-tasks", label: "Mis tareas", icon: CheckSquare, feature: "tasks" },
+      { href: "/calendar", label: "Calendario", icon: Calendar, feature: "calendar" },
     ],
   },
   {
-    id: "analytics",
-    label: "Análisis",
+    id: "business",
+    label: "Negocio",
     items: [
-      { href: "/reports", label: "Reportes", icon: BarChart3 },
-      { href: "/marketing", label: "Campañas", icon: Mail, adminOnly: true },
+      { href: "/operations", label: "Operaciones", icon: Briefcase, feature: "operations" },
+      { href: "/clients", label: "Clientes", icon: Building2, adminOnly: true, feature: "clients" },
+    ],
+  },
+  {
+    id: "growth",
+    label: "Crecimiento",
+    items: [
+      { href: "/reports", label: "Reportes", icon: BarChart3, feature: "analytics" },
+      { href: "/marketing", label: "Campañas", icon: Mail, adminOnly: true, feature: "blaster" },
     ],
   },
   {
@@ -84,6 +100,10 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
   const pathname = usePathname();
   const { profile } = useUser();
   const isAdmin = profile?.role === "admin";
+
+  // Tier del entorno activo → gating de features premium. Sin entorno → basic.
+  const activeTier: Tier =
+    wsData.workspaces.find((w) => w.id === wsData.activeId)?.tier ?? "basic";
 
   // Estado collapsed levantado a context — compartido con SidebarToggle
   // en el topbar y con keyboard shortcut ⌘B.
@@ -195,7 +215,9 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         {sections.map((section) => {
           const visibleItems = section.items.filter(
-            (it) => !it.adminOnly || isAdmin
+            (it) =>
+              (!it.adminOnly || isAdmin) &&
+              (!it.feature || hasFeature(activeTier, it.feature))
           );
           if (visibleItems.length === 0) return null;
           return (

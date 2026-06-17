@@ -16,6 +16,7 @@ interface Ws {
   id: string;
   name: string;
   color: string;
+  tier?: "basic" | "premium";
 }
 export interface WsData {
   workspaces: Ws[];

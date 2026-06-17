@@ -9,6 +9,7 @@ import { HairlineRule } from "@/components/shared/HairlineRule";
 import { CampaignBuilder } from "@/components/marketing/CampaignBuilder";
 import { DEFAULT_BUCKET } from "@/lib/marketing/constants";
 import { formatDateCR } from "@/lib/utils/datetime";
+import { requireFeature } from "@/lib/workspace";
 
 export const metadata = { title: "Campañas — Pistachio" };
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ export default async function MarketingPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   if (session.user.role !== "admin") redirect("/dashboard");
+  await requireFeature("blaster");
 
   const rows = await db
     .select()

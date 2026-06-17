@@ -8,6 +8,7 @@ import {
   ALL_WS_PERMISSIONS,
   DEFAULT_WS_ROLE_PERMISSIONS,
 } from "@/lib/constants/workspacePermissions";
+import { hasFeature, type Feature } from "@/lib/entitlements";
 
 export const WS_COOKIE = "ws";
 
@@ -67,6 +68,19 @@ export const getActiveWorkspace = async (): Promise<Workspace | null> => {
   if (list.length === 0) return null;
   const cookieId = cookies().get(WS_COOKIE)?.value;
   return list.find((w) => w.id === cookieId) ?? list[0];
+};
+
+/**
+ * Guard de feature por tier para páginas premium. Si el entorno activo no
+ * habilita la feature, redirige (hoy a /dashboard; futuro: página de upsell).
+ * Si no hay entorno activo, no redirige — deja que la página maneje NoEntorno.
+ * No-op para entornos premium (todos los de RMH hoy).
+ */
+export const requireFeature = async (feature: Feature): Promise<void> => {
+  const ws = await getActiveWorkspace();
+  if (ws && !hasFeature(ws.tier, feature)) {
+    redirect("/dashboard");
+  }
 };
 
 /** True si el usuario actual puede acceder a un entorno concreto. */

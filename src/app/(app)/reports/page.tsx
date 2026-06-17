@@ -4,6 +4,7 @@ import { BarChart3 } from "lucide-react";
 import { getWorkspaceReport } from "@/lib/actions/reports";
 import { ReportsView } from "@/components/reports/ReportsView";
 import { formatDateCR } from "@/lib/utils/datetime";
+import { requireFeature } from "@/lib/workspace";
 
 /**
  * /reports (Edition 04).
@@ -13,6 +14,7 @@ import { formatDateCR } from "@/lib/utils/datetime";
  * Issue numeration con el mes y el workspace.
  */
 export default async function ReportsPage() {
+  await requireFeature("analytics");
   const report = await getWorkspaceReport();
 
   if (!report) {
