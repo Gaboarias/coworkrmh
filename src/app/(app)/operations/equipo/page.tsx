@@ -7,16 +7,16 @@ import { TeamView } from "@/components/operations/TeamView";
 
 export default async function EquipoPage() {
   const { ws, can } = await getActiveWorkspaceWithPermissions();
-  if (!ws) return <NoEntorno title="Equipo" />;
+  if (!ws) return <NoEntorno title="Roles & acuerdos" />;
   const { members, agreements } = await getTeam();
 
   return (
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <PageHeader
-        eyebrow="/ operations / equipo"
-        title="Equipo,"
-        subtitle="roles y acuerdos."
+        eyebrow="/ operations / roles & acuerdos"
+        title="Roles"
+        subtitle="& acuerdos."
         issueLines={[
           `${members.length} INTEGRANTES`,
           `${agreements.length} ACUERDOS`,

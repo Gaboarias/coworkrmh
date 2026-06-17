@@ -8,7 +8,7 @@ const tabs = [
   { href: "/operations/cotizador", label: "Cotizador" },
   { href: "/operations/ventas", label: "Ventas" },
   { href: "/operations/gastos", label: "Gastos" },
-  { href: "/operations/equipo", label: "Equipo" },
+  { href: "/operations/equipo", label: "Roles & acuerdos" },
 ];
 
 export const OperationsNav = () => <TabNav tabs={tabs} />;
