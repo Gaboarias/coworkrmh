@@ -5,6 +5,9 @@ import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { UserSettingsForm } from "@/components/settings/UserSettingsForm";
+import { CalendarConnections } from "@/components/settings/CalendarConnections";
+import { getCalendarStatus } from "@/lib/calendar/meetings";
+import { googleConfigured } from "@/lib/calendar/google";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -17,6 +20,8 @@ export default async function SettingsPage() {
     .limit(1);
 
   if (!user) redirect("/login");
+
+  const calStatus = await getCalendarStatus(user.id);
 
   return (
     <div className="animate-fade-in mx-auto max-w-2xl px-8 py-10 md:px-12">
@@ -34,6 +39,11 @@ export default async function SettingsPage() {
           avatarUrl: user.avatarUrl ?? null,
           role: user.role ?? "member",
         }}
+      />
+      <CalendarConnections
+        configured={googleConfigured()}
+        connected={calStatus.connected}
+        email={calStatus.email}
       />
     </div>
   );

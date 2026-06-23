@@ -300,6 +300,38 @@ export const taskAssignees = pgTable(
   })
 );
 
+// ─── Conexiones de calendario (OAuth, read-only) ────────────────────────────────
+// Por-usuario. Tokens cifrados (AES-GCM) — nunca en texto plano. Read-only:
+// solo se leen eventos para mostrarlos en /calendar.
+export const calendarProviderEnum = pgEnum("calendar_provider", [
+  "google",
+  "microsoft",
+]);
+
+export const calendarConnections = pgTable(
+  "calendar_connections",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    provider: calendarProviderEnum("provider").notNull(),
+    accountEmail: text("account_email"),
+    accessToken: text("access_token").notNull(), // cifrado
+    refreshToken: text("refresh_token").notNull(), // cifrado
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    // Una conexión por proveedor por usuario.
+    userProviderIdx: uniqueIndex("calendar_conn_user_provider_idx").on(
+      t.userId,
+      t.provider
+    ),
+  })
+);
+
 // ─── Documents ────────────────────────────────────────────────────────────────
 
 export const documents = pgTable(

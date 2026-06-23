@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { Layers } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/workspace";
 import { getAssigneesForTasks } from "@/lib/actions/tasks";
+import { getUserMeetings } from "@/lib/calendar/meetings";
 
 export default async function CalendarPage() {
   const session = await auth();
@@ -133,12 +134,20 @@ export default async function CalendarPage() {
     date: (c.createdAt as Date).toISOString(),
   }));
 
+  // Reuniones del calendario conectado (read-only). Ventana amplia para cubrir
+  // navegación de meses sin refetch. [] si no hay calendario conectado.
+  const now = new Date();
+  const timeMin = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString();
+  const timeMax = new Date(now.getFullYear(), now.getMonth() + 6, 1).toISOString();
+  const meetings = await getUserMeetings(session.user.id, timeMin, timeMax);
+
   return (
     <CalendarView
       tasks={tasksData}
       projects={projectsData}
       notes={notesData}
       changelog={changelogData}
+      meetings={meetings}
       userId={session.user.id}
     />
   );

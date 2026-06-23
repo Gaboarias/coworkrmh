@@ -17,11 +17,17 @@ import {
   parseISO,
 } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, FileText, History } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  History,
+  Video,
+} from "lucide-react";
 import { TasksViewSwitch } from "@/components/tasks/TasksViewSwitch";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
-import { formatDateCR } from "@/lib/utils/datetime";
+import { formatDateCR, formatTimeCR } from "@/lib/utils/datetime";
 import { Modal } from "@/components/ui/Modal";
 import type { TaskPriority } from "@/lib/types";
 
@@ -65,11 +71,22 @@ interface CalendarChange {
   date: string;
 }
 
+interface CalendarMeeting {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  allDay: boolean;
+  location: string | null;
+  url: string | null;
+}
+
 interface CalendarViewProps {
   tasks: CalendarTask[];
   projects: CalendarProject[];
   notes: CalendarNote[];
   changelog: CalendarChange[];
+  meetings?: CalendarMeeting[];
   userId: string;
 }
 
@@ -87,6 +104,7 @@ export function CalendarView({
   projects,
   notes,
   changelog,
+  meetings = [],
   userId,
 }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -125,6 +143,10 @@ export function CalendarView({
 
   function changesForDay(day: Date) {
     return changelog.filter((c) => isSameDay(parseISO(c.date), day));
+  }
+
+  function meetingsForDay(day: Date) {
+    return meetings.filter((m) => isSameDay(parseISO(m.start), day));
   }
 
 
@@ -196,6 +218,10 @@ export function CalendarView({
           <History className="h-3 w-3" />
           Cambio
         </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Video className="h-3 w-3" style={{ color: "var(--info)" }} />
+          Reunión
+        </span>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-elev-1">
@@ -216,6 +242,7 @@ export function CalendarView({
             const dayProjects = projectsForDay(day);
             const dayNotes = notesForDay(day);
             const dayChanges = changesForDay(day);
+            const dayMeetings = meetingsForDay(day);
             const isCurrentMonth = isSameMonth(day, currentDate);
             const isCurrentDay = isToday(day);
             const isMonday = idx % 7 === 0;
@@ -224,7 +251,8 @@ export function CalendarView({
               dayTasks.length > 0 ||
               dayProjects.length > 0 ||
               dayNotes.length > 0 ||
-              dayChanges.length > 0;
+              dayChanges.length > 0 ||
+              dayMeetings.length > 0;
 
             return (
               <div
@@ -333,6 +361,42 @@ export function CalendarView({
                   )}
                 </div>
 
+                {dayMeetings.length > 0 && (
+                  <div className="mt-1 space-y-0.5">
+                    {dayMeetings.slice(0, 2).map((m) => (
+                      <a
+                        key={m.id}
+                        href={m.url ?? "#"}
+                        target={m.url ? "_blank" : undefined}
+                        rel="noopener noreferrer"
+                        title={`${m.title}${m.allDay ? "" : ` · ${formatTimeCR(m.start)}`}`}
+                        className="flex items-center gap-1 rounded px-1 py-0.5 text-xs transition-colors hover:bg-surface-el"
+                        style={{
+                          backgroundColor:
+                            "color-mix(in oklab, var(--info) 12%, transparent)",
+                        }}
+                      >
+                        <Video
+                          className="h-2.5 w-2.5 flex-shrink-0"
+                          style={{ color: "var(--info)" }}
+                        />
+                        <span className="truncate text-text-muted">
+                          {m.title}
+                        </span>
+                      </a>
+                    ))}
+                    {dayMeetings.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDay(day)}
+                        className="block w-full rounded px-1 py-0.5 text-left text-xs font-medium text-primary transition-colors hover:bg-accent-soft hover:text-text"
+                      >
+                        +{dayMeetings.length - 2} reuniones →
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {(dayNotes.length > 0 || dayChanges.length > 0) && (
                   <div className="mt-1 flex flex-wrap items-center gap-1">
                     {dayNotes.slice(0, 2).map((n) => (
@@ -375,6 +439,7 @@ export function CalendarView({
         projects={selectedDay ? projectsForDay(selectedDay) : []}
         notes={selectedDay ? notesForDay(selectedDay) : []}
         changes={selectedDay ? changesForDay(selectedDay) : []}
+        meetings={selectedDay ? meetingsForDay(selectedDay) : []}
       />
     </div>
   );
@@ -391,6 +456,7 @@ function DayDetailModal({
   projects,
   notes,
   changes,
+  meetings,
 }: {
   day: Date | null;
   onClose: () => void;
@@ -398,6 +464,7 @@ function DayDetailModal({
   projects: CalendarProject[];
   notes: CalendarNote[];
   changes: CalendarChange[];
+  meetings: CalendarMeeting[];
 }) {
   if (!day) return null;
   const titleDate = formatDateCR(day, {
@@ -415,6 +482,48 @@ function DayDetailModal({
       size="lg"
     >
       <div className="space-y-5">
+        {meetings.length > 0 && (
+          <section>
+            <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
+              Reuniones ({meetings.length})
+            </h3>
+            <ul className="space-y-1">
+              {meetings.map((m) => {
+                const inner = (
+                  <span className="flex items-center gap-2">
+                    <Video
+                      className="h-3.5 w-3.5 flex-shrink-0"
+                      style={{ color: "var(--info)" }}
+                    />
+                    <span className="min-w-0 flex-1 truncate font-medium text-text">
+                      {m.title}
+                    </span>
+                    <span className="text-xs text-text-tertiary">
+                      {m.allDay ? "Todo el día" : formatTimeCR(m.start)}
+                    </span>
+                  </span>
+                );
+                return (
+                  <li key={m.id}>
+                    {m.url ? (
+                      <a
+                        href={m.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block rounded px-2 py-1.5 text-sm transition-colors hover:bg-surface-el"
+                      >
+                        {inner}
+                      </a>
+                    ) : (
+                      <div className="px-2 py-1.5 text-sm">{inner}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+
         {projects.length > 0 && (
           <section>
             <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
@@ -559,7 +668,8 @@ function DayDetailModal({
         {tasks.length === 0 &&
           projects.length === 0 &&
           notes.length === 0 &&
-          changes.length === 0 && (
+          changes.length === 0 &&
+          meetings.length === 0 && (
             <p className="py-6 text-center text-sm text-text-muted">
               Sin actividad este día.
             </p>
