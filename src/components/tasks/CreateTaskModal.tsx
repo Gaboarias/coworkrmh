@@ -7,11 +7,13 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { AssigneePicker } from "@/components/tasks/AssigneePicker";
 
 interface Profile {
   id: string;
   name: string | null;
   email: string;
+  avatarUrl?: string | null;
 }
 
 interface CreateTaskModalProps {
@@ -32,9 +34,18 @@ export function CreateTaskModal({
   const [priority, setPriority] = useState<
     "low" | "medium" | "high" | "urgent"
   >("medium");
-  const [assigneeId, setAssigneeId] = useState("");
+  const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Hay datos sin guardar → el Modal pide confirmación antes de descartar
+  // por click afuera / Escape / X (evita perder la tarea por accidente).
+  const dirty =
+    title.trim() !== "" ||
+    description.trim() !== "" ||
+    assigneeIds.length > 0 ||
+    dueDate !== "" ||
+    priority !== "medium";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,7 +58,7 @@ export function CreateTaskModal({
         title: title.trim(),
         description: description || undefined,
         priority,
-        assigneeId: assigneeId || undefined,
+        assigneeIds,
         dueDate: dueDate || undefined,
       });
       toast.success("Tarea creada");
@@ -63,6 +74,7 @@ export function CreateTaskModal({
     <Modal
       open
       onClose={onClose}
+      confirmDismiss={dirty}
       title="Nueva tarea"
       footer={
         <>
@@ -151,24 +163,14 @@ export function CreateTaskModal({
         </div>
 
         <div>
-          <label
-            htmlFor="task-assignee"
-            className="mb-1 block text-xs font-medium text-text-muted"
-          >
-            Asignar a
+          <label className="mb-1 block text-xs font-medium text-text-muted">
+            Asignar a {assigneeIds.length > 0 && `(${assigneeIds.length})`}
           </label>
-          <Select
-            id="task-assignee"
-            value={assigneeId}
-            onChange={(e) => setAssigneeId(e.target.value)}
-          >
-            <option value="">Sin asignar</option>
-            {members.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name ?? m.email}
-              </option>
-            ))}
-          </Select>
+          <AssigneePicker
+            members={members}
+            value={assigneeIds}
+            onChange={setAssigneeIds}
+          />
         </div>
       </form>
     </Modal>

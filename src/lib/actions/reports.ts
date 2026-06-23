@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import {
   tasks,
   projects,
+  taskAssignees,
   erpSales,
   erpExpenses,
   erpQuotes,
@@ -143,16 +144,18 @@ export async function getWorkspaceReport(): Promise<WorkspaceReport | null> {
       .groupBy(erpSales.category)
       .orderBy(desc(sql`SUM(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric)`)),
 
-    // 9. Top contributors — 1 query con INNER JOIN users
+    // 9. Top contributors — cuenta por cada asignado (multi-asignado), no solo
+    // el responsable primario. JOIN task_assignees → users.
     db
       .select({
-        userId: tasks.assigneeId,
+        userId: taskAssignees.userId,
         name: users.name,
         completedTasks: sql<number>`count(*)::int`,
       })
       .from(tasks)
       .innerJoin(projects, eq(tasks.projectId, projects.id))
-      .innerJoin(users, eq(users.id, tasks.assigneeId))
+      .innerJoin(taskAssignees, eq(taskAssignees.taskId, tasks.id))
+      .innerJoin(users, eq(users.id, taskAssignees.userId))
       .where(
         and(
           eq(projects.workspaceId, ws.id),
@@ -160,7 +163,7 @@ export async function getWorkspaceReport(): Promise<WorkspaceReport | null> {
           gte(tasks.completedAt, thirtyDaysAgo)
         )
       )
-      .groupBy(tasks.assigneeId, users.name)
+      .groupBy(taskAssignees.userId, users.name)
       .orderBy(desc(sql`count(*)`))
       .limit(5),
   ]);

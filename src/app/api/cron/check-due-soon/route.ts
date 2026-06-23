@@ -16,7 +16,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { db } from "@/lib/db";
-import { tasks, projects, notifications } from "@/lib/db/schema";
+import { tasks, projects, notifications, taskAssignees } from "@/lib/db/schema";
 import { and, eq, gte, isNotNull, lte, ne, sql } from "drizzle-orm";
 import { createNotification } from "@/lib/actions/notifications";
 
@@ -54,21 +54,23 @@ export async function GET(request: Request) {
     now.getTime() - DEDUP_WINDOW_HOURS * 3600 * 1000
   );
 
-  // Query: tareas asignadas con dueDate dentro de la ventana, no done.
+  // Query: tareas con dueDate dentro de la ventana, no done. Multi-asignado:
+  // un row por (tarea × asignado) vía JOIN task_assignees → notificamos a
+  // cada asignado, no solo al responsable primario.
   const dueTasks = await db
     .select({
       id: tasks.id,
       title: tasks.title,
       dueDate: tasks.dueDate,
-      assigneeId: tasks.assigneeId,
+      assigneeId: taskAssignees.userId,
       projectId: tasks.projectId,
       projectName: projects.name,
     })
     .from(tasks)
     .innerJoin(projects, eq(tasks.projectId, projects.id))
+    .innerJoin(taskAssignees, eq(taskAssignees.taskId, tasks.id))
     .where(
       and(
-        isNotNull(tasks.assigneeId),
         isNotNull(tasks.dueDate),
         gte(tasks.dueDate, now.toISOString().slice(0, 10)),
         lte(tasks.dueDate, windowEnd.toISOString().slice(0, 10)),

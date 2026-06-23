@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { tasks, projects, workspaceMembers } from "@/lib/db/schema";
+import { tasks, projects, workspaceMembers, taskAssignees } from "@/lib/db/schema";
 import { eq, and, ne, inArray, count, lte } from "drizzle-orm";
 import { verifyBearerToken } from "@/lib/auth-bearer";
 import { todayYmdCR } from "@/lib/utils/datetime";
@@ -41,9 +41,10 @@ export async function GET(request: Request) {
       })
       .from(tasks)
       .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .innerJoin(taskAssignees, eq(taskAssignees.taskId, tasks.id))
       .where(
         and(
-          eq(tasks.assigneeId, user.sub),
+          eq(taskAssignees.userId, user.sub),
           ne(tasks.status, "done"),
           inArray(projects.workspaceId, wsIds),
           lte(tasks.dueDate, in7Days)
@@ -56,9 +57,10 @@ export async function GET(request: Request) {
       .select({ count: count() })
       .from(tasks)
       .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .innerJoin(taskAssignees, eq(taskAssignees.taskId, tasks.id))
       .where(
         and(
-          eq(tasks.assigneeId, user.sub),
+          eq(taskAssignees.userId, user.sub),
           ne(tasks.status, "done"),
           inArray(projects.workspaceId, wsIds)
         )

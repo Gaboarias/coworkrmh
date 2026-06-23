@@ -279,6 +279,27 @@ export const tasks = pgTable(
   })
 );
 
+// Asignados múltiples por tarea (many-to-many). Fuente de verdad de "quién
+// está asignado". `tasks.assignee_id` se mantiene como responsable primario
+// denormalizado (= primer asignado) para compat con queries que aún lo usan.
+export const taskAssignees = pgTable(
+  "task_assignees",
+  {
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => tasks.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    assignedAt: timestamp("assigned_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.taskId, t.userId] }),
+    // Reverse lookup "mis tareas" (WHERE user_id = me).
+    userIdx: index("task_assignees_user_idx").on(t.userId),
+  })
+);
+
 // ─── Documents ────────────────────────────────────────────────────────────────
 
 export const documents = pgTable(
@@ -531,9 +552,15 @@ export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
   user: one(users, { fields: [projectMembers.userId], references: [users.id] }),
 }));
 
-export const tasksRelations = relations(tasks, ({ one }) => ({
+export const tasksRelations = relations(tasks, ({ one, many }) => ({
   project: one(projects, { fields: [tasks.projectId], references: [projects.id] }),
   assignee: one(users, { fields: [tasks.assigneeId], references: [users.id] }),
+  assignees: many(taskAssignees),
+}));
+
+export const taskAssigneesRelations = relations(taskAssignees, ({ one }) => ({
+  task: one(tasks, { fields: [taskAssignees.taskId], references: [tasks.id] }),
+  user: one(users, { fields: [taskAssignees.userId], references: [users.id] }),
 }));
 
 export const clientsRelations = relations(clients, ({ many }) => ({

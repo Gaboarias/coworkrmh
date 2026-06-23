@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { tasks, projects } from "@/lib/db/schema";
+import { tasks, projects, taskAssignees } from "@/lib/db/schema";
 import { eq, and, asc, desc } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
@@ -45,9 +45,12 @@ export default async function MyTasksPage() {
     })
     .from(tasks)
     .innerJoin(projects, eq(tasks.projectId, projects.id))
+    // Multi-asignado: incluye tareas donde el user es uno de los asignados
+    // (no solo el responsable primario). task_assignees es la fuente de verdad.
+    .innerJoin(taskAssignees, eq(taskAssignees.taskId, tasks.id))
     .where(
       and(
-        eq(tasks.assigneeId, userId),
+        eq(taskAssignees.userId, userId),
         eq(projects.workspaceId, ws.id)
       )
     )

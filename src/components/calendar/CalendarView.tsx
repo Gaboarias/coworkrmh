@@ -36,6 +36,7 @@ interface CalendarTask {
   dueDate: string;
   projectId: string;
   assigneeId: string | null;
+  assigneeIds: string[];
   project: { name: string; color: string | null } | null;
 }
 
@@ -100,7 +101,7 @@ export function CalendarView({
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const filteredTasks = showMyTasksOnly
-    ? tasks.filter((t) => t.assigneeId === userId)
+    ? tasks.filter((t) => t.assigneeIds.includes(userId))
     : tasks;
 
   function tasksForDay(day: Date) {

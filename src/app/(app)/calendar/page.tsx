@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Layers } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/workspace";
+import { getAssigneesForTasks } from "@/lib/actions/tasks";
 
 export default async function CalendarPage() {
   const session = await auth();
@@ -44,6 +45,9 @@ export default async function CalendarPage() {
     .where(and(isNotNull(tasks.dueDate), eq(projects.workspaceId, ws.id)))
     .orderBy(asc(tasks.dueDate));
 
+  // Asignados (ids) por tarea — para el filtro "mis tareas" multi-asignado.
+  const calAssigneeMap = await getAssigneesForTasks(taskRows.map((t) => t.id));
+
   const tasksData = taskRows.map((t) => ({
     id: t.id,
     title: t.title,
@@ -52,6 +56,7 @@ export default async function CalendarPage() {
     dueDate: t.dueDate as string,
     projectId: t.projectId ?? "",
     assigneeId: t.assigneeId ?? null,
+    assigneeIds: (calAssigneeMap[t.id] ?? []).map((a) => a.id),
     project: t.projectName
       ? { name: t.projectName, color: t.projectColor ?? null }
       : null,

@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { ProjectTasksView } from "@/components/projects/ProjectTasksView";
 import { RecentActivityPanel } from "@/components/changelog/RecentActivityPanel";
 import { ensureWorkspaceForResource } from "@/lib/workspace";
+import { getAssigneesForTasks } from "@/lib/actions/tasks";
 
 interface PageProps {
   params: { projectId: string };
@@ -89,6 +90,9 @@ export default async function ProjectPage({ params }: PageProps) {
       .where(eq(projectMembers.projectId, params.projectId)),
   ]);
 
+  // Asignados (todos) por tarea — 1 query con JOIN a users.
+  const assigneeMap = await getAssigneesForTasks(taskRows.map((t) => t.id));
+
   const tasksData = taskRows.map((t) => ({
     id: t.id,
     projectId: t.projectId,
@@ -111,6 +115,7 @@ export default async function ProjectPage({ params }: PageProps) {
           avatarUrl: t.assigneeAvatarUrl ?? null,
         }
       : null,
+    assignees: assigneeMap[t.id] ?? [],
   }));
 
   // Dedup por user.id, priorizando wsMember (mismo id → mismo user, da igual).

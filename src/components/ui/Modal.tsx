@@ -14,6 +14,12 @@ interface ModalProps {
   footer?: React.ReactNode;
   size?: "sm" | "md" | "lg";
   className?: string;
+  /**
+   * Si es true, cerrar por backdrop / Escape / botón X pide confirmación
+   * antes de descartar. Default false → comportamiento idéntico al previo.
+   * Se usa en formularios con datos sin guardar para evitar pérdida accidental.
+   */
+  confirmDismiss?: boolean;
 }
 
 const sizes = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" };
@@ -37,13 +43,31 @@ export function Modal({
   footer,
   size = "md",
   className,
+  confirmDismiss = false,
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Ref siempre fresco — evita stale closure en el listener de Escape sin
+  // tener que meter confirmDismiss en las deps del effect (lo cual reejecutaría
+  // el lock de overflow del body).
+  const confirmDismissRef = useRef(confirmDismiss);
+  confirmDismissRef.current = confirmDismiss;
+
+  function requestClose() {
+    if (
+      confirmDismissRef.current &&
+      typeof window !== "undefined" &&
+      !window.confirm("¿Cerrar sin guardar? Se perderá lo que escribiste.")
+    ) {
+      return;
+    }
+    onClose();
+  }
 
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestClose();
     }
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -60,7 +84,7 @@ export function Modal({
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onClick={onClose}
+      onClick={requestClose}
     >
       <div
         ref={panelRef}
@@ -89,7 +113,7 @@ export function Modal({
             </div>
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               aria-label="Cerrar"
               className="rounded-md p-1 text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
             >

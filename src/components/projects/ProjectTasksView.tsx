@@ -39,6 +39,12 @@ interface Task {
     email: string;
     avatarUrl: string | null;
   } | null;
+  assignees?: {
+    id: string;
+    name: string | null;
+    email: string;
+    avatarUrl: string | null;
+  }[];
 }
 
 interface Profile {

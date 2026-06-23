@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   X,
   CalendarDays,
@@ -15,9 +15,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { TaskExtras } from "./TaskExtras";
-import { UserAvatar } from "@/components/shared/UserAvatar";
+import { AssigneePicker } from "@/components/tasks/AssigneePicker";
 import { Textarea } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { updateTask } from "@/lib/actions/tasks";
 import {
   listTaskComments,
@@ -44,6 +43,7 @@ interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   assigneeId: string | null;
+  assignees?: { id: string; name: string | null; email: string; avatarUrl: string | null }[];
   dueDate: string | null;
   completedAt: string | null;
   createdAt: string | null;
@@ -106,8 +106,17 @@ export function TaskDetail({
 }: TaskDetailProps) {
   const [status, setStatus] = useState<TaskStatus>(task.status);
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
-  const [assigneeId, setAssigneeId] = useState(task.assigneeId ?? "");
+  const [assigneeIds, setAssigneeIds] = useState<string[]>(
+    task.assignees?.map((a) => a.id) ??
+      (task.assigneeId ? [task.assigneeId] : [])
+  );
   const [description, setDescription] = useState(task.description ?? "");
+  const [title, setTitle] = useState(task.title);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(task.title);
+  // Ref para que el listener de Escape del panel no se dispare mientras se
+  // edita el título (ahí Escape cancela la edición, no cierra el panel).
+  const editingTitleRef = useRef(false);
   const [saving, setSaving] = useState(false);
   const [comments, setComments] = useState<TaskCommentRow[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
@@ -116,7 +125,10 @@ export function TaskDetail({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (editingTitleRef.current) return;
+        onClose();
+      }
     }
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -134,6 +146,13 @@ export function TaskDetail({
     setPrevTaskId(task.id);
     setComments([]);
     setCommentsLoading(true);
+    setTitle(task.title);
+    setEditingTitle(false);
+    editingTitleRef.current = false;
+    setAssigneeIds(
+      task.assignees?.map((a) => a.id) ??
+        (task.assigneeId ? [task.assigneeId] : [])
+    );
   }
 
   // Cargar bitácora cuando task.id cambia.
@@ -176,9 +195,30 @@ export function TaskDetail({
     await save({ priority: newPriority });
   }
 
-  async function handleAssigneeChange(newAssigneeId: string) {
-    setAssigneeId(newAssigneeId);
-    await save({ assigneeId: newAssigneeId || null });
+  async function handleAssigneesChange(newIds: string[]) {
+    setAssigneeIds(newIds);
+    await save({ assigneeIds: newIds });
+  }
+
+  function startEditTitle() {
+    setTitleDraft(title);
+    setEditingTitle(true);
+    editingTitleRef.current = true;
+  }
+
+  function cancelEditTitle() {
+    setEditingTitle(false);
+    editingTitleRef.current = false;
+  }
+
+  async function commitTitle() {
+    const trimmed = titleDraft.trim();
+    setEditingTitle(false);
+    editingTitleRef.current = false;
+    if (!trimmed || trimmed === title) return; // vacío o sin cambios → no-op
+    setTitle(trimmed);
+    await save({ title: trimmed });
+    toast.success("Título actualizado");
   }
 
   async function handleDescriptionBlur() {
@@ -217,8 +257,6 @@ export function TaskDetail({
     }
   }
 
-  const assignee = members.find((m) => m.id === assigneeId);
-
   return (
     <div
       className="fixed inset-0 z-50 flex justify-end bg-ink/40"
@@ -245,15 +283,38 @@ export function TaskDetail({
               <StatusPill status={status} />
               <PriorityPill priority={priority} />
             </div>
-            <h2 className="mt-4 text-[32px] font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[44px] md:text-[52px]">
-              {task.title}
-              <span
-                aria-hidden
-                style={{ color: "var(--project-color)" }}
+            {editingTitle ? (
+              <input
+                autoFocus
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onBlur={commitTitle}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void commitTitle();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    cancelEditTitle();
+                  }
+                }}
+                maxLength={500}
+                aria-label="Editar título de la tarea"
+                className="mt-4 w-full border-b-2 bg-transparent text-[32px] font-bold leading-[1.05] tracking-[-0.03em] text-ink outline-none sm:text-[44px] md:text-[52px]"
+                style={{ borderColor: "var(--project-color)" }}
+              />
+            ) : (
+              <h2
+                onClick={startEditTitle}
+                title="Click para editar el título"
+                className="mt-4 cursor-text text-[32px] font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[44px] md:text-[52px]"
               >
-                .
-              </span>
-            </h2>
+                {title}
+                <span aria-hidden style={{ color: "var(--project-color)" }}>
+                  .
+                </span>
+              </h2>
+            )}
             {task.createdAt && (
               <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-faint">
                 Creada {formatDateTimeCR(task.createdAt)}
@@ -353,31 +414,18 @@ export function TaskDetail({
             </div>
           </section>
 
-          {/* ── Asignado a ───────────────────────────────────────── */}
+          {/* ── Asignados (multi) ────────────────────────────────── */}
           <section>
             <SectionLabel icon={<User className="h-3 w-3" />}>
-              Asignado a
+              Asignados {assigneeIds.length > 0 && `(${assigneeIds.length})`}
             </SectionLabel>
-            <div className="mt-3 flex items-center gap-3">
-              {assignee && (
-                <UserAvatar
-                  name={assignee.name}
-                  avatarUrl={assignee.avatarUrl}
-                  size="sm"
-                />
-              )}
-              <Select
-                value={assigneeId}
-                onChange={(e) => handleAssigneeChange(e.target.value)}
-                className="flex-1"
-              >
-                <option value="">Sin asignar</option>
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name ?? m.email}
-                  </option>
-                ))}
-              </Select>
+            <div className="mt-3">
+              <AssigneePicker
+                members={members}
+                value={assigneeIds}
+                onChange={handleAssigneesChange}
+                disabled={saving}
+              />
             </div>
           </section>
 

@@ -7,6 +7,7 @@ import {
   payments,
   clients,
   buckets,
+  taskAssignees,
 } from "@/lib/db/schema";
 import { eq, and, ne, asc, desc, inArray } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -73,9 +74,11 @@ export default async function DashboardPage() {
       })
       .from(tasks)
       .innerJoin(projects, eq(tasks.projectId, projects.id))
+      // Multi-asignado: tareas donde soy uno de los asignados.
+      .innerJoin(taskAssignees, eq(taskAssignees.taskId, tasks.id))
       .where(
         and(
-          eq(tasks.assigneeId, userId),
+          eq(taskAssignees.userId, userId),
           ne(tasks.status, "done"),
           eq(projects.workspaceId, ws.id)
         )

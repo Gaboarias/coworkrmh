@@ -18,6 +18,7 @@ interface Task {
   priority: TaskPriority;
   dueDate: string | null;
   assignee?: { name: string | null; avatarUrl: string | null } | null;
+  assignees?: { id: string; name: string | null; avatarUrl: string | null }[];
 }
 
 interface TaskRowProps {
@@ -98,13 +99,29 @@ export function TaskRow({
 
       <TaskPriorityBadge priority={task.priority} />
 
-      {task.assignee && (
-        <UserAvatar
-          name={task.assignee.name}
-          avatarUrl={task.assignee.avatarUrl}
-          size="xs"
-        />
-      )}
+      {(() => {
+        const shown =
+          task.assignees && task.assignees.length > 0
+            ? task.assignees
+            : task.assignee
+            ? [task.assignee]
+            : [];
+        if (shown.length === 0) return null;
+        return (
+          <div className="flex flex-shrink-0 -space-x-1.5">
+            {shown.slice(0, 3).map((a, i) => (
+              <span key={i} className="rounded-full ring-2 ring-bg">
+                <UserAvatar name={a.name} avatarUrl={a.avatarUrl} size="xs" />
+              </span>
+            ))}
+            {shown.length > 3 && (
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-el text-[9px] font-bold text-text-tertiary ring-2 ring-bg">
+                +{shown.length - 3}
+              </span>
+            )}
+          </div>
+        );
+      })()}
 
       {task.dueDate && (
         <div

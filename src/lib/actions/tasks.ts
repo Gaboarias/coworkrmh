@@ -7,11 +7,13 @@ import {
   tasks,
   tags,
   taskTags,
+  taskAssignees,
   projects,
   projectMembers,
   workspaceMembers,
+  users,
 } from "@/lib/db/schema";
-import { and, eq, asc } from "drizzle-orm";
+import { and, eq, asc, inArray } from "drizzle-orm";
 import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
 import { createNotification } from "@/lib/actions/notifications";
 import { createTaskSchema, updateTaskSchema } from "@/lib/validation/actions";
@@ -98,26 +100,133 @@ async function requireProjectsManage() {
   return user;
 }
 
+/**
+ * Sincroniza el set de asignados de una tarea contra `userIds` (fuente de
+ * verdad = tabla task_assignees). Auto-agrega cada uno como project member,
+ * inserta los nuevos, borra los que ya no están, y mantiene
+ * tasks.assignee_id = primer asignado (responsable primario denormalizado).
+ * Devuelve el diff para disparar notificaciones.
+ */
+async function syncTaskAssignees(
+  taskId: string,
+  projectId: string,
+  userIds: string[]
+): Promise<{ added: string[]; all: string[] }> {
+  // Dedup preservando orden (el primero es el responsable primario).
+  const desired = Array.from(new Set(userIds));
+
+  // Asegurar membership de cada asignado (tira si no es del workspace).
+  await Promise.all(
+    desired.map((uid) => ensureAssigneeIsProjectMember(projectId, uid))
+  );
+
+  const current = await db
+    .select({ userId: taskAssignees.userId })
+    .from(taskAssignees)
+    .where(eq(taskAssignees.taskId, taskId));
+  const currentSet = new Set(current.map((r) => r.userId));
+  const desiredSet = new Set(desired);
+
+  const added = desired.filter((uid) => !currentSet.has(uid));
+  const removed = current
+    .map((r) => r.userId)
+    .filter((uid) => !desiredSet.has(uid));
+
+  if (added.length) {
+    await db
+      .insert(taskAssignees)
+      .values(added.map((uid) => ({ taskId, userId: uid })))
+      .onConflictDoNothing();
+  }
+  if (removed.length) {
+    await db
+      .delete(taskAssignees)
+      .where(
+        and(
+          eq(taskAssignees.taskId, taskId),
+          inArray(taskAssignees.userId, removed)
+        )
+      );
+  }
+
+  // Responsable primario denormalizado (compat con queries que aún lo usan).
+  await db
+    .update(tasks)
+    .set({ assigneeId: desired[0] ?? null })
+    .where(eq(tasks.id, taskId));
+
+  return { added, all: desired };
+}
+
+export type TaskAssigneeProfile = {
+  id: string;
+  name: string | null;
+  email: string;
+  avatarUrl: string | null;
+};
+
+/**
+ * Asignados (perfiles) para un set de tareas, agrupados por taskId. Una sola
+ * query con JOIN a users. Usado por las páginas que listan tareas para mostrar
+ * los avatares de todos los asignados.
+ */
+export async function getAssigneesForTasks(
+  taskIds: string[]
+): Promise<Record<string, TaskAssigneeProfile[]>> {
+  if (taskIds.length === 0) return {};
+  const rows = await db
+    .select({
+      taskId: taskAssignees.taskId,
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      avatarUrl: users.avatarUrl,
+    })
+    .from(taskAssignees)
+    .innerJoin(users, eq(users.id, taskAssignees.userId))
+    .where(inArray(taskAssignees.taskId, taskIds))
+    .orderBy(asc(taskAssignees.assignedAt));
+
+  const map: Record<string, TaskAssigneeProfile[]> = {};
+  for (const r of rows) {
+    (map[r.taskId] ??= []).push({
+      id: r.id,
+      name: r.name ?? null,
+      email: r.email ?? "",
+      avatarUrl: r.avatarUrl ?? null,
+    });
+  }
+  return map;
+}
+
 export async function createTask(formData: {
   projectId: string;
   title: string;
   description?: string;
   priority?: "low" | "medium" | "high" | "urgent";
   assigneeId?: string;
+  assigneeIds?: string[];
   dueDate?: string;
   parentTaskId?: string;
 }) {
   createTaskSchema.parse(formData);
   const user = await requireProjectsManage();
 
-  // Auto-add assignee como project member si es workspace member pero no
-  // project member todavía. Tira si no pertenece ni al workspace.
-  if (formData.assigneeId) {
-    await ensureAssigneeIsProjectMember(
-      formData.projectId,
-      formData.assigneeId
-    );
-  }
+  // Resolver lista de asignados — acepta assigneeIds[] (nuevo) o el legacy
+  // assigneeId (single). Dedup preservando orden.
+  const assigneeIds = Array.from(
+    new Set(
+      formData.assigneeIds ??
+        (formData.assigneeId ? [formData.assigneeId] : [])
+    )
+  );
+
+  // Auto-add cada asignado como project member (tira si no es del workspace).
+  await Promise.all(
+    assigneeIds.map((uid) =>
+      ensureAssigneeIsProjectMember(formData.projectId, uid)
+    )
+  );
 
   const [task] = await db
     .insert(tasks)
@@ -126,34 +235,48 @@ export async function createTask(formData: {
       title: formData.title,
       description: formData.description ?? null,
       priority: formData.priority ?? "medium",
-      assigneeId: formData.assigneeId ?? null,
+      assigneeId: assigneeIds[0] ?? null,
       dueDate: formData.dueDate ?? null,
       parentTaskId: formData.parentTaskId ?? null,
       createdBy: user.id,
     })
     .returning();
 
-  revalidatePath(`/projects/${formData.projectId}`);
+  if (assigneeIds.length) {
+    await db
+      .insert(taskAssignees)
+      .values(assigneeIds.map((uid) => ({ taskId: task.id, userId: uid })))
+      .onConflictDoNothing();
+  }
 
-  // Notification trigger: si la tarea se crea ya asignada a alguien, notificar.
-  if (formData.assigneeId && formData.assigneeId !== user.id) {
+  revalidatePath(`/projects/${formData.projectId}`);
+  revalidatePath("/my-tasks");
+  revalidatePath("/calendar");
+
+  // Notification trigger: notificar a cada asignado distinto del creador.
+  const toNotify = assigneeIds.filter((uid) => uid !== user.id);
+  if (toNotify.length) {
     const [project] = await db
       .select({ name: projects.name })
       .from(projects)
       .where(eq(projects.id, formData.projectId))
       .limit(1);
-    await createNotification({
-      userId: formData.assigneeId,
-      type: "task_assigned",
-      payload: {
-        title: "Te asignaron una tarea",
-        body: `${formData.title} — ${project?.name ?? "proyecto"}`,
-        actorId: user.id,
-        actorName: user.name ?? user.email ?? undefined,
-        refs: { taskId: task.id, projectId: formData.projectId },
-      },
-      href: `/projects/${formData.projectId}`,
-    });
+    await Promise.all(
+      toNotify.map((uid) =>
+        createNotification({
+          userId: uid,
+          type: "task_assigned",
+          payload: {
+            title: "Te asignaron una tarea",
+            body: `${formData.title} — ${project?.name ?? "proyecto"}`,
+            actorId: user.id,
+            actorName: user.name ?? user.email ?? undefined,
+            refs: { taskId: task.id, projectId: formData.projectId },
+          },
+          href: `/projects/${formData.projectId}`,
+        })
+      )
+    );
   }
 
   return task;
@@ -168,6 +291,7 @@ export async function updateTask(
     status?: "todo" | "in_progress" | "review" | "done";
     priority?: "low" | "medium" | "high" | "urgent";
     assigneeId?: string | null;
+    assigneeIds?: string[];
     dueDate?: string | null;
   }
 ) {
@@ -180,43 +304,50 @@ export async function updateTask(
       ? null
       : undefined;
 
-  // Capturar estado anterior para detectar cambios (notification triggers).
-  // Levantamos assigneeId + title siempre (los necesitamos para varios triggers),
-  // y status para el task_status_changed trigger.
+  // Set de asignados deseado — acepta assigneeIds[] (nuevo) o el legacy
+  // assigneeId (single). undefined = no tocar asignados.
+  const desiredAssignees: string[] | undefined =
+    updates.assigneeIds ??
+    (updates.assigneeId !== undefined
+      ? updates.assigneeId
+        ? [updates.assigneeId]
+        : []
+      : undefined);
+
+  // Capturar estado anterior para los triggers de notificación.
   const needsPrev =
-    updates.assigneeId !== undefined || updates.status !== undefined;
-  let prevAssigneeId: string | null = null;
+    desiredAssignees !== undefined || updates.status !== undefined;
   let prevStatus: string | null = null;
   let taskTitle: string | null = null;
-  let taskAssigneeId: string | null = null;
   if (needsPrev) {
     const [prev] = await db
-      .select({
-        assigneeId: tasks.assigneeId,
-        title: tasks.title,
-        status: tasks.status,
-      })
+      .select({ title: tasks.title, status: tasks.status })
       .from(tasks)
       .where(eq(tasks.id, taskId))
       .limit(1);
-    prevAssigneeId = prev?.assigneeId ?? null;
     prevStatus = prev?.status ?? null;
     taskTitle = prev?.title ?? null;
-    taskAssigneeId = prev?.assigneeId ?? null;
   }
 
-  // Auto-add assignee como project member si cambió y necesita ser materializado.
-  if (
-    updates.assigneeId &&
-    updates.assigneeId !== prevAssigneeId
-  ) {
-    await ensureAssigneeIsProjectMember(projectId, updates.assigneeId);
-  }
+  // Columnas directas (excluye los campos de asignado — van por sync, que
+  // además mantiene tasks.assignee_id = primer asignado).
+  const dbSet: Record<string, unknown> = { updatedAt: new Date() };
+  if (updates.title !== undefined) dbSet.title = updates.title;
+  if (updates.description !== undefined) dbSet.description = updates.description;
+  if (updates.status !== undefined) dbSet.status = updates.status;
+  if (updates.priority !== undefined && updates.priority !== null)
+    dbSet.priority = updates.priority;
+  if (updates.dueDate !== undefined) dbSet.dueDate = updates.dueDate;
+  if (completedAt !== undefined) dbSet.completedAt = completedAt;
 
-  await db
-    .update(tasks)
-    .set({ ...updates, ...(completedAt !== undefined ? { completedAt } : {}), updatedAt: new Date() })
-    .where(eq(tasks.id, taskId));
+  await db.update(tasks).set(dbSet).where(eq(tasks.id, taskId));
+
+  // Sincronizar asignados (si se pidió). Devuelve los nuevos para notificar.
+  let addedAssignees: string[] = [];
+  if (desiredAssignees !== undefined) {
+    const res = await syncTaskAssignees(taskId, projectId, desiredAssignees);
+    addedAssignees = res.added;
+  }
 
   // Lazy-load project name (sólo si algún trigger lo necesita).
   let projectName: string | null = null;
@@ -231,53 +362,63 @@ export async function updateTask(
     return projectName;
   };
 
-  // Trigger 1: task_assigned — assigneeId cambió a alguien distinto del actor.
-  if (
-    updates.assigneeId &&
-    updates.assigneeId !== prevAssigneeId &&
-    updates.assigneeId !== user.id
-  ) {
-    await createNotification({
-      userId: updates.assigneeId,
-      type: "task_assigned",
-      payload: {
-        title: "Te asignaron una tarea",
-        body: `${updates.title ?? taskTitle ?? "Tarea"} — ${await getProjectName()}`,
-        actorId: user.id,
-        actorName: user.name ?? user.email ?? undefined,
-        refs: { taskId, projectId },
-      },
-      href: `/projects/${projectId}`,
-    });
+  // Trigger 1: task_assigned — notificar a cada asignado NUEVO (≠ actor).
+  const newAssignees = addedAssignees.filter((uid) => uid !== user.id);
+  if (newAssignees.length) {
+    const pname = await getProjectName();
+    await Promise.all(
+      newAssignees.map((uid) =>
+        createNotification({
+          userId: uid,
+          type: "task_assigned",
+          payload: {
+            title: "Te asignaron una tarea",
+            body: `${updates.title ?? taskTitle ?? "Tarea"} — ${pname}`,
+            actorId: user.id,
+            actorName: user.name ?? user.email ?? undefined,
+            refs: { taskId, projectId },
+          },
+          href: `/projects/${projectId}`,
+        })
+      )
+    );
   }
 
-  // Trigger 2: task_status_changed — status cambió, notificar al assignee
-  // (si no es el actor). Útil para reflejar avance de tareas que asignaste.
-  if (
-    updates.status &&
-    prevStatus &&
-    updates.status !== prevStatus &&
-    taskAssigneeId &&
-    taskAssigneeId !== user.id
-  ) {
-    const statusLabels: Record<string, string> = {
-      todo: "Por hacer",
-      in_progress: "En curso",
-      review: "En revisión",
-      done: "Listo",
-    };
-    await createNotification({
-      userId: taskAssigneeId,
-      type: "task_status_changed",
-      payload: {
-        title: `Estado actualizado: ${statusLabels[updates.status] ?? updates.status}`,
-        body: `${taskTitle ?? "Tarea"} — ${await getProjectName()}`,
-        actorId: user.id,
-        actorName: user.name ?? user.email ?? undefined,
-        refs: { taskId, projectId },
-      },
-      href: `/projects/${projectId}`,
-    });
+  // Trigger 2: task_status_changed — status cambió, notificar a TODOS los
+  // asignados actuales (≠ actor). Refleja avance a todo el equipo de la tarea.
+  if (updates.status && prevStatus && updates.status !== prevStatus) {
+    const assignedRows = await db
+      .select({ userId: taskAssignees.userId })
+      .from(taskAssignees)
+      .where(eq(taskAssignees.taskId, taskId));
+    const recipients = assignedRows
+      .map((r) => r.userId)
+      .filter((uid) => uid !== user.id);
+    if (recipients.length) {
+      const statusLabels: Record<string, string> = {
+        todo: "Por hacer",
+        in_progress: "En curso",
+        review: "En revisión",
+        done: "Listo",
+      };
+      const pname = await getProjectName();
+      await Promise.all(
+        recipients.map((uid) =>
+          createNotification({
+            userId: uid,
+            type: "task_status_changed",
+            payload: {
+              title: `Estado actualizado: ${statusLabels[updates.status!] ?? updates.status}`,
+              body: `${taskTitle ?? "Tarea"} — ${pname}`,
+              actorId: user.id,
+              actorName: user.name ?? user.email ?? undefined,
+              refs: { taskId, projectId },
+            },
+            href: `/projects/${projectId}`,
+          })
+        )
+      );
+    }
   }
 
   revalidatePath(`/projects/${projectId}`);
