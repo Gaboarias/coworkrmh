@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Plus, FolderKanban, Layers } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { getActiveWorkspace } from "@/lib/workspace";
-import { ProjectsExplorer } from "@/components/projects/ProjectsExplorer";
+import { ProjectsView } from "@/components/projects/ProjectsView";
 import type { ProjectStatus } from "@/lib/types";
 
 /**
@@ -147,7 +147,11 @@ export default async function ProjectsPage() {
           action={isManager ? newProjectButton : undefined}
         />
       ) : (
-        <ProjectsExplorer specimens={specimens} buckets={bucketTabs} />
+        <ProjectsView
+          specimens={specimens}
+          buckets={bucketTabs}
+          canEdit={isManager}
+        />
       )}
     </div>
   );

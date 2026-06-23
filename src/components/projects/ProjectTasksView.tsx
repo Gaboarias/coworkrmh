@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, List, LayoutGrid } from "lucide-react";
 import { TaskRow } from "@/components/tasks/TaskRow";
+import { TaskBoard } from "@/components/tasks/TaskBoard";
 import { TaskDetail } from "@/components/tasks/TaskDetail";
 import { CreateTaskModal } from "@/components/tasks/CreateTaskModal";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -83,16 +84,22 @@ export function ProjectTasksView({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<"lista" | "tablero">("lista");
+
+  const matchesSearch = (t: Task) =>
+    !search || t.title.toLowerCase().includes(search.toLowerCase());
 
   const filtered = tasks.filter((t) => {
     if (statusFilter !== "all" && t.status !== statusFilter) return false;
-    if (search && !t.title.toLowerCase().includes(search.toLowerCase()))
-      return false;
-    return true;
+    return matchesSearch(t);
   });
 
   const active = filtered.filter((t) => t.status !== "done");
   const completed = filtered.filter((t) => t.status === "done");
+
+  // El tablero muestra todas las tareas (los estados son las columnas), solo
+  // filtradas por búsqueda — ignora el filtro de estado de la lista.
+  const boardTasks = tasks.filter(matchesSearch);
 
   const newButton = canEdit ? (
     <button
@@ -125,6 +132,31 @@ export function ProjectTasksView({
 
       <ProjectTabs projectId={project.id} />
 
+      {/* Switch de vista Lista | Tablero */}
+      <div className="mb-4 flex items-center gap-1.5">
+        {(
+          [
+            ["lista", "Lista", List],
+            ["tablero", "Tablero", LayoutGrid],
+          ] as const
+        ).map(([k, label, Icon]) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => setView(k)}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors",
+              view === k
+                ? "bg-accent-soft text-ink"
+                : "text-ink-soft hover:bg-accent-soft hover:text-ink"
+            )}
+          >
+            <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
+            {label}
+          </button>
+        ))}
+      </div>
+
       {/* Filtros */}
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <Input
@@ -135,31 +167,45 @@ export function ProjectTasksView({
           aria-label="Buscar tareas"
           className="w-52"
         />
-        <div className="flex items-center gap-1">
-          {(
-            ["all", "todo", "in_progress", "review", "done"] as StatusFilter[]
-          ).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStatusFilter(s)}
-              className={cn(
-                "rounded-md px-2.5 py-1 font-mono text-[12px] uppercase tracking-[0.14em] transition-colors duration-150",
-                statusFilter === s
-                  ? "bg-ink text-bg"
-                  : "text-ink-soft hover:bg-accent-soft hover:text-ink"
-              )}
-            >
-              {s === "all" ? "todas" : s.replace("_", " ")}
-            </button>
-          ))}
-        </div>
-        <span className="ml-auto font-mono text-[12px] uppercase tracking-[0.14em] text-ink-faint">
-          {filtered.length} de {tasks.length}
-        </span>
+        {view === "lista" && (
+          <>
+            <div className="flex items-center gap-1">
+              {(
+                ["all", "todo", "in_progress", "review", "done"] as StatusFilter[]
+              ).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStatusFilter(s)}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 font-mono text-[12px] uppercase tracking-[0.14em] transition-colors duration-150",
+                    statusFilter === s
+                      ? "bg-ink text-bg"
+                      : "text-ink-soft hover:bg-accent-soft hover:text-ink"
+                  )}
+                >
+                  {s === "all" ? "todas" : s.replace("_", " ")}
+                </button>
+              ))}
+            </div>
+            <span className="ml-auto font-mono text-[12px] uppercase tracking-[0.14em] text-ink-faint">
+              {filtered.length} de {tasks.length}
+            </span>
+          </>
+        )}
       </div>
 
-      {filtered.length === 0 ? (
+      {view === "tablero" ? (
+        <TaskBoard
+          tasks={boardTasks}
+          projectId={project.id}
+          canEdit={canEdit}
+          onSelectTask={(id) => {
+            const t = tasks.find((x) => x.id === id);
+            if (t) setSelectedTask(t);
+          }}
+        />
+      ) : filtered.length === 0 ? (
         <EmptyState
           title="Sin tareas"
           description={
