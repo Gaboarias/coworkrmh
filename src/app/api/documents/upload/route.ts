@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { requireProjectAccess } from "@/lib/workspace";
-import { logger } from "@/lib/logger";
 
 /**
  * Upload client-side via @vercel/blob `handleUpload()`.
@@ -81,7 +80,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json(jsonResponse);
   } catch (err) {
     const e = err as Error;
-    logger.error("UPL_FAIL", { message: e.message?.slice(0, 100) });
+    // Visibilidad en prod: el cliente @vercel/blob enmascara el motivo real
+    // bajo "Failed to retrieve the client token". Lo logueamos acá (no se
+    // expone al cliente) para poder diagnosticar token/store vs acceso.
+    console.error("[documents/upload] fail:", e?.name, "-", e?.message);
     return NextResponse.json(
       { error: e.message || "Error al procesar el upload" },
       { status: 400 }
