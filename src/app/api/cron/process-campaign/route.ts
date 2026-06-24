@@ -29,10 +29,10 @@ function safeEqual(a: string, b: string): boolean {
  */
 export async function GET(req: NextRequest) {
   if (!process.env.CRON_SECRET) {
-    return NextResponse.json(
-      { error: "CRON_SECRET no configurado" },
-      { status: 500 }
-    );
+    // Sin CRON_SECRET el cron no puede autenticar y no hay nada que procesar
+    // (el blaster no está configurado). No-op 200 para no ensuciar los logs
+    // con un 500 cada minuto. Al setear CRON_SECRET vuelve a operar normal.
+    return NextResponse.json({ skipped: "blaster no configurado" });
   }
   const authHeader = req.headers.get("authorization");
   if (!authHeader || !safeEqual(authHeader, `Bearer ${process.env.CRON_SECRET}`)) {

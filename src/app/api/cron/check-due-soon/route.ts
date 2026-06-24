@@ -39,10 +39,8 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   const expected = `Bearer ${process.env.CRON_SECRET}`;
   if (!process.env.CRON_SECRET) {
-    return NextResponse.json(
-      { error: "CRON_SECRET no configurado en env" },
-      { status: 500 }
-    );
+    // No-op 200 si no está configurado (evita 500 en cada corrida del cron).
+    return NextResponse.json({ skipped: "CRON_SECRET no configurado" });
   }
   if (!authHeader || !safeEqual(authHeader, expected)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
