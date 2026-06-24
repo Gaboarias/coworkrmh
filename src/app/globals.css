@@ -292,6 +292,34 @@
   color: var(--ink-soft);
 }
 
+/* Status / Priority badges (TaskStatusBadge / TaskPriorityBadge).
+   Estas clases las consumen los badges vía config.className; faltaban en el CSS
+   por lo que los badges salían sin color (solo texto). Tinte suave + texto del
+   color semántico, consistente con los pills del detalle de tarea. */
+.status-todo,
+.priority-low {
+  background: color-mix(in oklab, var(--ink-faint) 16%, transparent);
+  color: var(--ink-soft);
+}
+.status-in_progress,
+.priority-medium {
+  background: color-mix(in oklab, var(--info) 16%, transparent);
+  color: var(--info);
+}
+.status-review,
+.priority-high {
+  background: color-mix(in oklab, var(--warn) 18%, transparent);
+  color: var(--warn);
+}
+.status-done {
+  background: color-mix(in oklab, var(--done) 18%, transparent);
+  color: var(--done);
+}
+.priority-urgent {
+  background: color-mix(in oklab, var(--urgent) 16%, transparent);
+  color: var(--urgent);
+}
+
 /* Hanging numbers en listas */
 .h-list {
   display: flex;
