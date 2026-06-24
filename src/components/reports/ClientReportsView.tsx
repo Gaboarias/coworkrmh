@@ -2,7 +2,6 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { upload } from "@vercel/blob/client";
 import { toast } from "sonner";
 import {
   FileText,
@@ -132,17 +131,43 @@ export function ClientReportsView({
       setIsUploading(true);
       setUploadProgress(0);
       try {
-        const blob = await upload(pendingFile.name, pendingFile, {
-          access: "public",
-          handleUploadUrl: "/api/documents/upload",
-          clientPayload: JSON.stringify({ projectId: project.id, taskId: null }),
-          onUploadProgress: ({ percentage }) => {
-            setUploadProgress(percentage);
-          },
+        const fd = new FormData();
+        fd.append("file", pendingFile);
+        fd.append("projectId", project.id);
+        const up = await new Promise<{
+          url: string;
+          mimeType: string;
+          sizeBytes: number;
+        }>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/api/reports/upload");
+          xhr.upload.onprogress = (ev) => {
+            if (ev.lengthComputable)
+              setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
+          };
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                resolve(JSON.parse(xhr.responseText));
+              } catch {
+                reject(new Error("Respuesta inválida del servidor"));
+              }
+            } else {
+              let m = "Error al subir el archivo";
+              try {
+                m = (JSON.parse(xhr.responseText) as { error?: string }).error ?? m;
+              } catch {
+                /* no JSON */
+              }
+              reject(new Error(m));
+            }
+          };
+          xhr.onerror = () => reject(new Error("Error de red"));
+          xhr.send(fd);
         });
-        blobUrl = blob.url;
-        mimeType = pendingFile.type || "application/octet-stream";
-        sizeBytes = pendingFile.size;
+        blobUrl = up.url;
+        mimeType = up.mimeType;
+        sizeBytes = up.sizeBytes;
       } catch (err) {
         toast.error(
           err instanceof Error ? err.message : "Error al subir el archivo."
