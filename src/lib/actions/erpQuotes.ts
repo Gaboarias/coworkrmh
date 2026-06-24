@@ -34,6 +34,21 @@ export interface QuoteRow {
   createdAt: string;
 }
 
+/** Título de una cotización, para breadcrumbs. null si no existe o sin acceso. */
+export async function getQuoteTitle(quoteId: string): Promise<string | null> {
+  try {
+    const { ws } = await requireWs();
+    const [row] = await db
+      .select({ title: erpQuotes.title })
+      .from(erpQuotes)
+      .where(and(eq(erpQuotes.id, quoteId), eq(erpQuotes.workspaceId, ws.id)))
+      .limit(1);
+    return row?.title ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export const computeQuoteTotals = async (
   items: QuoteItemInput[],
   ivaRate: number

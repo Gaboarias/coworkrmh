@@ -7,6 +7,22 @@ import { eq } from "drizzle-orm";
 import { requireProjectAccess } from "@/lib/workspace";
 import { createNotification } from "@/lib/actions/notifications";
 
+/** Título de una nota, para breadcrumbs. null si no existe o sin acceso. */
+export async function getNoteTitle(noteId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ title: notes.title, projectId: notes.projectId })
+    .from(notes)
+    .where(eq(notes.id, noteId))
+    .limit(1);
+  if (!row) return null;
+  try {
+    await requireProjectAccess(row.projectId);
+  } catch {
+    return null;
+  }
+  return row.title;
+}
+
 export async function createNote(formData: {
   projectId: string;
   title: string;

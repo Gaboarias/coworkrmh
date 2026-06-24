@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getProjectName } from "@/lib/actions/projects";
+import { getNoteTitle } from "@/lib/actions/notes";
+import { getQuoteTitle } from "@/lib/actions/erpQuotes";
 
-// Cache módulo-level: id de proyecto → nombre. Evita refetch al navegar entre
-// sub-rutas del mismo proyecto (tareas/docs/notas/reportes).
-const projectNameCache = new Map<string, string>();
+// Cache módulo-level: href dinámico → label real resuelto. Evita refetch al
+// navegar (mismo proyecto/nota/cotización).
+const labelCache = new Map<string, string>();
 
 /**
  * Breadcrumbs auto-generados a partir del pathname.
@@ -85,50 +87,72 @@ export interface BreadcrumbsProps {
 export function Breadcrumbs({ overrideLast, className }: BreadcrumbsProps) {
   const pathname = usePathname();
 
-  // Detectar el ID de proyecto en la URL (/projects/<id>...) para resolver su
-  // nombre real — el breadcrumb solo tiene el UUID de la ruta.
+  // Segmentos dinámicos (UUID) en la URL → cómo resolver su label real. El
+  // breadcrumb solo tiene el ID, así que pedimos el nombre/título al server.
   const parts = pathname.split("/").filter(Boolean);
-  const projectId =
-    parts[0] === "projects" && parts[1] && !SEGMENT_LABELS[parts[1]]
-      ? parts[1]
-      : null;
+  const targets: { href: string; resolve: () => Promise<string | null> }[] = [];
+  if (parts[0] === "projects" && parts[1] && !SEGMENT_LABELS[parts[1]]) {
+    const pid = parts[1];
+    targets.push({ href: `/projects/${pid}`, resolve: () => getProjectName(pid) });
+    if (parts[2] === "notes" && parts[3] && !SEGMENT_LABELS[parts[3]]) {
+      const nid = parts[3];
+      targets.push({
+        href: `/projects/${pid}/notes/${nid}`,
+        resolve: () => getNoteTitle(nid),
+      });
+    }
+  } else if (
+    parts[0] === "operations" &&
+    parts[1] === "cotizador" &&
+    parts[2] &&
+    !SEGMENT_LABELS[parts[2]]
+  ) {
+    const qid = parts[2];
+    targets.push({
+      href: `/operations/cotizador/${qid}`,
+      resolve: () => getQuoteTitle(qid),
+    });
+  }
 
-  const [projectName, setProjectName] = useState<string | null>(() =>
-    projectId ? projectNameCache.get(projectId) ?? null : null
-  );
+  const targetKey = targets.map((t) => t.href).join("|");
+  const [labels, setLabels] = useState<Record<string, string>>(() => {
+    const seed: Record<string, string> = {};
+    for (const t of targets) {
+      const c = labelCache.get(t.href);
+      if (c) seed[t.href] = c;
+    }
+    return seed;
+  });
 
   useEffect(() => {
-    if (!projectId) {
-      setProjectName(null);
-      return;
-    }
-    const cached = projectNameCache.get(projectId);
-    if (cached) {
-      setProjectName(cached);
-      return;
-    }
     let alive = true;
-    getProjectName(projectId)
-      .then((name) => {
-        if (!alive || !name) return;
-        projectNameCache.set(projectId, name);
-        setProjectName(name);
-      })
-      .catch(() => {});
+    for (const t of targets) {
+      const cached = labelCache.get(t.href);
+      if (cached) {
+        setLabels((prev) => ({ ...prev, [t.href]: cached }));
+        continue;
+      }
+      t.resolve()
+        .then((label) => {
+          if (!alive || !label) return;
+          labelCache.set(t.href, label);
+          setLabels((prev) => ({ ...prev, [t.href]: label }));
+        })
+        .catch(() => {});
+    }
     return () => {
       alive = false;
     };
-  }, [projectId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetKey]);
 
   if (HIDDEN_ROUTES.has(pathname)) return null;
   const segments = buildSegments(pathname);
   if (segments.length === 0) return null;
 
-  // Reemplazar el segmento del proyecto (UUID) por su nombre real si ya lo
-  // resolvimos.
-  if (projectId && projectName) {
-    const projSeg = segments.find((s) => s.href === `/projects/${projectId}`);
-    if (projSeg) projSeg.label = projectName;
+  // Reemplazar segmentos dinámicos (UUID) por sus labels resueltos.
+  for (const seg of segments) {
+    if (labels[seg.href]) seg.label = labels[seg.href];
   }
 
   // Aplicar override al último si viene
