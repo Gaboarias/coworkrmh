@@ -24,6 +24,7 @@ import {
   deleteClientReport,
 } from "@/lib/actions/clientReports";
 import type { ClientReportRow } from "@/lib/actions/clientReports";
+import { FilePreviewButton } from "./FilePreviewButton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -526,6 +527,14 @@ function ReportRow({
 
         {/* Actions */}
         <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          {r.fileUrl && (
+            <FilePreviewButton
+              name={r.title}
+              blobUrl={r.fileUrl}
+              mimeType={r.mimeType}
+              className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-background hover:text-text"
+            />
+          )}
           {r.fileUrl && (
             <a
               href={r.fileUrl}

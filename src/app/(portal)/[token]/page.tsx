@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getPortalDataByToken } from "@/lib/actions/clients";
 import { listPublishedReportsForClient } from "@/lib/actions/clientReports";
+import { FilePreviewButton } from "@/components/reports/FilePreviewButton";
 import {
   FileText,
   Download,
@@ -231,28 +232,49 @@ export default async function PortalPage({ params }: PageProps) {
                         </div>
                       </div>
                       {r.fileUrl && (
-                        <a
-                          href={r.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            background: "#161412",
-                            color: "#f5f2eb",
-                            borderRadius: "8px",
-                            padding: "8px 14px",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            textDecoration: "none",
-                            flexShrink: 0,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                          Descargar
-                        </a>
+                        <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                          <FilePreviewButton
+                            name={r.title}
+                            blobUrl={r.fileUrl}
+                            mimeType={r.mimeType}
+                            label="Ver"
+                            style={{
+                              background: "#ffffff",
+                              color: "#161412",
+                              border: "1px solid rgba(22,20,18,0.18)",
+                              borderRadius: "8px",
+                              padding: "8px 14px",
+                              fontSize: "12px",
+                              fontWeight: 600,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              whiteSpace: "nowrap",
+                              cursor: "pointer",
+                            }}
+                          />
+                          <a
+                            href={r.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              background: "#161412",
+                              color: "#f5f2eb",
+                              borderRadius: "8px",
+                              padding: "8px 14px",
+                              fontSize: "12px",
+                              fontWeight: 600,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              textDecoration: "none",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            Descargar
+                          </a>
+                        </div>
                       )}
                     </div>
                   </div>
