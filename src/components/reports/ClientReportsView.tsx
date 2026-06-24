@@ -7,10 +7,9 @@ import {
   FileText,
   Upload,
   Trash2,
-  Eye,
-  EyeOff,
   Download,
   Globe,
+  Lock,
   FilePlus,
   Loader2,
 } from "lucide-react";
@@ -542,6 +541,7 @@ function ReportRow({
               rel="noopener noreferrer"
               className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-background hover:text-text"
               title="Descargar"
+              aria-label="Descargar reporte"
             >
               <Download className="h-3.5 w-3.5" />
             </a>
@@ -554,16 +554,18 @@ function ReportRow({
                   onClick={() => onUnpublish(r.id)}
                   className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-background hover:text-text"
                   title="Despublicar (ocultar del portal)"
+                  aria-label="Despublicar reporte"
                 >
-                  <EyeOff className="h-3.5 w-3.5" />
+                  <Lock className="h-3.5 w-3.5" />
                 </button>
               ) : (
                 <button
                   onClick={() => onPublish(r.id)}
                   className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-background hover:text-[oklch(0.62_0.17_145)]"
                   title="Publicar en portal del cliente"
+                  aria-label="Publicar reporte en el portal"
                 >
-                  <Eye className="h-3.5 w-3.5" />
+                  <Globe className="h-3.5 w-3.5" />
                 </button>
               )}
 
@@ -571,6 +573,7 @@ function ReportRow({
                 onClick={() => onDelete(r.id)}
                 className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-background hover:text-[oklch(0.62_0.2_25)]"
                 title="Eliminar reporte"
+                aria-label="Eliminar reporte"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
