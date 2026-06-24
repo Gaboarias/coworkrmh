@@ -1,40 +1,28 @@
 import { NextResponse } from "next/server";
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { put } from "@vercel/blob";
+import { db } from "@/lib/db";
+import { documents } from "@/lib/db/schema";
 import { requireProjectAccess } from "@/lib/workspace";
+import { revalidatePath } from "next/cache";
 
 /**
- * Upload client-side via @vercel/blob `handleUpload()`.
+ * Upload de documentos — server-side con `put()` de @vercel/blob.
  *
- * Este patrón elimina el límite de 4 MB (cap de body de Vercel Functions)
- * porque el browser sube el archivo directamente al CDN de Vercel Blob —
- * la función solo genera el token de autorización y lo devuelve.
+ * El archivo pasa por esta función (multipart FormData), se sube a Vercel Blob
+ * y se registra en DB en una sola llamada. Simple y directo.
  *
- * Límite configurado: 500 MB por archivo.
+ * Límite: ~4 MB por archivo (cap del body de las Vercel Functions). Para
+ * archivos más grandes habría que volver a client uploads (handleUpload), pero
+ * eso requiere un BLOB_READ_WRITE_TOKEN estático bien configurado.
  *
- * Flujo:
- *  1. Cliente POST { type: "blob.generate-client-token", payload: { pathname, callbackUrl, clientPayload } }
- *  2. onBeforeGenerateToken: valida auth + membresía → retorna token
- *  3. Browser PUT el archivo directo a Vercel Blob CDN con el token
- *  4. Cliente POST { type: "blob.upload-completed", ... } (auto, no-op acá)
- *  5. Cliente llama a /api/documents/register para guardar el record en DB
- *
- * Nota: BLOB_READ_WRITE_TOKEN sigue inyectándose en runtime incluso con
- * stores OIDC — handleUpload() lo lee automáticamente del env.
+ * Requiere BLOB_READ_WRITE_TOKEN en el entorno (Vercel lo inyecta al conectar
+ * un Blob store al proyecto).
  */
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-/**
- * Lista de MIME types para el campo allowedContentTypes de handleUpload.
- * Vercel Blob rechaza uploads con tipos fuera de esta lista.
- * Si necesitás soportar un tipo nuevo, agregalo acá.
- */
-// Lista plana para el campo allowedContentTypes de handleUpload.
-// "*/*" no es seguro — preferimos listar tipos explícitamente.
-const ALLOWED_CONTENT_TYPES: string[] = [
-  "image/*",
-  "video/*",
-  "audio/*",
+const ALLOWED_PREFIXES = ["image/", "video/", "audio/"];
+const ALLOWED_EXACT = new Set<string>([
   "application/pdf",
   "application/zip",
   "application/x-zip-compressed",
@@ -48,44 +36,80 @@ const ALLOWED_CONTENT_TYPES: string[] = [
   "text/csv",
   "text/markdown",
   "application/json",
-];
+]);
+
+function isMimeAllowed(m: string): boolean {
+  if (!m) return false;
+  if (ALLOWED_PREFIXES.some((p) => m.startsWith(p))) return true;
+  return ALLOWED_EXACT.has(m);
+}
+
+// Cap práctico del body de funciones Vercel (~4.5 MB). Dejamos 4 MB.
+const MAX_BYTES = 4 * 1024 * 1024;
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const body = (await request.json()) as HandleUploadBody;
+    const form = await request.formData();
+    const file = form.get("file");
+    const projectId = String(form.get("projectId") ?? "");
+    const taskIdRaw = form.get("taskId");
+    const taskId =
+      taskIdRaw && taskIdRaw !== "null" ? String(taskIdRaw) : null;
 
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async (pathname, clientPayload) => {
-        // Validar auth + membresía antes de generar el token de upload.
-        const { projectId } = JSON.parse(clientPayload || "{}") as {
-          projectId?: string;
-        };
-        if (!projectId) throw new Error("projectId requerido en clientPayload");
-        await requireProjectAccess(projectId);
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: "Archivo faltante" }, { status: 400 });
+    }
+    if (!projectId) {
+      return NextResponse.json(
+        { error: "projectId requerido" },
+        { status: 400 }
+      );
+    }
 
-        return {
-          allowedContentTypes: ALLOWED_CONTENT_TYPES,
-          maximumSizeInBytes: 500 * 1024 * 1024, // 500 MB
-          tokenPayload: clientPayload ?? "",
-        };
-      },
-      onUploadCompleted: async () => {
-        // no-op: el cliente guarda el record en DB vía /api/documents/register
-        // después de que upload() resuelve. Así funciona en local dev (sin túnel).
-      },
+    const mime = file.type || "application/octet-stream";
+    if (!isMimeAllowed(mime)) {
+      return NextResponse.json(
+        { error: `Tipo de archivo no permitido (${mime})` },
+        { status: 400 }
+      );
+    }
+    if (file.size > MAX_BYTES) {
+      return NextResponse.json(
+        { error: "El archivo supera el máximo de 4 MB" },
+        { status: 400 }
+      );
+    }
+
+    // Auth + membresía al proyecto.
+    const { userId } = await requireProjectAccess(projectId);
+
+    const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+    const blob = await put(`documents/${projectId}/${safeName}`, file, {
+      access: "public",
+      contentType: mime,
+      addRandomSuffix: true,
     });
 
-    return NextResponse.json(jsonResponse);
+    const [doc] = await db
+      .insert(documents)
+      .values({
+        projectId,
+        taskId,
+        name: file.name,
+        blobUrl: blob.url,
+        mimeType: mime,
+        sizeBytes: file.size,
+        uploadedBy: userId,
+      })
+      .returning();
+
+    revalidatePath(`/projects/${projectId}/documents`);
+    return NextResponse.json({ document: doc });
   } catch (err) {
     const e = err as Error;
-    // Visibilidad en prod: el cliente @vercel/blob enmascara el motivo real
-    // bajo "Failed to retrieve the client token". Lo logueamos acá (no se
-    // expone al cliente) para poder diagnosticar token/store vs acceso.
     console.error("[documents/upload] fail:", e?.name, "-", e?.message);
     return NextResponse.json(
-      { error: e.message || "Error al procesar el upload" },
+      { error: e.message || "Error al subir el archivo" },
       { status: 400 }
     );
   }

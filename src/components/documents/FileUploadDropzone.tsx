@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
-import { upload } from "@vercel/blob/client";
 import { Upload, File, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,8 +18,8 @@ interface UploadingFile {
   error?: string;
 }
 
-// 500 MB — límite de Vercel Blob client upload.
-const MAX_BYTES = 500 * 1024 * 1024;
+// 4 MB — límite práctico del body de las Vercel Functions (server-side put()).
+const MAX_BYTES = 4 * 1024 * 1024;
 
 export function FileUploadDropzone({
   projectId,
@@ -30,71 +29,66 @@ export function FileUploadDropzone({
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
 
   const uploadFile = useCallback(
-    async (file: File) => {
+    (file: File) => {
       setUploadingFiles((prev) => [
         ...prev,
         { file, progress: 0, done: false },
       ]);
 
-      try {
-        // 1. Upload directo al CDN de Vercel Blob.
-        //    La ruta /api/documents/upload valida auth + membresía y genera el token.
-        const blob = await upload(file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/documents/upload",
-          clientPayload: JSON.stringify({ projectId, taskId: taskId ?? null }),
-          onUploadProgress: ({ percentage }) => {
-            setUploadingFiles((prev) =>
-              prev.map((f) =>
-                f.file === file ? { ...f, progress: percentage } : f
-              )
-            );
-          },
-        });
+      // POST multipart a /api/documents/upload (server-side put() + insert DB).
+      // XHR para tener barra de progreso real durante la subida.
+      const form = new FormData();
+      form.append("file", file);
+      form.append("projectId", projectId);
+      form.append("taskId", taskId ?? "null");
 
-        // 2. Registrar el documento en DB vía endpoint dedicado.
-        //    Separado del upload para compatibilidad con local dev (sin túnel).
-        const res = await fetch("/api/documents/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            blobUrl: blob.url,
-            projectId,
-            taskId: taskId ?? null,
-            name: file.name,
-            mimeType: file.type || "application/octet-stream",
-            sizeBytes: file.size,
-          }),
-        });
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/documents/upload");
 
-        if (!res.ok) {
-          let msg = "Error al registrar el documento";
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable) return;
+        const pct = Math.round((e.loaded / e.total) * 100);
+        setUploadingFiles((prev) =>
+          prev.map((f) => (f.file === file ? { ...f, progress: pct } : f))
+        );
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setUploadingFiles((prev) =>
+            prev.map((f) =>
+              f.file === file ? { ...f, progress: 100, done: true } : f
+            )
+          );
+          toast.success(`${file.name} subido`);
+          onUploaded();
+          setTimeout(() => {
+            setUploadingFiles((prev) => prev.filter((f) => f.file !== file));
+          }, 2000);
+        } else {
+          let msg = "Error al subir";
           try {
-            const data = (await res.json()) as { error?: string };
-            msg = data.error ?? msg;
+            msg = (JSON.parse(xhr.responseText) as { error?: string }).error ?? msg;
           } catch {
-            // respuesta no JSON
+            /* respuesta no JSON */
           }
-          throw new Error(msg);
+          setUploadingFiles((prev) =>
+            prev.map((f) => (f.file === file ? { ...f, error: msg } : f))
+          );
+          toast.error(`${file.name}: ${msg}`);
         }
+      };
 
+      xhr.onerror = () => {
         setUploadingFiles((prev) =>
           prev.map((f) =>
-            f.file === file ? { ...f, progress: 100, done: true } : f
+            f.file === file ? { ...f, error: "Error de red" } : f
           )
         );
-        toast.success(`${file.name} subido`);
-        onUploaded();
-        setTimeout(() => {
-          setUploadingFiles((prev) => prev.filter((f) => f.file !== file));
-        }, 2000);
-      } catch (err) {
-        const message = (err as Error).message || "Error al subir";
-        setUploadingFiles((prev) =>
-          prev.map((f) => (f.file === file ? { ...f, error: message } : f))
-        );
-        toast.error(`${file.name}: ${message}`);
-      }
+        toast.error(`${file.name}: error de red`);
+      };
+
+      xhr.send(form);
     },
     [projectId, taskId, onUploaded]
   );
@@ -134,7 +128,7 @@ export function FileUploadDropzone({
         <p className="text-sm font-medium text-text">
           {isDragActive ? "Suelta aquí" : "Arrastra archivos o haz clic"}
         </p>
-        <p className="mt-1 text-xs text-text-muted">Máximo 500 MB por archivo</p>
+        <p className="mt-1 text-xs text-text-muted">Máximo 4 MB por archivo</p>
       </div>
 
       {uploadingFiles.length > 0 && (
@@ -155,9 +149,7 @@ export function FileUploadDropzone({
                     />
                   </div>
                 )}
-                {f.error && (
-                  <p className="text-xs text-danger">{f.error}</p>
-                )}
+                {f.error && <p className="text-xs text-danger">{f.error}</p>}
               </div>
               {f.done && (
                 <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-success" />
