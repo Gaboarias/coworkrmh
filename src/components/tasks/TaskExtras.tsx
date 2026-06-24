@@ -144,7 +144,14 @@ export function TaskExtras({
             placeholder="Nueva etiqueta"
             className="h-8 text-xs"
           />
-          <Button type="submit" size="sm" variant="outline" loading={busyTags}>
+          <Button
+            type="submit"
+            size="sm"
+            variant="outline"
+            loading={busyTags}
+            aria-label="Agregar etiqueta"
+            title="Agregar etiqueta"
+          >
             <Plus className="h-3.5 w-3.5" />
           </Button>
         </form>
@@ -189,7 +196,14 @@ export function TaskExtras({
             placeholder="Nueva subtarea"
             className="h-8 text-xs"
           />
-          <Button type="submit" size="sm" variant="outline" loading={addingSub}>
+          <Button
+            type="submit"
+            size="sm"
+            variant="outline"
+            loading={addingSub}
+            aria-label="Agregar subtarea"
+            title="Agregar subtarea"
+          >
             <Plus className="h-3.5 w-3.5" />
           </Button>
         </form>

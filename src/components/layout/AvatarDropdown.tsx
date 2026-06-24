@@ -55,6 +55,8 @@ export function AvatarDropdown() {
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-label="Menú de cuenta"
+        title="Cuenta"
         onClick={() => setOpen((o) => !o)}
         className="flex h-9 w-9 items-center justify-center rounded-full transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
       >

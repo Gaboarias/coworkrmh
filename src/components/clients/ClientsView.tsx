@@ -342,6 +342,8 @@ function ClientCard({
             onClick={() => setExpanded((v) => !v)}
             className="shrink-0 text-text-muted transition-colors hover:text-text"
             title="Portal y detalles"
+            aria-label={expanded ? "Ocultar portal y detalles" : "Ver portal y detalles"}
+            aria-expanded={expanded}
           >
             <ChevronRight
               className={`h-4 w-4 transition-transform ${expanded ? "rotate-90" : ""}`}
