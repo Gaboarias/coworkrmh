@@ -1,7 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getProjectName } from "@/lib/actions/projects";
+
+// Cache módulo-level: id de proyecto → nombre. Evita refetch al navegar entre
+// sub-rutas del mismo proyecto (tareas/docs/notas/reportes).
+const projectNameCache = new Map<string, string>();
 
 /**
  * Breadcrumbs auto-generados a partir del pathname.
@@ -78,9 +84,52 @@ export interface BreadcrumbsProps {
 
 export function Breadcrumbs({ overrideLast, className }: BreadcrumbsProps) {
   const pathname = usePathname();
+
+  // Detectar el ID de proyecto en la URL (/projects/<id>...) para resolver su
+  // nombre real — el breadcrumb solo tiene el UUID de la ruta.
+  const parts = pathname.split("/").filter(Boolean);
+  const projectId =
+    parts[0] === "projects" && parts[1] && !SEGMENT_LABELS[parts[1]]
+      ? parts[1]
+      : null;
+
+  const [projectName, setProjectName] = useState<string | null>(() =>
+    projectId ? projectNameCache.get(projectId) ?? null : null
+  );
+
+  useEffect(() => {
+    if (!projectId) {
+      setProjectName(null);
+      return;
+    }
+    const cached = projectNameCache.get(projectId);
+    if (cached) {
+      setProjectName(cached);
+      return;
+    }
+    let alive = true;
+    getProjectName(projectId)
+      .then((name) => {
+        if (!alive || !name) return;
+        projectNameCache.set(projectId, name);
+        setProjectName(name);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [projectId]);
+
   if (HIDDEN_ROUTES.has(pathname)) return null;
   const segments = buildSegments(pathname);
   if (segments.length === 0) return null;
+
+  // Reemplazar el segmento del proyecto (UUID) por su nombre real si ya lo
+  // resolvimos.
+  if (projectId && projectName) {
+    const projSeg = segments.find((s) => s.href === `/projects/${projectId}`);
+    if (projSeg) projSeg.label = projectName;
+  }
 
   // Aplicar override al último si viene
   const last = segments[segments.length - 1];

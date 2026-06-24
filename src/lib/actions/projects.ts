@@ -6,7 +6,11 @@ import { db } from "@/lib/db";
 import { projects, projectMembers, buckets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import type { ProjectStatus } from "@/lib/types";
-import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
+import {
+  getActiveWorkspace,
+  getWorkspacePermissions,
+  requireProjectAccess,
+} from "@/lib/workspace";
 import { createNotification } from "@/lib/actions/notifications";
 import { createProjectSchema } from "@/lib/validation/actions";
 
@@ -85,6 +89,24 @@ export async function updateProject(
   await db.update(projects).set({ ...updates, updatedAt: new Date() }).where(eq(projects.id, projectId));
   revalidatePath("/projects");
   revalidatePath(`/projects/${projectId}`);
+}
+
+/**
+ * Nombre de un proyecto, para resolver breadcrumbs (que solo tienen el ID en
+ * la URL). Devuelve null si no existe o el usuario no tiene acceso.
+ */
+export async function getProjectName(projectId: string): Promise<string | null> {
+  try {
+    await requireProjectAccess(projectId);
+  } catch {
+    return null;
+  }
+  const [row] = await db
+    .select({ name: projects.name })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+    .limit(1);
+  return row?.name ?? null;
 }
 
 export async function createBucket(formData: { name: string; color?: string }) {
