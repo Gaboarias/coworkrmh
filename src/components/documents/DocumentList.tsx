@@ -1,9 +1,11 @@
 "use client";
 
-import { File, Download, Trash2, Image, FileText, Film } from "lucide-react";
+import { useState } from "react";
+import { File, Download, Trash2, Image, FileText, Film, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { deleteDocument } from "@/lib/actions/documents";
 import { formatDateCR } from "@/lib/utils/datetime";
+import { FilePreviewModal } from "./FilePreviewModal";
 
 interface Document {
   id: string;
@@ -43,6 +45,8 @@ export function DocumentList({
   userId,
   onDeleted,
 }: DocumentListProps) {
+  const [preview, setPreview] = useState<Document | null>(null);
+
   async function handleDelete(doc: Document) {
     if (!confirm(`¿Eliminar "${doc.name}"?`)) return;
     try {
@@ -63,23 +67,42 @@ export function DocumentList({
   }
 
   return (
+    <>
     <div className="space-y-2">
       {documents.map((doc) => (
         <div
           key={doc.id}
           className="group flex items-center gap-3 rounded-lg border border-border bg-surface p-3 transition hover:border-border-strong"
         >
-          <FileIcon mimeType={doc.mimeType} />
-
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-text">{doc.name}</p>
-            <p className="text-xs text-text-tertiary">
-              {formatBytes(doc.sizeBytes)}
-              {doc.createdAt && ` · ${formatDateCR(doc.createdAt)}`}
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={() => setPreview(doc)}
+            className="flex min-w-0 flex-1 items-center gap-3 text-left"
+            title="Vista previa"
+          >
+            <FileIcon mimeType={doc.mimeType} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-text">
+                {doc.name}
+              </p>
+              <p className="text-xs text-text-tertiary">
+                {formatBytes(doc.sizeBytes)}
+                {doc.createdAt && ` · ${formatDateCR(doc.createdAt)}`}
+              </p>
+            </div>
+          </button>
 
           <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <button
+              type="button"
+              onClick={() => setPreview(doc)}
+              aria-label={`Vista previa de ${doc.name}`}
+              className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+              title="Vista previa"
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+
             <a
               href={doc.blobUrl}
               download={doc.name}
@@ -107,5 +130,7 @@ export function DocumentList({
         </div>
       ))}
     </div>
+    <FilePreviewModal doc={preview} onClose={() => setPreview(null)} />
+    </>
   );
 }
