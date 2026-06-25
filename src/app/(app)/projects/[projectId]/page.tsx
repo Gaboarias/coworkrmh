@@ -7,7 +7,7 @@ import {
   projectMembers,
   users,
 } from "@/lib/db/schema";
-import { eq, and, isNull, asc } from "drizzle-orm";
+import { eq, and, isNull, ne, asc, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { ProjectTasksView } from "@/components/projects/ProjectTasksView";
 import { RecentActivityPanel } from "@/components/changelog/RecentActivityPanel";
@@ -42,32 +42,47 @@ export default async function ProjectPage({ params }: PageProps) {
   //   1. Workspace members nuevos aparecen sin agregarlos explícitamente.
   //   2. DATA LEGACY: users agregados directo a projectMembers (sin pasar
   //      por workspace) — ej. Jorge Castillo en Midnight Trouble.
-  const [taskRows, wsMemberRows, pjMemberRows] = await Promise.all([
+  // Las tareas "done" crecen sin techo en proyectos largos. Cargamos las
+  // activas completas (working set, acotado por flujo) y solo las últimas N
+  // completadas — evita cargar miles de filas en cada visita.
+  const DONE_LIMIT = 100;
+  const taskSelect = {
+    id: tasks.id,
+    projectId: tasks.projectId,
+    parentTaskId: tasks.parentTaskId,
+    title: tasks.title,
+    description: tasks.description,
+    status: tasks.status,
+    priority: tasks.priority,
+    assigneeId: tasks.assigneeId,
+    dueDate: tasks.dueDate,
+    completedAt: tasks.completedAt,
+    position: tasks.position,
+    createdBy: tasks.createdBy,
+    createdAt: tasks.createdAt,
+    assigneeName: users.name,
+    assigneeEmail: users.email,
+    assigneeAvatarUrl: users.avatarUrl,
+  };
+  const topLevel = and(
+    eq(tasks.projectId, params.projectId),
+    isNull(tasks.parentTaskId)
+  );
+
+  const [activeRows, doneRows, wsMemberRows, pjMemberRows] = await Promise.all([
     db
-      .select({
-        id: tasks.id,
-        projectId: tasks.projectId,
-        parentTaskId: tasks.parentTaskId,
-        title: tasks.title,
-        description: tasks.description,
-        status: tasks.status,
-        priority: tasks.priority,
-        assigneeId: tasks.assigneeId,
-        dueDate: tasks.dueDate,
-        completedAt: tasks.completedAt,
-        position: tasks.position,
-        createdBy: tasks.createdBy,
-        createdAt: tasks.createdAt,
-        assigneeName: users.name,
-        assigneeEmail: users.email,
-        assigneeAvatarUrl: users.avatarUrl,
-      })
+      .select(taskSelect)
       .from(tasks)
       .leftJoin(users, eq(tasks.assigneeId, users.id))
-      .where(
-        and(eq(tasks.projectId, params.projectId), isNull(tasks.parentTaskId))
-      )
+      .where(and(topLevel, ne(tasks.status, "done")))
       .orderBy(asc(tasks.position)),
+    db
+      .select(taskSelect)
+      .from(tasks)
+      .leftJoin(users, eq(tasks.assigneeId, users.id))
+      .where(and(topLevel, eq(tasks.status, "done")))
+      .orderBy(desc(tasks.completedAt))
+      .limit(DONE_LIMIT),
     db
       .select({
         id: users.id,
@@ -89,6 +104,8 @@ export default async function ProjectPage({ params }: PageProps) {
       .innerJoin(users, eq(projectMembers.userId, users.id))
       .where(eq(projectMembers.projectId, params.projectId)),
   ]);
+
+  const taskRows = [...activeRows, ...doneRows];
 
   // Asignados (todos) por tarea — 1 query con JOIN a users.
   const assigneeMap = await getAssigneesForTasks(taskRows.map((t) => t.id));

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { erpExpenses, workspaces } from "@/lib/db/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, sql } from "drizzle-orm";
 import { toMoney, fromMoney, fromRate } from "@/lib/utils/money";
 import { ER, requireWs, requireWsCan } from "./erp.helpers";
 
@@ -27,7 +27,9 @@ export interface ExpensesResult {
 
 export const listExpenses = async (): Promise<ExpensesResult> => {
   const { ws } = await requireWs();
-  const [rows, [wsRow]] = await Promise.all([
+  // Filas para display (limit) + totales por kind en SQL (correctos sin tope —
+  // de ellos depende el punto de equilibrio).
+  const [rows, [wsRow], totalRows] = await Promise.all([
     db
       .select()
       .from(erpExpenses)
@@ -39,6 +41,14 @@ export const listExpenses = async (): Promise<ExpensesResult> => {
       .from(workspaces)
       .where(eq(workspaces.id, ws.id))
       .limit(1),
+    db
+      .select({
+        kind: erpExpenses.kind,
+        total: sql<string>`coalesce(sum(${erpExpenses.amount}::numeric), 0)`,
+      })
+      .from(erpExpenses)
+      .where(eq(erpExpenses.workspaceId, ws.id))
+      .groupBy(erpExpenses.kind),
   ]);
   const map = (r: (typeof rows)[number]): ExpenseRow => ({
     id: r.id,
@@ -50,8 +60,12 @@ export const listExpenses = async (): Promise<ExpensesResult> => {
   });
   const investment = rows.filter((r) => r.kind === "investment").map(map);
   const fixed = rows.filter((r) => r.kind === "fixed").map(map);
-  const totalInvestment = investment.reduce((s, r) => s + r.amount, 0);
-  const totalFixed = fixed.reduce((s, r) => s + r.amount, 0);
+  const totalInvestment = Number(
+    totalRows.find((t) => t.kind === "investment")?.total ?? 0
+  );
+  const totalFixed = Number(
+    totalRows.find((t) => t.kind === "fixed")?.total ?? 0
+  );
   const breakEvenMargin = wsRow?.m ? toMoney(wsRow.m) : 0.45;
   return {
     investment,

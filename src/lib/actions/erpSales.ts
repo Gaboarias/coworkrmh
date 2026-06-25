@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { erpSales } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { toMoney, fromMoney } from "@/lib/utils/money";
 import { ER, requireWs, requireWsCan } from "./erp.helpers";
 
@@ -26,14 +26,37 @@ export interface SalesResult {
   byCategory: { category: string; sales: number; profit: number }[];
 }
 
+// 500 filas para la TABLA (display). Los totales y el desglose por categoría
+// se calculan en SQL sobre TODAS las ventas — así son correctos sin importar
+// cuántas haya (antes se sumaban en JS sobre el corte de 500 → totales mal).
+const SALES_DISPLAY_LIMIT = 500;
+const CAT_KEY = sql<string>`coalesce(nullif(trim(${erpSales.category}), ''), 'Sin categoría')`;
+const SUM_SALES = sql<string>`coalesce(sum(${erpSales.qty}::numeric * ${erpSales.unitPrice}::numeric), 0)`;
+const SUM_PROFIT = sql<string>`coalesce(sum(${erpSales.qty}::numeric * (${erpSales.unitPrice}::numeric - ${erpSales.unitCost}::numeric)), 0)`;
+
 export const listSales = async (): Promise<SalesResult> => {
   const { ws } = await requireWs();
-  const rows = await db
-    .select()
-    .from(erpSales)
-    .where(eq(erpSales.workspaceId, ws.id))
-    .orderBy(desc(erpSales.saleDate))
-    .limit(500);
+  const where = eq(erpSales.workspaceId, ws.id);
+
+  const [rows, [agg], catRows] = await Promise.all([
+    db
+      .select()
+      .from(erpSales)
+      .where(where)
+      .orderBy(desc(erpSales.saleDate))
+      .limit(SALES_DISPLAY_LIMIT),
+    db
+      .select({ sales: SUM_SALES, profit: SUM_PROFIT })
+      .from(erpSales)
+      .where(where),
+    db
+      .select({ category: CAT_KEY, sales: SUM_SALES, profit: SUM_PROFIT })
+      .from(erpSales)
+      .where(where)
+      .groupBy(CAT_KEY)
+      .orderBy(desc(SUM_SALES)),
+  ]);
+
   const mapped: SaleRow[] = rows.map((r) => {
     const qty = toMoney(r.qty);
     const unitCost = toMoney(r.unitCost);
@@ -52,22 +75,15 @@ export const listSales = async (): Promise<SalesResult> => {
       profit: total - qty * unitCost,
     };
   });
-  const totals = mapped.reduce(
-    (a, r) => ({ sales: a.sales + r.total, profit: a.profit + r.profit }),
-    { sales: 0, profit: 0 }
-  );
-  const cat = new Map<string, { sales: number; profit: number }>();
-  for (const r of mapped) {
-    const k = r.category?.trim() || "Sin categoría";
-    const c = cat.get(k) ?? { sales: 0, profit: 0 };
-    c.sales += r.total;
-    c.profit += r.profit;
-    cat.set(k, c);
-  }
+
   return {
     rows: mapped,
-    totals,
-    byCategory: [...cat.entries()].map(([category, v]) => ({ category, ...v })),
+    totals: { sales: Number(agg?.sales ?? 0), profit: Number(agg?.profit ?? 0) },
+    byCategory: catRows.map((r) => ({
+      category: r.category,
+      sales: Number(r.sales),
+      profit: Number(r.profit),
+    })),
   };
 };
 
