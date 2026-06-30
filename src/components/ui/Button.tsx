@@ -23,13 +23,13 @@ const button = cva(
     variants: {
       variant: {
         primary:
-          "bg-ink text-bg hover:bg-ink-soft focus-visible:ring-ink",
+          "bg-primary text-primary-foreground hover:bg-primary-hover focus-visible:ring-primary",
         secondary:
-          "border border-rule-strong bg-transparent text-ink hover:bg-accent-soft focus-visible:ring-ink",
+          "border border-rule-strong bg-transparent text-ink hover:bg-accent-soft focus-visible:ring-primary",
         outline:
-          "border border-rule-strong bg-transparent text-ink-soft hover:text-ink hover:border-ink focus-visible:ring-ink",
+          "border border-rule-strong bg-transparent text-ink-soft hover:text-ink hover:border-ink focus-visible:ring-primary",
         ghost:
-          "bg-transparent text-ink-soft hover:bg-accent-soft hover:text-ink focus-visible:ring-ink",
+          "bg-transparent text-ink-soft hover:bg-accent-soft hover:text-ink focus-visible:ring-primary",
         danger:
           "bg-urgent text-white hover:opacity-90 focus-visible:ring-urgent",
         done:
