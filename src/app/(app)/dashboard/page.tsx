@@ -119,6 +119,18 @@ export default async function DashboardPage() {
   // Pad para issue numeration — DD/MM en lugar de "MMM dd" para consistencia.
   const dateStamp = formatDateCR(now, { day: "2-digit", month: "2-digit" });
 
+  // Progressive disclosure: lo que necesita atención HOY va arriba, antes del
+  // detalle. Derivado de lo ya consultado (sin queries extra).
+  const attentionTasks = myTaskRows.filter(
+    (t) => t.priority === "urgent" || (t.dueDate && isPastDateCR(t.dueDate))
+  );
+  const overduePayments = upcomingPaymentRows.filter(
+    ({ payment }) =>
+      payment.status === "overdue" ||
+      (payment.dueDate && isPastDateCR(payment.dueDate))
+  );
+  const attentionCount = attentionTasks.length + overduePayments.length;
+
   return (
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <PageHeader
@@ -130,6 +142,62 @@ export default async function DashboardPage() {
           `${myTaskRows.length} ACTIVAS · ${recentProjectRows.length} PROYECTOS`,
         ]}
       />
+
+      {/* ── Atención (progressive disclosure: ¿está todo bien?) ──────── */}
+      <section className="mb-10">
+        <HairlineRule label="Atención" count={`${attentionCount}`} />
+        {attentionCount === 0 ? (
+          <p className="mt-3 text-[15px] italic text-ink-soft">
+            Todo al día — nada urgente ni vencido.
+          </p>
+        ) : (
+          <ul className="mt-3 space-y-1">
+            {attentionTasks.map((t) => {
+              const due = t.dueDate ? formatDateCR(t.dueDate) : null;
+              return (
+                <li key={`t-${t.id}`}>
+                  <Link
+                    href={`/projects/${t.projectId}`}
+                    className="row-hover -mx-2 flex items-baseline gap-3 rounded-md px-2 py-1.5"
+                  >
+                    <span
+                      className="h-2 w-2 flex-shrink-0 self-center rounded-full bg-urgent"
+                      aria-hidden
+                    />
+                    <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-ink">
+                      {t.title}
+                    </span>
+                    <span className="flex-shrink-0 font-mono text-[12px] uppercase tracking-[0.1em] text-ink-faint">
+                      {t.projectName}
+                    </span>
+                    <span className="pill pill-urgent">{due ?? "Urgente"}</span>
+                  </Link>
+                </li>
+              );
+            })}
+            {overduePayments.map(({ payment, client }) => (
+              <li
+                key={`p-${payment.id}`}
+                className="-mx-2 flex items-baseline gap-3 rounded-md px-2 py-1.5"
+              >
+                <span
+                  className="h-2 w-2 flex-shrink-0 self-center rounded-full bg-urgent"
+                  aria-hidden
+                />
+                <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-ink">
+                  {payment.description}
+                </span>
+                <span className="flex-shrink-0 font-mono text-[12px] uppercase tracking-[0.08em] text-ink-faint">
+                  {client?.companyName}
+                </span>
+                <span className="pill pill-urgent">
+                  {payment.dueDate ? formatDateCR(payment.dueDate) : "Vencido"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {/* Asymmetric main grid */}
       <div className="mt-2 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-14">
