@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Package } from "lucide-react";
 import { formatMoney } from "@/lib/utils/money";
+import { DensityToggle } from "./DensityToggle";
 import {
   createProduct,
   updateProduct,
@@ -150,6 +151,9 @@ export const CatalogView = ({
 
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <DensityToggle />
+      </div>
       {canManage && (
       <Card>
         <CardContent>
@@ -211,7 +215,7 @@ export const CatalogView = ({
               ) : (
                 <div
                   key={p.id}
-                  className="flex items-center gap-4 px-4 py-3 text-sm transition-colors hover:bg-surface-el"
+                  className="flex items-center gap-4 px-4 py-[var(--erp-row-py)] text-sm transition-colors hover:bg-surface-el"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-text">{p.name}</p>

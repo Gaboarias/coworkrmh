@@ -15,6 +15,7 @@ import {
   setBreakEvenMargin,
   type ExpensesResult,
 } from "@/lib/actions/erpExpenses";
+import { DensityToggle } from "./DensityToggle";
 
 // ── Subcomponente de sección ──────────────────────────────────────────────────
 // Definido en scope de módulo para que React mantenga identidad estable entre
@@ -46,7 +47,7 @@ function ExpensesSection({
         ) : (
           <div className="divide-y divide-border">
             {rows.map((e) => (
-              <div key={e.id} className="flex items-center gap-3 py-2 text-sm">
+              <div key={e.id} className="flex items-center gap-3 py-[var(--erp-row-py)] text-sm">
                 <span className="flex-1 text-text">{e.concept}</span>
                 <span className="text-xs text-text-tertiary">
                   {e.category ?? "—"}
@@ -144,6 +145,9 @@ export const ExpensesView = ({
 
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <DensityToggle />
+      </div>
       {canManage && (
       <Card>
         <CardContent>
