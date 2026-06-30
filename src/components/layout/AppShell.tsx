@@ -3,6 +3,7 @@ import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { CommandPaletteProvider } from "./CommandPaletteProvider";
 import { SidebarStateProvider } from "./SidebarStateContext";
+import { MotionProvider } from "@/components/providers/MotionProvider";
 import { getMemberWorkspaces, WS_COOKIE } from "@/lib/workspace";
 
 /**
@@ -26,6 +27,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarStateProvider>
       <CommandPaletteProvider>
+        <MotionProvider>
         <div className="flex h-screen overflow-hidden">
           <Sidebar wsData={{ workspaces, isAdmin, activeId }} />
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -33,6 +35,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             <main className="flex-1 overflow-y-auto">{children}</main>
           </div>
         </div>
+        </MotionProvider>
       </CommandPaletteProvider>
     </SidebarStateProvider>
   );
