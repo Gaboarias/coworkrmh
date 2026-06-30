@@ -161,7 +161,7 @@ export function ClientsView({ clients: initialClients, isAdmin }: ClientsViewPro
           isAdmin ? (
             <button
               onClick={() => setShowForm((v) => !v)}
-              className="inline-flex items-center gap-2 rounded-lg bg-ink px-3.5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-80"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-80"
             >
               <Plus className="h-4 w-4" />
               Nuevo cliente
@@ -229,7 +229,7 @@ export function ClientsView({ clients: initialClients, isAdmin }: ClientsViewPro
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-80 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-80 disabled:opacity-50"
               >
                 {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 Crear
@@ -411,7 +411,7 @@ function ClientCard({
               </p>
               <button
                 onClick={() => onGenerateToken(client.id)}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-xs font-medium text-background transition-opacity hover:opacity-80"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-80"
               >
                 <Globe className="h-3.5 w-3.5" />
                 Generar portal

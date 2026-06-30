@@ -28,7 +28,7 @@ export default async function CotizadorPage() {
   const newButton = canManage ? (
     <Link
       href="/operations/cotizador/nuevo"
-      className="inline-flex items-center gap-2 rounded-md bg-ink px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft"
+      className="inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover"
     >
       <Plus className="h-3 w-3" />
       Nueva cotización

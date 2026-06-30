@@ -499,7 +499,7 @@ export function TaskDetail({
                 <button
                   type="submit"
                   disabled={!newComment.trim() || postingComment}
-                  className="inline-flex items-center gap-2 rounded-md bg-ink px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Send className="h-3.5 w-3.5" />
                   {postingComment ? "Guardando…" : "Agregar nota"}

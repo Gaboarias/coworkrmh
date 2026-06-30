@@ -92,7 +92,7 @@ export function CalendarConnections({
           ) : (
             <a
               href="/api/calendar/google/connect"
-              className="mt-3 inline-flex items-center gap-2 rounded-md bg-ink px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-bg transition-colors hover:bg-ink-soft"
+              className="mt-3 inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover"
             >
               <CalendarClock className="h-3.5 w-3.5" />
               Conectar Google Calendar
