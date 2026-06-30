@@ -30,8 +30,8 @@
 
     /* Default accent — usado en aggregations (dashboard/reports).
        Cuando entrás a un proyecto, --project-color lo override. */
-    --accent: #161412;
-    --accent-soft: rgba(22, 20, 18, 0.06);
+    --accent: #3f7a34; /* pistacho — accent de acción/identidad (operacional con calidez) */
+    --accent-soft: rgba(63, 122, 52, 0.10);
     --project-color: var(--accent);
 
     /* Estados — committed pero refinados */
@@ -48,9 +48,9 @@
     --coral: #c96b35;
 
     /* Colores semánticos legacy (shadcn/ui compat) */
-    --primary: var(--ink);
-    --primary-hover: #2a2622;
-    --primary-foreground: var(--bg);
+    --primary: #3f7a34;
+    --primary-hover: #34611f;
+    --primary-foreground: #ffffff;
     --primary-muted: var(--accent-soft);
     --secondary: var(--ink-soft);
     --secondary-foreground: var(--bg);
@@ -74,7 +74,7 @@
     --destructive: var(--urgent);
     --destructive-foreground: #ffffff;
     --input: var(--rule);
-    --ring: var(--ink);
+    --ring: #3f7a34;
 
     --sidebar: var(--bg);
     --sidebar-foreground: var(--ink);
@@ -104,8 +104,8 @@
     --rule: rgba(240, 237, 229, 0.08);
     --rule-strong: rgba(240, 237, 229, 0.2);
 
-    --accent: #f0ede5;
-    --accent-soft: rgba(240, 237, 229, 0.08);
+    --accent: #8fce6e; /* pistacho brillante para dark */
+    --accent-soft: rgba(143, 206, 110, 0.13);
     --project-color: var(--accent);
 
     --urgent: #ff4a3a;
@@ -119,10 +119,11 @@
 
     --coral: #e07a4a;
 
-    --primary: var(--ink);
-    --primary-hover: #ffffff;
-    --primary-foreground: var(--bg);
+    --primary: #8fce6e;
+    --primary-hover: #a4dd86;
+    --primary-foreground: #10231a;
     --primary-muted: var(--accent-soft);
+    --ring: #8fce6e;
 
     --elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
     --elev-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px -4px rgba(0, 0, 0, 0.5);
