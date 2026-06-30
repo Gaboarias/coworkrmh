@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { motion } from "motion/react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -82,19 +83,25 @@ export function Modal({
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.12 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       onClick={requestClose}
     >
-      <div
+      <motion.div
         ref={panelRef}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.98, y: 6 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          "w-full animate-slide-up overflow-hidden rounded-md border border-rule-strong bg-surface-el shadow-elev-3 outline-none",
+          "w-full overflow-hidden rounded-md border border-rule-strong bg-surface-el shadow-elev-3 outline-none",
           sizes[size],
           className
         )}
@@ -127,8 +134,8 @@ export function Modal({
             {footer}
           </div>
         )}
-      </div>
-    </div>,
+      </motion.div>
+    </motion.div>,
     document.body
   );
 }
