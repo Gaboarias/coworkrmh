@@ -83,6 +83,7 @@
     --sidebar-active: var(--ink);
 
     --radius: 0.5rem;
+    --erp-row-py: 0.625rem; /* densidad ERP (comfortable); compact override abajo */
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --elev-1: 0 1px 2px rgba(22, 20, 18, 0.06);
     --elev-2: 0 1px 2px rgba(22, 20, 18, 0.06), 0 4px 12px -4px rgba(22, 20, 18, 0.1);
@@ -129,6 +130,9 @@
     --elev-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px -4px rgba(0, 0, 0, 0.5);
     --elev-3: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 28px -12px rgba(0, 0, 0, 0.6);
   }
+
+  /* Densidad ERP — compact reduce el padding vertical de fila (~40% menos). */
+  html[data-density="compact"] { --erp-row-py: 0.3rem; }
 }
 
 @layer base {

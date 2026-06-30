@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { formatMoney } from "@/lib/utils/money";
 import { createSale, deleteSale, type SalesResult } from "@/lib/actions/erpSales";
 import { formatDateCR } from "@/lib/utils/datetime";
+import { DensityToggle } from "./DensityToggle";
 
 export const SalesView = ({
   data,
@@ -198,6 +199,11 @@ export const SalesView = ({
         </Card>
       </div>
 
+      {data.rows.length > 0 && (
+        <div className="mb-2 flex justify-end">
+          <DensityToggle />
+        </div>
+      )}
       <Card>
         {data.rows.length === 0 ? (
           <EmptyState
@@ -208,7 +214,7 @@ export const SalesView = ({
         ) : (
           <div className="divide-y divide-border">
             {data.rows.map((r) => (
-              <div key={r.id} className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-surface-el">
+              <div key={r.id} className="flex items-center gap-4 px-4 py-[var(--erp-row-py)] transition-colors hover:bg-surface-el">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-text">
                     {r.description}
