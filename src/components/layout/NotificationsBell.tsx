@@ -18,12 +18,14 @@ import { formatDateCR } from "@/lib/utils/datetime";
 /**
  * Bell + drawer slide-in (Sunset Aurora · N4).
  *
- * - Polling cada 30s del unread count (cheap server call).
+ * - Polling cada 2 min del unread count, y SOLO con la pestaña visible.
+ *   Una pestaña en background no necesita el conteo y cada consulta quema
+ *   compute de la DB (Neon). Al volver a foco refrescamos de inmediato.
  * - Drawer del lado derecho cuando se abre la campana; lista las últimas 50.
  * - Mark-as-read individual y "marcar todas".
  */
 
-const POLL_INTERVAL_MS = 30_000;
+const POLL_INTERVAL_MS = 120_000;
 
 function timeAgo(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
@@ -57,9 +59,21 @@ export function NotificationsBell() {
   }, []);
 
   useEffect(() => {
-    pollUnread();
-    const id = setInterval(pollUnread, POLL_INTERVAL_MS);
-    return () => clearInterval(id);
+    // Poll solo con la pestaña visible; una pestaña oculta no consulta.
+    const tick = () => {
+      if (!document.hidden) pollUnread();
+    };
+    tick();
+    const id = setInterval(tick, POLL_INTERVAL_MS);
+    // Al volver a foco, refresco inmediato para no esperar el próximo tick.
+    const onVisible = () => {
+      if (!document.hidden) pollUnread();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [pollUnread]);
 
   // Cargar lista cuando se abre el drawer

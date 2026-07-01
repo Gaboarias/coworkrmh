@@ -42,10 +42,13 @@ export function CampaignMetrics({ campaignId }: { campaignId: string }) {
     load();
   }, [load]);
 
-  // Polling sólo mientras haya envíos en cola/proceso.
+  // Polling sólo mientras haya envíos en cola/proceso, y solo con la pestaña
+  // visible (una pestaña oculta no necesita refrescar y quema compute de DB).
   useEffect(() => {
     if (!data || data.queued === 0) return;
-    const id = setInterval(load, POLL_MS);
+    const id = setInterval(() => {
+      if (!document.hidden) load();
+    }, POLL_MS);
     return () => clearInterval(id);
   }, [data, load]);
 
