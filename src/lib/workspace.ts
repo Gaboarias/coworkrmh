@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -24,8 +25,15 @@ export interface Workspace {
   tier: "basic" | "premium";
 }
 
-/** Entornos a los que pertenece el usuario actual (admin → todos). */
-export const getMemberWorkspaces = async (): Promise<{
+/**
+ * Entornos a los que pertenece el usuario actual (admin → todos).
+ *
+ * Envuelto en React `cache()`: se ejecuta UNA vez por request aunque lo llamen
+ * el layout y varias veces `getActiveWorkspace`/`canAccessWorkspace`. Con el
+ * driver neon-http cada query = una activación de compute, así que esto corta
+ * las queries de workspace redundantes por página (member: 4 → 2).
+ */
+export const getMemberWorkspaces = cache(async (): Promise<{
   userId: string;
   isAdmin: boolean;
   workspaces: Workspace[];
@@ -57,7 +65,7 @@ export const getMemberWorkspaces = async (): Promise<{
     .where(inArray(workspaces.id, ids))
     .orderBy(asc(workspaces.name));
   return { userId, isAdmin, workspaces: rows };
-};
+});
 
 /**
  * Entorno activo: cookie `ws` validada contra la membresía; si no hay/no

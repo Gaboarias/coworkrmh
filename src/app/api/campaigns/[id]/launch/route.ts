@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { campaigns, campaignSends } from "@/lib/db/schema";
 import { resolveSegment, type SegmentFilter } from "@/lib/marketing/segment";
 import { requireEmailRole, emailAuthResponse } from "@/lib/marketing/auth";
+import { processCampaignQueue } from "@/lib/marketing/processCampaign";
+
+export const maxDuration = 60; // segundos — cubre el envío on-demand del lote
 
 /**
  * POST /api/campaigns/[id]/launch  (admin)
@@ -76,5 +79,14 @@ export async function POST(
     })
     .where(eq(campaigns.id, campaign.id));
 
-  return NextResponse.json({ queued: rows.length });
+  // Trigger on-demand: procesa la cola ya, sin esperar al cron. Si algo falla
+  // acá, el encolado ya quedó hecho y el cron de respaldo (cada 10 min) drena.
+  let processed = 0;
+  try {
+    processed = await processCampaignQueue();
+  } catch {
+    /* el cron de respaldo lo procesará */
+  }
+
+  return NextResponse.json({ queued: rows.length, processed });
 }
