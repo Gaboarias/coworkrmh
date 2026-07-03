@@ -121,8 +121,9 @@ export function ProjectTasksView({
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <PageHeader
         eyebrow={`/ proyectos / ${titleText.toLowerCase()}`}
-        title={`${titleText},`}
-        subtitle={subtitleText ?? project.description ?? "proyecto."}
+        title={subtitleText ? `${titleText},` : titleText}
+        subtitle={subtitleText}
+        description={project.description ?? undefined}
         issueLines={[
           `${tasks.length} TAREAS`,
           `${active.length} ACTIVAS · ${completed.length} COMPLETADAS`,

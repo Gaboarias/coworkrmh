@@ -65,10 +65,14 @@ export function ProjectsExplorer({
       const key = s.bucketId ?? UNCATEGORIZED_ID;
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
-    const bucketTabs = buckets.map((b) => ({
-      ...b,
-      count: counts.get(b.id) ?? 0,
-    }));
+    // Solo categorías con al menos un proyecto — las que están en 0 no se
+    // muestran (evita una fila de filtros saturada de estados vacíos).
+    const bucketTabs = buckets
+      .map((b) => ({
+        ...b,
+        count: counts.get(b.id) ?? 0,
+      }))
+      .filter((b) => b.count > 0);
     const all = [
       { id: ALL_ID, name: "Todos", color: null, count: specimens.length },
       ...bucketTabs,
