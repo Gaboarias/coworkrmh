@@ -97,7 +97,7 @@ export function DocumentList({
               type="button"
               onClick={() => setPreview(doc)}
               aria-label={`Vista previa de ${doc.name}`}
-              className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+              className="rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-el hover:text-text"
               title="Vista previa"
             >
               <Eye className="h-4 w-4" />
@@ -109,7 +109,7 @@ export function DocumentList({
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`Descargar ${doc.name}`}
-              className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+              className="rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-el hover:text-text"
               title="Descargar"
             >
               <Download className="h-4 w-4" />
@@ -120,7 +120,7 @@ export function DocumentList({
                 type="button"
                 onClick={() => handleDelete(doc)}
                 aria-label={`Eliminar ${doc.name}`}
-                className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-surface-el hover:text-danger"
+                className="rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-el hover:text-danger"
                 title="Eliminar"
               >
                 <Trash2 className="h-4 w-4" />

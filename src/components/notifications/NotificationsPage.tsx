@@ -121,7 +121,7 @@ export function NotificationsPage({
             type="button"
             onClick={handleMarkAll}
             disabled={markingAll}
-            className="inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text disabled:opacity-50"
+            className="inline-flex items-center gap-2 text-sm text-text-muted transition-colors hover:text-text disabled:opacity-50"
           >
             <CheckCheck className="h-4 w-4" />
             Marcar todas como leídas
@@ -149,14 +149,14 @@ export function NotificationsPage({
                   const inner = (
                     <div
                       className={cn(
-                        "flex gap-3 px-4 py-3.5 transition-colors hover:bg-surface",
+                        "flex gap-3 px-4 py-4 transition-colors hover:bg-surface",
                         isUnread &&
                           "bg-[color-mix(in_oklab,var(--coral)_5%,transparent)]"
                       )}
                     >
                       <div
                         className={cn(
-                          "mt-1.5 h-2 w-2 flex-shrink-0 rounded-full",
+                          "mt-2 h-2 w-2 flex-shrink-0 rounded-full",
                           isUnread ? "bg-[var(--coral)]" : "bg-transparent"
                         )}
                         aria-hidden
@@ -173,7 +173,7 @@ export function NotificationsPage({
                           {item.payload.title}
                         </p>
                         {item.payload.body && (
-                          <p className="mt-0.5 text-xs text-text-tertiary line-clamp-1">
+                          <p className="mt-1 text-xs text-text-tertiary line-clamp-1">
                             {item.payload.body}
                           </p>
                         )}

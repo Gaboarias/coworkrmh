@@ -58,7 +58,7 @@ export default function SignupPage() {
             <div>
               <label
                 htmlFor="name"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Nombre completo
               </label>
@@ -75,7 +75,7 @@ export default function SignupPage() {
             <div>
               <label
                 htmlFor="email"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Correo electrónico
               </label>
@@ -92,7 +92,7 @@ export default function SignupPage() {
             <div>
               <label
                 htmlFor="password"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Contraseña
               </label>

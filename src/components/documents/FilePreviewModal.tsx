@@ -93,7 +93,7 @@ export function FilePreviewModal({
               download={doc.name}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md p-1.5 text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
+              className="rounded-md p-2 text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
               title="Descargar"
             >
               <Download className="h-4 w-4" />
@@ -103,7 +103,7 @@ export function FilePreviewModal({
               onClick={onClose}
               aria-label="Cerrar"
               title="Cerrar"
-              className="rounded-md p-1.5 text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
+              className="rounded-md p-2 text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
             >
               <X className="h-4 w-4" />
             </button>

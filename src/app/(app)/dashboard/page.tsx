@@ -158,7 +158,7 @@ export default async function DashboardPage() {
                 <li key={`t-${t.id}`}>
                   <Link
                     href={`/projects/${t.projectId}`}
-                    className="row-hover -mx-2 flex items-baseline gap-3 rounded-md px-2 py-1.5"
+                    className="row-hover -mx-2 flex items-baseline gap-3 rounded-md px-2 py-2"
                   >
                     <span
                       className="h-2 w-2 flex-shrink-0 self-center rounded-full bg-urgent"
@@ -178,7 +178,7 @@ export default async function DashboardPage() {
             {overduePayments.map(({ payment, client }) => (
               <li
                 key={`p-${payment.id}`}
-                className="-mx-2 flex items-baseline gap-3 rounded-md px-2 py-1.5"
+                className="-mx-2 flex items-baseline gap-3 rounded-md px-2 py-2"
               >
                 <span
                   className="h-2 w-2 flex-shrink-0 self-center rounded-full bg-urgent"
@@ -282,7 +282,7 @@ export default async function DashboardPage() {
                   <li key={project.id}>
                     <Link
                       href={`/projects/${project.id}`}
-                      className="row-hover -mx-2 flex items-center gap-3 rounded-md px-2 py-1.5"
+                      className="row-hover -mx-2 flex items-center gap-3 rounded-md px-2 py-2"
                     >
                       <span
                         className="h-2 w-2 flex-shrink-0 rounded-full"
@@ -332,7 +332,7 @@ export default async function DashboardPage() {
                           {client?.companyName}
                         </p>
                       </div>
-                      <div className="flex flex-col items-end gap-0.5 text-right">
+                      <div className="flex flex-col items-end gap-1 text-right">
                         <span
                           className={
                             "text-[15px] font-bold tabular-nums " +

@@ -15,7 +15,7 @@ export const SwatchPicker = ({ value, onChange, label }: Props) => (
   <div
     role="radiogroup"
     aria-label={label ?? "Color"}
-    className="flex flex-wrap gap-1.5"
+    className="flex flex-wrap gap-2"
   >
     {ENTORNO_SWATCHES.map((c) => {
       const selected = value.toLowerCase() === c.toLowerCase();

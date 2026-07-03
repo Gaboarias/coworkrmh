@@ -104,7 +104,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
         <div>
           <label
             htmlFor="ws-new-name"
-            className="mb-1.5 block text-sm font-medium text-text-muted"
+            className="mb-2 block text-sm font-medium text-text-muted"
           >
             Nombre
           </label>
@@ -117,7 +117,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
           />
         </div>
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-text-muted">
+          <span className="mb-2 block text-sm font-medium text-text-muted">
             Color
           </span>
           <SwatchPicker
@@ -157,7 +157,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-md bg-[color-mix(in_oklab,var(--sidebar-foreground)_10%,transparent)] px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_18%,transparent)]"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-[color-mix(in_oklab,var(--sidebar-foreground)_10%,transparent)] px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_18%,transparent)]"
         >
           <Plus className="h-4 w-4" />
           Crear entorno
@@ -177,7 +177,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="relative flex w-full items-center gap-2.5 overflow-hidden rounded-lg border border-sidebar-border bg-[color-mix(in_oklab,var(--sidebar-foreground)_6%,transparent)] py-2 pl-4 pr-3 text-left transition-colors duration-200 ease-out hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_12%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-active"
+        className="relative flex w-full items-center gap-3 overflow-hidden rounded-lg border border-sidebar-border bg-[color-mix(in_oklab,var(--sidebar-foreground)_6%,transparent)] py-2 pl-4 pr-3 text-left transition-colors duration-200 ease-out hover:bg-[color-mix(in_oklab,var(--sidebar-foreground)_12%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-active"
       >
         <span
           aria-hidden
@@ -222,7 +222,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
                   <a
                     href={`/api/ws/switch?to=${w.id}&next=${next}`}
                     className={cn(
-                      "flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-surface-el",
+                      "flex items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-surface-el",
                       isActive ? "text-primary" : "text-text"
                     )}
                   >
@@ -245,7 +245,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
               setOpen(false);
               setCreating(true);
             }}
-            className="flex w-full items-center gap-2.5 border-t border-border px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+            className="flex w-full items-center gap-3 border-t border-border px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface-el hover:text-text"
           >
             <Plus className="h-4 w-4 flex-shrink-0" />
             Crear entorno
@@ -253,7 +253,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
           {data.isAdmin && (
             <a
               href="/admin"
-              className="flex items-center gap-2.5 border-t border-border px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+              className="flex items-center gap-3 border-t border-border px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface-el hover:text-text"
             >
               <Shield className="h-4 w-4 flex-shrink-0" />
               Administración

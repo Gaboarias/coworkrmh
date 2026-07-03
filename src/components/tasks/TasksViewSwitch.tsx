@@ -18,7 +18,7 @@ export function TasksViewSwitch() {
   ];
 
   return (
-    <div className="mb-6 flex items-center gap-1.5">
+    <div className="mb-6 flex items-center gap-2">
       {items.map((it) => {
         const active = pathname.startsWith(it.href);
         const Icon = it.icon;
@@ -27,7 +27,7 @@ export function TasksViewSwitch() {
             key={it.href}
             href={it.href}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors",
+              "inline-flex items-center gap-2 rounded-full px-3 py-2 text-[13px] font-medium transition-colors",
               active
                 ? "bg-accent-soft text-ink"
                 : "text-ink-soft hover:bg-accent-soft hover:text-ink"

@@ -71,7 +71,7 @@ export function TaskRow({
 
   return (
     <div
-      className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 transition-colors duration-200 ease-out hover:border-border hover:bg-surface-el"
+      className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-3 transition-colors duration-200 ease-out hover:border-border hover:bg-surface-el"
       onClick={onClick}
       style={{ cursor: onClick ? "pointer" : "default" }}
     >

@@ -279,7 +279,7 @@ export const AdminWorkspacesTab = ({
             className="flex flex-wrap items-end gap-3"
           >
             <div className="min-w-[200px] flex-1">
-              <label htmlFor="ws-create-name" className="mb-1.5 block text-xs font-medium text-text-muted">
+              <label htmlFor="ws-create-name" className="mb-2 block text-xs font-medium text-text-muted">
                 Nombre
               </label>
               <Input
@@ -290,7 +290,7 @@ export const AdminWorkspacesTab = ({
               />
             </div>
             <div>
-              <span className="mb-1.5 block text-xs font-medium text-text-muted">
+              <span className="mb-2 block text-xs font-medium text-text-muted">
                 Color
               </span>
               <div className="flex h-9 items-center">
@@ -357,7 +357,7 @@ export const AdminWorkspacesTab = ({
                   <div className="space-y-3 border-t border-border bg-surface-el/40 px-4 py-4">
                     <div className="flex flex-wrap items-end gap-2 border-b border-border pb-3">
                       <div className="min-w-[180px] flex-1">
-                        <label htmlFor={`ws-edit-name-${w.id}`} className="mb-1.5 block text-xs font-medium text-text-muted">
+                        <label htmlFor={`ws-edit-name-${w.id}`} className="mb-2 block text-xs font-medium text-text-muted">
                           Nombre del entorno
                         </label>
                         <Input
@@ -367,7 +367,7 @@ export const AdminWorkspacesTab = ({
                         />
                       </div>
                       <div>
-                        <span className="mb-1.5 block text-xs font-medium text-text-muted">
+                        <span className="mb-2 block text-xs font-medium text-text-muted">
                           Color
                         </span>
                         <SwatchPicker
@@ -437,7 +437,7 @@ export const AdminWorkspacesTab = ({
                                                   handleDeleteCustomRole(w.id, rk)
                                                 }
                                                 aria-label={`Eliminar rol ${rk}`}
-                                                className="rounded p-0.5 text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger"
+                                                className="rounded p-1 text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger"
                                               >
                                                 <Trash2 className="h-3 w-3" />
                                               </button>
@@ -468,7 +468,7 @@ export const AdminWorkspacesTab = ({
                         </div>
                         <div className="flex flex-wrap items-end gap-2 pt-1">
                           <div className="min-w-[160px] flex-1">
-                            <label htmlFor={`ws-create-role-${w.id}`} className="mb-1.5 block text-xs font-medium text-text-muted">
+                            <label htmlFor={`ws-create-role-${w.id}`} className="mb-2 block text-xs font-medium text-text-muted">
                               Crear rol custom
                             </label>
                             <Input
@@ -500,7 +500,7 @@ export const AdminWorkspacesTab = ({
 
                     <div className="flex flex-wrap items-end gap-2">
                       <div className="min-w-[180px] flex-1">
-                        <label htmlFor={`ws-add-user-${w.id}`} className="mb-1.5 block text-xs font-medium text-text-muted">
+                        <label htmlFor={`ws-add-user-${w.id}`} className="mb-2 block text-xs font-medium text-text-muted">
                           Agregar usuario
                         </label>
                         <Select
@@ -638,7 +638,7 @@ const GroupRows = ({
       <tr className="bg-surface-el/60">
         <td
           colSpan={roleKeys.length + 1}
-          className="px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-text-muted"
+          className="px-3 py-2 text-[13px] font-semibold uppercase tracking-wide text-text-muted"
         >
           {group}
         </td>

@@ -97,7 +97,7 @@ export const QuoteForm = ({
       <Card>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="quote-title" className="mb-1.5 block text-sm font-medium text-text-muted">
+            <label htmlFor="quote-title" className="mb-2 block text-sm font-medium text-text-muted">
               Título *
             </label>
             <Input
@@ -108,7 +108,7 @@ export const QuoteForm = ({
             />
           </div>
           <div>
-            <label htmlFor="quote-customer" className="mb-1.5 block text-sm font-medium text-text-muted">
+            <label htmlFor="quote-customer" className="mb-2 block text-sm font-medium text-text-muted">
               Cliente
             </label>
             <Input
@@ -233,7 +233,7 @@ export const QuoteForm = ({
             </div>
           </dl>
           <div>
-            <label htmlFor="quote-notes" className="mb-1.5 block text-sm font-medium text-text-muted">
+            <label htmlFor="quote-notes" className="mb-2 block text-sm font-medium text-text-muted">
               Notas
             </label>
             <Textarea

@@ -227,7 +227,7 @@ export function NotificationsBell() {
                           {item.payload.title}
                         </p>
                         {item.payload.body && (
-                          <p className="mt-0.5 truncate text-xs text-text-tertiary">
+                          <p className="mt-1 truncate text-xs text-text-tertiary">
                             {item.payload.body}
                           </p>
                         )}
@@ -273,7 +273,7 @@ export function NotificationsBell() {
           </div>
 
           {/* Footer — link a la página completa */}
-          <div className="border-t border-border px-4 py-2.5">
+          <div className="border-t border-border px-4 py-3">
             <Link
               href="/notifications"
               onClick={() => setOpen(false)}

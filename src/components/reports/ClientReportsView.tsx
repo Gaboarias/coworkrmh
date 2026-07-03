@@ -286,7 +286,7 @@ export function ClientReportsView({
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Title */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-medium text-text-muted">
                   Título <span className="text-[oklch(0.62_0.2_25)]">*</span>
                 </label>
@@ -300,7 +300,7 @@ export function ClientReportsView({
               </div>
 
               {/* Date */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-medium text-text-muted">
                   Fecha del reporte
                 </label>
@@ -314,7 +314,7 @@ export function ClientReportsView({
 
               {/* Client */}
               {linkedClients.length > 0 && (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-xs font-medium text-text-muted">
                     Cliente asociado
                   </label>
@@ -334,7 +334,7 @@ export function ClientReportsView({
               )}
 
               {/* Description */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-medium text-text-muted">
                   Descripción (opcional)
                 </label>
@@ -348,13 +348,13 @@ export function ClientReportsView({
               </div>
 
               {/* File */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-medium text-text-muted">
                   Archivo (opcional · máx. 500 MB)
                 </label>
 
                 {pendingFile ? (
-                  <div className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5">
+                  <div className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-3">
                     <FileText className="h-4 w-4 shrink-0 text-text-muted" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-medium text-text">
@@ -364,7 +364,7 @@ export function ClientReportsView({
                         {formatBytes(pendingFile.size)}
                       </p>
                       {isUploading && (
-                        <div className="mt-1.5 h-1 w-full rounded-full bg-border">
+                        <div className="mt-2 h-1 w-full rounded-full bg-border">
                           <div
                             className="h-1 rounded-full bg-[var(--project-color,var(--ink))] transition-all"
                             style={{ width: `${uploadProgress}%` }}
@@ -404,7 +404,7 @@ export function ClientReportsView({
               <button
                 type="submit"
                 disabled={isPending || isUploading}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--project-color,var(--ink))] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--project-color,var(--ink))] px-4 py-3 text-sm font-medium text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isPending || isUploading ? (
                   <>
@@ -424,7 +424,7 @@ export function ClientReportsView({
           <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
             <FileText className="h-3.5 w-3.5" />
             Reportes{" "}
-            <span className="rounded-full bg-surface px-1.5 py-0.5 text-xs tabular-nums">
+            <span className="rounded-full bg-surface px-1.5 py-1 text-xs tabular-nums">
               {reports.length}
             </span>
           </h2>
@@ -482,7 +482,7 @@ function ReportRow({
   const clientName = clients.find((c) => c.id === r.clientId)?.companyName;
 
   return (
-    <li className="group rounded-xl border border-border bg-surface px-4 py-3.5 transition-colors hover:border-[var(--project-color,var(--ink))/40]">
+    <li className="group rounded-xl border border-border bg-surface px-4 py-4 transition-colors hover:border-[var(--project-color,var(--ink))/40]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -490,18 +490,18 @@ function ReportRow({
               {r.title}
             </span>
             {r.isPublished ? (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[oklch(0.25_0.06_145)] px-2 py-0.5 text-[10px] font-medium text-[oklch(0.72_0.17_145)]">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[oklch(0.25_0.06_145)] px-2 py-1 text-[10px] font-medium text-[oklch(0.72_0.17_145)]">
                 <Globe className="h-2.5 w-2.5" />
                 Publicado
               </span>
             ) : (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-surface px-2 py-0.5 text-[10px] font-medium text-text-muted ring-1 ring-border">
+              <span className="inline-flex shrink-0 items-center rounded-full bg-surface px-2 py-1 text-[10px] font-medium text-text-muted ring-1 ring-border">
                 Borrador
               </span>
             )}
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-text-muted">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
             {r.reportDate && <span>{formatDate(r.reportDate)}</span>}
             {clientName && (
               <span className="flex items-center gap-1">
@@ -518,7 +518,7 @@ function ReportRow({
           </div>
 
           {r.description && (
-            <p className="mt-1.5 line-clamp-2 text-xs text-text-muted">
+            <p className="mt-2 line-clamp-2 text-xs text-text-muted">
               {r.description}
             </p>
           )}
@@ -531,7 +531,7 @@ function ReportRow({
               name={r.title}
               blobUrl={r.fileUrl}
               mimeType={r.mimeType}
-              className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-background hover:text-text"
+              className="rounded-lg p-2 text-text-muted transition-colors hover:bg-background hover:text-text"
             />
           )}
           {r.fileUrl && (
@@ -539,7 +539,7 @@ function ReportRow({
               href={r.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-background hover:text-text"
+              className="rounded-lg p-2 text-text-muted transition-colors hover:bg-background hover:text-text"
               title="Descargar"
               aria-label="Descargar reporte"
             >
@@ -552,7 +552,7 @@ function ReportRow({
               {r.isPublished ? (
                 <button
                   onClick={() => onUnpublish(r.id)}
-                  className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-background hover:text-text"
+                  className="rounded-lg p-2 text-text-muted transition-colors hover:bg-background hover:text-text"
                   title="Despublicar (ocultar del portal)"
                   aria-label="Despublicar reporte"
                 >
@@ -561,7 +561,7 @@ function ReportRow({
               ) : (
                 <button
                   onClick={() => onPublish(r.id)}
-                  className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-background hover:text-[oklch(0.62_0.17_145)]"
+                  className="rounded-lg p-2 text-text-muted transition-colors hover:bg-background hover:text-[oklch(0.62_0.17_145)]"
                   title="Publicar en portal del cliente"
                   aria-label="Publicar reporte en el portal"
                 >
@@ -571,7 +571,7 @@ function ReportRow({
 
               <button
                 onClick={() => onDelete(r.id)}
-                className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-background hover:text-[oklch(0.62_0.2_25)]"
+                className="rounded-lg p-2 text-text-muted transition-colors hover:bg-background hover:text-[oklch(0.62_0.2_25)]"
                 title="Eliminar reporte"
                 aria-label="Eliminar reporte"
               >

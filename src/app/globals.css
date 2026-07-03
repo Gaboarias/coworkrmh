@@ -83,7 +83,7 @@
     --sidebar-active: var(--ink);
 
     --radius: 0.5rem;
-    --erp-row-py: 0.625rem; /* densidad ERP (comfortable); compact override abajo */
+    --erp-row-py: 0.75rem; /* 12px — densidad ERP comfortable (base-4); compact abajo */
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --elev-1: 0 1px 2px rgba(22, 20, 18, 0.06);
     --elev-2: 0 1px 2px rgba(22, 20, 18, 0.06), 0 4px 12px -4px rgba(22, 20, 18, 0.1);
@@ -132,7 +132,7 @@
   }
 
   /* Densidad ERP — compact reduce el padding vertical de fila (~40% menos). */
-  html[data-density="compact"] { --erp-row-py: 0.3rem; }
+  html[data-density="compact"] { --erp-row-py: 0.25rem; } /* 4px */
 }
 
 @layer base {
@@ -151,7 +151,7 @@
     font-family: "Satoshi", system-ui, -apple-system, sans-serif;
     font-weight: 500;
     font-feature-settings: "ss01" 1, "kern" 1, "liga" 1, "calt" 1;
-    line-height: 1.6;                          /* bumped 1.55 → 1.6 más respiración */
+    line-height: 1.647; /* 28px sobre 17px — ritmo vertical base-4 (7×4) */
   }
 
   /* Headings: Satoshi bold + tight tracking, generous size */
@@ -260,7 +260,7 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-faint);
-  line-height: 1.6;
+  line-height: 1.667; /* 20px sobre 12px — base-4 */
   text-align: right;
 }
 
@@ -336,7 +336,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.75rem;
-  padding: 0.875rem 0;                         /* bumped 0.625 → 0.875 más respiración */
+  padding: 1rem 0; /* 16px — ritmo base-4 */
   align-items: baseline;
   position: relative;
 }

@@ -349,7 +349,7 @@ export function TaskDetail({
                     onClick={() => handleStatusChange(s)}
                     aria-pressed={isActive}
                     className={cn(
-                      "group/status flex items-center gap-2 rounded-md border px-3 py-2.5 text-left font-mono text-[11px] font-bold uppercase tracking-[0.14em] transition-all duration-200 ease-out",
+                      "group/status flex items-center gap-2 rounded-md border px-3 py-3 text-left font-mono text-[11px] font-bold uppercase tracking-[0.14em] transition-all duration-200 ease-out",
                       isActive
                         ? "text-bg shadow-elev-1"
                         : "text-ink-soft hover:bg-surface-el hover:text-ink"
@@ -390,7 +390,7 @@ export function TaskDetail({
                     onClick={() => handlePriorityChange(p)}
                     aria-pressed={isActive}
                     className={cn(
-                      "flex items-center gap-2 rounded-full border px-3.5 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.14em] transition-all duration-200 ease-out",
+                      "flex items-center gap-2 rounded-full border px-3.5 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] transition-all duration-200 ease-out",
                       isActive
                         ? "text-bg"
                         : "text-ink-soft hover:bg-surface-el hover:text-ink"
@@ -547,7 +547,7 @@ export function TaskDetail({
                       </button>
                     )}
                   </header>
-                  <p className="mt-1.5 whitespace-pre-wrap text-[15px] leading-[1.55] text-ink">
+                  <p className="mt-2 whitespace-pre-wrap text-[15px] leading-[1.55] text-ink">
                     {c.body}
                   </p>
                 </li>
@@ -559,7 +559,7 @@ export function TaskDetail({
         {saving && (
           <div
             aria-live="polite"
-            className="fixed bottom-4 right-4 rounded-md border border-rule-strong bg-surface-el px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-soft shadow-elev-2"
+            className="fixed bottom-4 right-4 rounded-md border border-rule-strong bg-surface-el px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-soft shadow-elev-2"
           >
             Guardando…
           </div>
@@ -579,7 +579,7 @@ function SectionLabel({
   icon?: React.ReactNode;
 }) {
   return (
-    <h3 className="flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-ink">
+    <h3 className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-ink">
       {icon}
       {children}
     </h3>
@@ -591,7 +591,7 @@ function StatusPill({ status }: { status: TaskStatus }) {
   const color = STATUS_VAR[status];
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em]"
+      className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em]"
       style={{
         backgroundColor: `color-mix(in oklab, ${color} 18%, transparent)`,
         color: color,
@@ -609,7 +609,7 @@ function PriorityPill({ priority }: { priority: TaskPriority }) {
   const color = PRIORITY_VAR[priority];
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em]"
+      className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em]"
       style={{
         backgroundColor: `color-mix(in oklab, ${color} 14%, transparent)`,
         color: color,

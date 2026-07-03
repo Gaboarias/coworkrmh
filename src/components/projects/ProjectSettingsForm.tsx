@@ -159,7 +159,7 @@ export function ProjectSettingsForm({
             <div>
               <label
                 htmlFor="ps-name"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Nombre
               </label>
@@ -176,7 +176,7 @@ export function ProjectSettingsForm({
             <div>
               <label
                 htmlFor="ps-desc"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Descripción
               </label>
@@ -194,7 +194,7 @@ export function ProjectSettingsForm({
               <div>
                 <label
                   htmlFor="ps-bucket"
-                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-text-muted"
                 >
                   Categoría
                 </label>
@@ -271,7 +271,7 @@ export function ProjectSettingsForm({
               <div>
                 <label
                   htmlFor="ps-start"
-                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-text-muted"
                 >
                   Fecha de inicio
                 </label>
@@ -287,7 +287,7 @@ export function ProjectSettingsForm({
               <div>
                 <label
                   htmlFor="ps-end"
-                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-text-muted"
                 >
                   Fecha de fin
                 </label>

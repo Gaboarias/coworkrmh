@@ -18,7 +18,7 @@ function Rows({ n = 6 }: { n?: number }) {
       {Array.from({ length: n }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-4 border-b border-border px-4 py-3.5 last:border-b-0"
+          className="flex items-center gap-4 border-b border-border px-4 py-4 last:border-b-0"
         >
           <Skeleton className="h-5 w-20 rounded-full" />
           <Skeleton className="h-4 flex-1" />

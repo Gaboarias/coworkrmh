@@ -168,7 +168,7 @@ export function CalendarView({
             type="button"
             onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
             className={cn(
-              "rounded-full px-3 py-1.5 text-xs font-medium transition-colors duration-200 ease-out",
+              "rounded-full px-3 py-2 text-xs font-medium transition-colors duration-200 ease-out",
               showMyTasksOnly
                 ? "bg-primary text-primary-foreground"
                 : "bg-surface-el text-text-muted hover:text-text"
@@ -206,19 +206,19 @@ export function CalendarView({
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-tertiary">
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-2">
           <span className="h-2 w-3 rounded-sm bg-primary/60" />
           Duración de proyecto
         </span>
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-2">
           <FileText className="h-3 w-3" />
           Nota
         </span>
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-2">
           <History className="h-3 w-3" />
           Cambio
         </span>
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-2">
           <Video className="h-3 w-3" style={{ color: "var(--info)" }} />
           Reunión
         </span>
@@ -269,7 +269,7 @@ export function CalendarView({
                   disabled={!hasContent}
                   aria-label={`Ver todo del ${formatDateCR(day)}`}
                   className={cn(
-                    "mb-1.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium transition-colors",
+                    "mb-2 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium transition-colors",
                     isCurrentDay
                       ? "bg-primary text-primary-foreground"
                       : isCurrentMonth
@@ -284,7 +284,7 @@ export function CalendarView({
                 </button>
 
                 {dayProjects.length > 0 && (
-                  <div className="mb-1 space-y-0.5">
+                  <div className="mb-1 space-y-1">
                     {dayProjects.slice(0, 2).map((p) => {
                       const color = p.color ?? DEFAULT_COLOR;
                       const isStart = isSameDay(parseISO(p.startDate), day);
@@ -324,13 +324,13 @@ export function CalendarView({
                   </div>
                 )}
 
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   {dayTasks.slice(0, 2).map((task) => (
                     <Link
                       key={task.id}
                       href={`/projects/${task.projectId}`}
                       title={task.title}
-                      className="flex items-center gap-1 rounded px-1 py-0.5 text-xs transition-colors hover:bg-surface-el"
+                      className="flex items-center gap-1 rounded px-1 py-1 text-xs transition-colors hover:bg-surface-el"
                     >
                       <span
                         className={cn(
@@ -354,7 +354,7 @@ export function CalendarView({
                     <button
                       type="button"
                       onClick={() => setSelectedDay(day)}
-                      className="block w-full rounded px-1 py-0.5 text-left text-xs font-medium text-primary transition-colors hover:bg-accent-soft hover:text-text"
+                      className="block w-full rounded px-1 py-1 text-left text-xs font-medium text-primary transition-colors hover:bg-accent-soft hover:text-text"
                     >
                       +{dayTasks.length - 2} más →
                     </button>
@@ -362,7 +362,7 @@ export function CalendarView({
                 </div>
 
                 {dayMeetings.length > 0 && (
-                  <div className="mt-1 space-y-0.5">
+                  <div className="mt-1 space-y-1">
                     {dayMeetings.slice(0, 2).map((m) => (
                       <a
                         key={m.id}
@@ -370,7 +370,7 @@ export function CalendarView({
                         target={m.url ? "_blank" : undefined}
                         rel="noopener noreferrer"
                         title={`${m.title}${m.allDay ? "" : ` · ${formatTimeCR(m.start)}`}`}
-                        className="flex items-center gap-1 rounded px-1 py-0.5 text-xs transition-colors hover:bg-surface-el"
+                        className="flex items-center gap-1 rounded px-1 py-1 text-xs transition-colors hover:bg-surface-el"
                         style={{
                           backgroundColor:
                             "color-mix(in oklab, var(--info) 12%, transparent)",
@@ -389,7 +389,7 @@ export function CalendarView({
                       <button
                         type="button"
                         onClick={() => setSelectedDay(day)}
-                        className="block w-full rounded px-1 py-0.5 text-left text-xs font-medium text-primary transition-colors hover:bg-accent-soft hover:text-text"
+                        className="block w-full rounded px-1 py-1 text-left text-xs font-medium text-primary transition-colors hover:bg-accent-soft hover:text-text"
                       >
                         +{dayMeetings.length - 2} reuniones →
                       </button>
@@ -404,7 +404,7 @@ export function CalendarView({
                         key={n.id}
                         href={`/projects/${n.projectId}/notes`}
                         title={`Nota: ${n.title}`}
-                        className="inline-flex max-w-full items-center gap-0.5 rounded bg-surface-el px-1 py-0.5 text-[12px] text-text-muted transition-colors hover:text-text"
+                        className="inline-flex max-w-full items-center gap-1 rounded bg-surface-el px-1 py-1 text-[12px] text-text-muted transition-colors hover:text-text"
                       >
                         <FileText className="h-2.5 w-2.5 flex-shrink-0" />
                         <span className="truncate">{n.title}</span>
@@ -418,7 +418,7 @@ export function CalendarView({
                             : "#"
                         }
                         title={`${dayChanges.length} cambio(s)`}
-                        className="inline-flex items-center gap-0.5 rounded bg-surface-el px-1 py-0.5 text-[12px] text-text-muted transition-colors hover:text-text"
+                        className="inline-flex items-center gap-1 rounded bg-surface-el px-1 py-1 text-[12px] text-text-muted transition-colors hover:text-text"
                       >
                         <History className="h-2.5 w-2.5" />
                         {dayChanges.length}
@@ -510,12 +510,12 @@ function DayDetailModal({
                         href={m.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block rounded px-2 py-1.5 text-sm transition-colors hover:bg-surface-el"
+                        className="block rounded px-2 py-2 text-sm transition-colors hover:bg-surface-el"
                       >
                         {inner}
                       </a>
                     ) : (
-                      <div className="px-2 py-1.5 text-sm">{inner}</div>
+                      <div className="px-2 py-2 text-sm">{inner}</div>
                     )}
                   </li>
                 );
@@ -529,7 +529,7 @@ function DayDetailModal({
             <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
               Proyectos activos ({projects.length})
             </h3>
-            <ul className="space-y-1.5">
+            <ul className="space-y-2">
               {projects.map((p) => {
                 const color = p.color ?? DEFAULT_COLOR;
                 return (
@@ -537,7 +537,7 @@ function DayDetailModal({
                     <Link
                       href={`/projects/${p.id}`}
                       onClick={onClose}
-                      className="flex items-center gap-2 rounded px-2 py-1.5 text-sm text-text transition-colors hover:bg-surface-el"
+                      className="flex items-center gap-2 rounded px-2 py-2 text-sm text-text transition-colors hover:bg-surface-el"
                     >
                       <span
                         className="h-2 w-2 flex-shrink-0 rounded-full"
@@ -566,7 +566,7 @@ function DayDetailModal({
                   <Link
                     href={`/projects/${t.projectId}`}
                     onClick={onClose}
-                    className="flex items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-surface-el"
+                    className="flex items-center gap-2 rounded px-2 py-2 text-sm transition-colors hover:bg-surface-el"
                   >
                     <span
                       className={cn(
@@ -616,7 +616,7 @@ function DayDetailModal({
                   <Link
                     href={`/projects/${n.projectId}/notes`}
                     onClick={onClose}
-                    className="flex items-center gap-2 rounded px-2 py-1.5 text-sm text-text transition-colors hover:bg-surface-el"
+                    className="flex items-center gap-2 rounded px-2 py-2 text-sm text-text transition-colors hover:bg-surface-el"
                   >
                     <FileText className="h-3.5 w-3.5 flex-shrink-0 text-text-tertiary" />
                     <span className="min-w-0 flex-1 truncate">{n.title}</span>
@@ -647,9 +647,9 @@ function DayDetailModal({
                         : "#"
                     }
                     onClick={onClose}
-                    className="flex items-start gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-surface-el"
+                    className="flex items-start gap-2 rounded px-2 py-2 text-sm transition-colors hover:bg-surface-el"
                   >
-                    <History className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-text-tertiary" />
+                    <History className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-text-tertiary" />
                     <span className="min-w-0 flex-1 text-text">
                       {c.description}
                     </span>

@@ -59,12 +59,12 @@ export function CalendarConnections({
       <HairlineRule label="Calendarios" />
       <div className="mt-4 flex items-start gap-3 rounded-lg border border-rule bg-surface-el p-4">
         <CalendarClock
-          className="mt-0.5 h-5 w-5 flex-shrink-0 text-ink-faint"
+          className="mt-1 h-5 w-5 flex-shrink-0 text-ink-faint"
           strokeWidth={1.75}
         />
         <div className="min-w-0 flex-1">
           <p className="text-[15px] font-bold text-ink">Google Calendar</p>
-          <p className="mt-0.5 text-[13px] text-ink-soft">
+          <p className="mt-1 text-[13px] text-ink-soft">
             Conectá tu calendario para ver tus reuniones dentro del calendario
             de Pistachio. Solo lectura.
           </p>
@@ -75,7 +75,7 @@ export function CalendarConnections({
             </p>
           ) : connected ? (
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink">
+              <span className="inline-flex items-center gap-2 text-[13px] font-medium text-ink">
                 <Check className="h-3.5 w-3.5 text-[var(--done)]" />
                 Conectado{email ? ` · ${email}` : ""}
               </span>
@@ -83,7 +83,7 @@ export function CalendarConnections({
                 type="button"
                 onClick={handleDisconnect}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 rounded-md border border-rule px-2.5 py-1.5 text-[12px] font-medium text-ink-soft transition-colors hover:border-urgent hover:text-urgent disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-md border border-rule px-2.5 py-2 text-[12px] font-medium text-ink-soft transition-colors hover:border-urgent hover:text-urgent disabled:opacity-50"
               >
                 <Unlink className="h-3.5 w-3.5" />
                 {busy ? "Desconectando…" : "Desconectar"}

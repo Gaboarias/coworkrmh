@@ -151,7 +151,7 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
             <div>
               <label
                 htmlFor="us-name"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Nombre completo
               </label>
@@ -165,7 +165,7 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
             <div>
               <label
                 htmlFor="us-email"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Correo electrónico
               </label>
@@ -191,7 +191,7 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
             <div>
               <label
                 htmlFor="us-cur-pw"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Contraseña actual
               </label>
@@ -208,7 +208,7 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
               <div>
                 <label
                   htmlFor="us-new-pw"
-                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-text-muted"
                 >
                   Nueva contraseña
                 </label>
@@ -224,7 +224,7 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
               <div>
                 <label
                   htmlFor="us-conf-pw"
-                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-text-muted"
                 >
                   Confirmar contraseña
                 </label>

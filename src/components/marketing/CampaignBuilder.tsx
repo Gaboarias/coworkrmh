@@ -197,7 +197,7 @@ export function CampaignBuilder({ bucketId }: { bucketId: string }) {
                 {preview.total} destinatario{preview.total === 1 ? "" : "s"}
               </p>
               {preview.sample.length > 0 && (
-                <ul className="mt-3 space-y-1.5 text-[13px] text-ink-soft">
+                <ul className="mt-3 space-y-2 text-[13px] text-ink-soft">
                   {preview.sample.map((c) => (
                     <li key={c.email} className="truncate">
                       <span className="text-ink">{c.nombre || "—"}</span> ·{" "}
@@ -247,7 +247,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 flex items-baseline justify-between">
+      <span className="mb-2 flex items-baseline justify-between">
         <span className="text-[13px] font-medium text-ink">{label}</span>
         {hint && <span className="text-[11px] text-ink-faint">{hint}</span>}
       </span>

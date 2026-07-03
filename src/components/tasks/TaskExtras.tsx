@@ -113,7 +113,7 @@ export function TaskExtras({
           <TagIcon className="h-3 w-3" />
           Etiquetas
         </span>
-        <div className="mb-2 flex flex-wrap gap-1.5">
+        <div className="mb-2 flex flex-wrap gap-2">
           {tags.length === 0 && (
             <span className="text-xs text-text-tertiary">Sin etiquetas aún</span>
           )}
@@ -125,7 +125,7 @@ export function TaskExtras({
                 type="button"
                 onClick={() => toggleTag(t.id)}
                 className={cn(
-                  "rounded-full border px-2 py-0.5 text-xs transition",
+                  "rounded-full border px-2 py-1 text-xs transition",
                   on
                     ? "border-transparent text-white"
                     : "border-border text-text-muted hover:text-text"
@@ -168,7 +168,7 @@ export function TaskExtras({
           {subtasks.map((s) => (
             <div
               key={s.id}
-              className="flex items-center gap-2 rounded-md bg-surface-el px-2 py-1.5 text-sm"
+              className="flex items-center gap-2 rounded-md bg-surface-el px-2 py-2 text-sm"
             >
               <span
                 className={cn(

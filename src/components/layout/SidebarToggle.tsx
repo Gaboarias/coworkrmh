@@ -33,7 +33,7 @@ export function SidebarToggle() {
       onClick={toggle}
       aria-label={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
       title={collapsed ? "Expandir sidebar (⌘B)" : "Colapsar sidebar (⌘B)"}
-      className="group inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-ink-soft transition-colors hover:bg-accent-soft hover:text-ink"
+      className="group inline-flex items-center gap-2 rounded-md px-2 py-2 text-ink-soft transition-colors hover:bg-accent-soft hover:text-ink"
     >
       {collapsed ? (
         <PanelLeftOpen className="h-4 w-4" strokeWidth={1.75} />

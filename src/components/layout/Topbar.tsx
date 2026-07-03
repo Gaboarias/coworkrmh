@@ -32,7 +32,7 @@ export function Topbar() {
       <div className="flex min-w-0 flex-1 items-center overflow-hidden">
         <Breadcrumbs />
       </div>
-      <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+      <div className="flex flex-shrink-0 items-center gap-2 sm:gap-2">
         <SearchTrigger />
         <ThemeToggle />
         <NotificationsBell />

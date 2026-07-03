@@ -228,7 +228,7 @@ export const ExpensesView = ({
           </h3>
           <div className="flex flex-wrap items-end gap-3">
             <div>
-              <label htmlFor="expenses-margin" className="mb-1.5 block text-xs font-medium text-text-muted">
+              <label htmlFor="expenses-margin" className="mb-2 block text-xs font-medium text-text-muted">
                 Margen promedio (0–1)
               </label>
               <Input

@@ -75,7 +75,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
     <div className="animate-fade-in mx-auto max-w-xl px-8 py-10 md:px-12">
       <Link
         href="/projects"
-        className="mb-6 inline-flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.16em] text-ink-soft transition-colors hover:text-ink"
+        className="mb-6 inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.16em] text-ink-soft transition-colors hover:text-ink"
       >
         <ChevronLeft className="h-3 w-3" />
         Volver a proyectos
@@ -92,7 +92,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
             <div>
               <label
                 htmlFor="np-name"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Nombre del proyecto *
               </label>
@@ -109,7 +109,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
             <div>
               <label
                 htmlFor="np-desc"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Descripción
               </label>
@@ -125,7 +125,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
             <div>
               <label
                 htmlFor="np-bucket"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Categoría
               </label>
@@ -202,7 +202,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
               <div>
                 <label
                   htmlFor="np-start"
-                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-text-muted"
                 >
                   Inicio
                 </label>
@@ -216,7 +216,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
               <div>
                 <label
                   htmlFor="np-end"
-                  className="mb-1.5 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-text-muted"
                 >
                   Fin
                 </label>

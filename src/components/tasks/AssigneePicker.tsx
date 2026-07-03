@@ -55,7 +55,7 @@ export function AssigneePicker({
             disabled={disabled}
             aria-pressed={selected}
             className={cn(
-              "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors",
+              "flex w-full items-center gap-3 rounded-md px-2 py-2 text-left transition-colors",
               selected ? "bg-accent-soft" : "hover:bg-accent-soft/60",
               disabled && "cursor-not-allowed opacity-60"
             )}

@@ -143,7 +143,7 @@ function SetPasswordModal({
         <div>
           <label
             htmlFor="admin-pwd"
-            className="mb-1.5 block text-xs font-medium text-text-muted"
+            className="mb-2 block text-xs font-medium text-text-muted"
           >
             Nueva contraseña (mín. {minLen} caracteres)
           </label>
@@ -166,7 +166,7 @@ function SetPasswordModal({
         <div>
           <label
             htmlFor="admin-pwd-confirm"
-            className="mb-1.5 block text-xs font-medium text-text-muted"
+            className="mb-2 block text-xs font-medium text-text-muted"
           >
             Confirmar contraseña
           </label>
@@ -269,7 +269,7 @@ function ResetLinkModal({
     >
       {result && (
         <div className="space-y-3">
-          <div className="rounded-md border border-rule bg-surface-el px-3 py-2.5">
+          <div className="rounded-md border border-rule bg-surface-el px-3 py-3">
             <p className="break-all font-mono text-[12px] leading-relaxed text-ink">
               {result.resetUrl}
             </p>
@@ -278,7 +278,7 @@ function ResetLinkModal({
             <button
               type="button"
               onClick={copyToClipboard}
-              className="inline-flex items-center gap-1.5 rounded-md border border-rule-strong bg-transparent px-3 py-1.5 text-[13px] font-medium text-ink transition-colors hover:bg-accent-soft"
+              className="inline-flex items-center gap-2 rounded-md border border-rule-strong bg-transparent px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-accent-soft"
             >
               {copied ? (
                 <>

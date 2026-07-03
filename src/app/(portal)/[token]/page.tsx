@@ -32,7 +32,7 @@ function ProjectBadge({ status }: { status: string }) {
   return (
     <span
       style={{ color: s.color, background: s.bg }}
-      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
     >
       {s.label}
     </span>
@@ -49,7 +49,7 @@ function PaymentStatusBadge({ status }: { status: string }) {
   return (
     <span
       style={{ color: s.color, background: s.bg }}
-      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+      className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium"
     >
       {s.icon}
       {s.label}
@@ -92,7 +92,7 @@ function SectionLabel({ icon, title, count }: { icon: React.ReactNode; title: st
         </h2>
       </div>
       {count !== undefined && count > 0 && (
-        <span style={{ color: "#8a8378", background: "#f1ede3" }} className="rounded-full px-2 py-0.5 text-xs tabular-nums">
+        <span style={{ color: "#8a8378", background: "#f1ede3" }} className="rounded-full px-2 py-1 text-xs tabular-nums">
           {count}
         </span>
       )}
@@ -119,7 +119,7 @@ export default async function PortalPage({ params }: PageProps) {
       <div style={{ background: "#ffffff", borderBottom: "1px solid rgba(22,20,18,0.09)" }}>
         <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
           {/* Pistachio wordmark */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <div
               style={{ background: "#161412", color: "#c9e58b" }}
               className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-bold select-none"
@@ -131,7 +131,7 @@ export default async function PortalPage({ params }: PageProps) {
             </span>
           </div>
           {/* Secure badge */}
-          <div className="flex items-center gap-1.5" style={{ color: "#8a8378" }}>
+          <div className="flex items-center gap-2" style={{ color: "#8a8378" }}>
             <Lock className="h-3 w-3" />
             <span className="text-xs">Enlace privado</span>
           </div>
@@ -143,7 +143,7 @@ export default async function PortalPage({ params }: PageProps) {
 
         {/* Client identity */}
         <div className="mb-10">
-          <p style={{ color: "#8a8378" }} className="mb-1.5 text-xs font-medium uppercase tracking-widest">
+          <p style={{ color: "#8a8378" }} className="mb-2 text-xs font-medium uppercase tracking-widest">
             Portal de cliente
           </p>
           <h1 style={{ color: "#161412" }} className="text-3xl font-bold tracking-tight">
@@ -216,7 +216,7 @@ export default async function PortalPage({ params }: PageProps) {
                             {r.description}
                           </p>
                         )}
-                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                           {r.reportDate && (
                             <span style={{ color: "#8a8378" }} className="text-xs">
                               {formatDate(r.reportDate)}
@@ -357,7 +357,7 @@ export default async function PortalPage({ params }: PageProps) {
           <p style={{ color: "#8a8378" }} className="text-xs">
             Pistachio · RMH Studio
           </p>
-          <div className="flex items-center gap-1.5" style={{ color: "#8a8378" }}>
+          <div className="flex items-center gap-2" style={{ color: "#8a8378" }}>
             <Lock className="h-3 w-3" />
             <span className="text-xs">Enlace personal, no compartir</span>
           </div>

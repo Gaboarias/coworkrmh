@@ -162,7 +162,7 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
       {/* Brand block */}
       <div
         className={cn(
-          "flex items-center gap-2.5 border-b border-rule",
+          "flex items-center gap-3 border-b border-rule",
           collapsed ? "h-[64px] justify-center px-2" : "h-[64px] px-5"
         )}
       >
@@ -227,7 +227,7 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
                   {section.label}
                 </div>
               )}
-              <ul className="space-y-0.5">
+              <ul className="space-y-1">
                 {visibleItems.map((item) => {
                   const active = isActive(item.href, item.exact);
                   const Icon = item.icon;
@@ -245,7 +245,7 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
                           "group relative flex items-center rounded-md transition-colors duration-150 ease-out",
                           collapsed
                             ? "h-8 w-8 justify-center mx-auto"
-                            : "gap-2.5 px-2 py-1.5",
+                            : "gap-3 px-2 py-2",
                           active
                             ? "bg-accent-soft text-ink"
                             : "text-ink-soft hover:bg-accent-soft hover:text-ink",
@@ -272,7 +272,7 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
                           </span>
                         )}
                         {!collapsed && item.badge === "soon" && (
-                          <span className="rounded-sm bg-accent-soft px-1 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-ink-faint">
+                          <span className="rounded-sm bg-accent-soft px-1 py-1 font-mono text-[8px] uppercase tracking-[0.1em] text-ink-faint">
                             Pronto
                           </span>
                         )}
@@ -307,7 +307,7 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
             "flex items-center rounded-md transition-colors duration-150 ease-out",
             collapsed
               ? "h-8 w-8 mx-auto justify-center"
-              : "gap-2.5 px-2 py-1.5",
+              : "gap-3 px-2 py-2",
             isActive("/settings", true)
               ? "bg-accent-soft text-ink"
               : "text-ink-soft hover:bg-accent-soft hover:text-ink"

@@ -167,7 +167,7 @@ export function Breadcrumbs({ overrideLast, className }: BreadcrumbsProps) {
     <nav
       aria-label="Breadcrumb"
       className={
-        "flex min-w-0 items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint sm:text-[12px] " +
+        "flex min-w-0 items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint sm:text-[12px] " +
         (className ?? "")
       }
     >
@@ -183,7 +183,7 @@ export function Breadcrumbs({ overrideLast, className }: BreadcrumbsProps) {
           <span
             key={s.href}
             className={
-              "flex min-w-0 items-center gap-1.5 " +
+              "flex min-w-0 items-center gap-2 " +
               (isLast ? "" : "hidden sm:flex flex-shrink-0")
             }
           >

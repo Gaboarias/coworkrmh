@@ -28,7 +28,7 @@ export function ProjectsView({
 
   return (
     <div>
-      <div className="mb-2 flex items-center gap-1.5">
+      <div className="mb-2 flex items-center gap-2">
         {(
           [
             ["lista", "Lista", List],
@@ -40,7 +40,7 @@ export function ProjectsView({
             type="button"
             onClick={() => setView(k)}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors",
+              "inline-flex items-center gap-2 rounded-full px-3 py-2 text-[13px] font-medium transition-colors",
               view === k
                 ? "bg-accent-soft text-ink"
                 : "text-ink-soft hover:bg-accent-soft hover:text-ink"

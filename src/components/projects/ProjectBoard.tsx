@@ -105,7 +105,7 @@ export function ProjectBoard({
   return (
     <div className="mt-2 space-y-6">
       {/* Toggle de agrupación */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         {(
           [
             ["bucket", "Por categoría"],
@@ -117,7 +117,7 @@ export function ProjectBoard({
             type="button"
             onClick={() => setGroupBy(k)}
             className={cn(
-              "rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors",
+              "rounded-full px-3 py-2 text-[13px] font-medium transition-colors",
               groupBy === k
                 ? "bg-accent-soft text-ink"
                 : "text-ink-soft hover:bg-accent-soft hover:text-ink"
@@ -156,7 +156,7 @@ export function ProjectBoard({
                   : "border-rule"
               )}
             >
-              <div className="flex items-center justify-between border-b border-rule px-3 py-2.5">
+              <div className="flex items-center justify-between border-b border-rule px-3 py-3">
                 <span className="flex items-center gap-2">
                   {col.color && (
                     <span
@@ -194,7 +194,7 @@ export function ProjectBoard({
                     >
                       <div className="flex items-start gap-2">
                         <span
-                          className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
+                          className="mt-2 h-2 w-2 flex-shrink-0 rounded-full"
                           style={{
                             backgroundColor: s.color ?? "var(--ink-faint)",
                           }}

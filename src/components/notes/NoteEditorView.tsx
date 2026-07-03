@@ -188,7 +188,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
       />
 
       {/* Toolbar */}
-      <div className="mb-4 flex items-center gap-1 rounded-lg border border-border bg-surface p-1.5">
+      <div className="mb-4 flex items-center gap-1 rounded-lg border border-border bg-surface p-2">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}

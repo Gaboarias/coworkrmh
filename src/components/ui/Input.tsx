@@ -25,7 +25,7 @@ export const Textarea = forwardRef<
 >(({ className, ...props }, ref) => (
   <textarea
     ref={ref}
-    className={cn(fieldBase, "resize-none py-2.5 leading-relaxed", className)}
+    className={cn(fieldBase, "resize-none py-3 leading-relaxed", className)}
     {...props}
   />
 ));

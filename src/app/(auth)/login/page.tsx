@@ -57,7 +57,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Correo electrónico
               </label>
@@ -74,7 +74,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="mb-1.5 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-text-muted"
               >
                 Contraseña
               </label>
@@ -86,7 +86,7 @@ export default function LoginPage() {
                 required
                 placeholder="••••••••"
               />
-              <div className="mt-1.5 text-right">
+              <div className="mt-2 text-right">
                 <Link
                   href="/reset-password"
                   className="text-xs text-text-muted transition-colors hover:text-primary"

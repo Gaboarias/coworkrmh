@@ -70,7 +70,7 @@ function RequestForm() {
           <div>
             <label
               htmlFor="reset-email"
-              className="mb-1.5 block text-sm font-medium text-text-muted"
+              className="mb-2 block text-sm font-medium text-text-muted"
             >
               Correo electrónico
             </label>
@@ -147,7 +147,7 @@ function SetPasswordForm({ token }: { token: string }) {
         <div>
           <label
             htmlFor="new-password"
-            className="mb-1.5 block text-sm font-medium text-text-muted"
+            className="mb-2 block text-sm font-medium text-text-muted"
           >
             Nueva contraseña
           </label>
@@ -164,7 +164,7 @@ function SetPasswordForm({ token }: { token: string }) {
         <div>
           <label
             htmlFor="confirm-password"
-            className="mb-1.5 block text-sm font-medium text-text-muted"
+            className="mb-2 block text-sm font-medium text-text-muted"
           >
             Confirmar contraseña
           </label>

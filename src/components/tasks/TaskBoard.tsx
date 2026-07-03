@@ -100,7 +100,7 @@ export function TaskBoard({
                 : "border-rule"
             )}
           >
-            <div className="flex items-center justify-between border-b border-rule px-3 py-2.5">
+            <div className="flex items-center justify-between border-b border-rule px-3 py-3">
               <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-ink">
                 {cfg.label}
               </span>
@@ -136,7 +136,7 @@ export function TaskBoard({
                     <p className="text-[14px] font-medium leading-snug text-ink">
                       {t.title}
                     </p>
-                    <div className="mt-2.5 flex items-center justify-between gap-2">
+                    <div className="mt-3 flex items-center justify-between gap-2">
                       <TaskPriorityBadge priority={t.priority} />
                       <div className="flex items-center gap-2">
                         {t.dueDate && (

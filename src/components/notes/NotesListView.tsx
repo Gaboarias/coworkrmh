@@ -107,7 +107,7 @@ export function NotesListView({
                 </span>
                 <Link
                   href={`/projects/${project.id}/notes/${note.id}`}
-                  className="flex min-w-0 flex-1 flex-col gap-0.5"
+                  className="flex min-w-0 flex-1 flex-col gap-1"
                 >
                   <span className="truncate text-[16px] font-bold text-ink">
                     {note.title}

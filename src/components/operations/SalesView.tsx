@@ -289,7 +289,7 @@ function FieldWithLabel({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-text-muted">
+      <label className="mb-2 block text-xs font-medium text-text-muted">
         {label}
         {hint && (
           <span className="ml-1 font-normal italic text-text-tertiary">
@@ -312,7 +312,7 @@ function CalcStat({
   positive?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col gap-1">
       <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
         {label}
       </span>

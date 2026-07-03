@@ -89,7 +89,7 @@ export default async function CampaignDetailPage({
 
 function Meta({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-ink-faint">
         {label}
       </dt>

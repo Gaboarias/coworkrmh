@@ -12,7 +12,7 @@ export function DensityToggle() {
     <div
       role="group"
       aria-label="Densidad de la tabla"
-      className="inline-flex items-center gap-0.5 rounded-md border border-rule p-0.5"
+      className="inline-flex items-center gap-1 rounded-md border border-rule p-1"
     >
       {(["comfortable", "compact"] as const).map((d) => (
         <button

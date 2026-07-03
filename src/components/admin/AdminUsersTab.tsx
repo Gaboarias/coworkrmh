@@ -167,7 +167,7 @@ export const AdminUsersTab = ({
                         key={ws.id}
                         onClick={() => toggleInviteWorkspace(ws.id)}
                         className={cn(
-                          "inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs transition-colors",
+                          "inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs transition-colors",
                           isSelected
                             ? "border-ink bg-accent-soft text-ink"
                             : "border-rule bg-transparent text-ink-soft hover:border-rule-strong hover:text-ink"
@@ -203,7 +203,7 @@ export const AdminUsersTab = ({
                 </p>
                 <p className="truncate text-xs text-text-muted">{u.email}</p>
                 {u.workspaceCount === 0 && (
-                  <span className="mt-1 inline-flex items-center gap-1 rounded-sm bg-urgent-soft px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-urgent">
+                  <span className="mt-1 inline-flex items-center gap-1 rounded-sm bg-urgent-soft px-1.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-urgent">
                     Sin entorno
                   </span>
                 )}

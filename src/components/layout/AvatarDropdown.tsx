@@ -87,7 +87,7 @@ export function AvatarDropdown() {
             <Link
               href="/settings"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface hover:text-text"
+              className="flex items-center gap-3 px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface hover:text-text"
             >
               <Settings className="h-4 w-4 flex-shrink-0" />
               Configuración
@@ -95,7 +95,7 @@ export function AvatarDropdown() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface hover:text-danger"
+              className="flex w-full items-center gap-3 px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface hover:text-danger"
             >
               <LogOut className="h-4 w-4 flex-shrink-0" />
               Cerrar sesión

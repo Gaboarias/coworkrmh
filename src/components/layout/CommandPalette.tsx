@@ -231,7 +231,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             placeholder="Buscar acciones, páginas, proyectos..."
             className="flex-1 bg-transparent text-sm text-text placeholder:text-text-tertiary outline-none"
           />
-          <kbd className="hidden rounded border border-border bg-surface px-1.5 py-0.5 text-[12px] font-medium text-text-tertiary sm:inline-block">
+          <kbd className="hidden rounded border border-border bg-surface px-1.5 py-1 text-[12px] font-medium text-text-tertiary sm:inline-block">
             ESC
           </kbd>
         </div>
@@ -246,7 +246,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             <Command.Group
               key={group.id}
               heading={group.heading}
-              className="px-2 py-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[12px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-text-tertiary"
+              className="px-2 py-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-[12px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-text-tertiary"
             >
               {group.items.map((item) => {
                 const Icon = item.icon;
