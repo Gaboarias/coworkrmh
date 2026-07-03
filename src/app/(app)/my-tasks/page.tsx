@@ -160,6 +160,11 @@ export default async function MyTasksPage() {
                   </li>
                 ))}
               </ul>
+              {done.length > 10 && (
+                <p className="mt-3 font-mono text-[12px] uppercase tracking-[0.1em] text-ink-faint">
+                  Mostrando 10 de {done.length}
+                </p>
+              )}
             </section>
           )}
         </div>
