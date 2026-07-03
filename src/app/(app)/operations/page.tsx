@@ -110,7 +110,6 @@ export default async function OperationsDashboard() {
 
   return (
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
-      <OperationsNav />
       <PageHeader
         eyebrow="/ operations · resumen"
         title="Operaciones,"
@@ -120,47 +119,61 @@ export default async function OperationsDashboard() {
           `${kpis.length} KPIs · ${OPERATIONS_MODULES.length} módulos`,
         ]}
       />
+      <OperationsNav />
 
-      {/* KPIs como objetos tipográficos (figuras ERP all-time). El análisis
-          mensual con tendencias y gráficos vive en /reports — fuente única. */}
-      <section>
-        <HairlineRule label="Resumen del estudio" />
-        <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-          {kpis.map((k) => (
-            <div key={k.label} className="flex flex-col gap-2">
-              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-ink-faint">
-                {k.label}
-              </dt>
-              <dd className="text-[34px] font-bold tabular-nums leading-none tracking-[-0.035em] text-ink">
-                {k.value}
-              </dd>
-              {k.sub && (
-                <span className="text-[13px] italic text-ink-soft">
-                  {k.sub}
-                </span>
-              )}
+      {isEmpty ? (
+        /* Entorno vacío: liderar con el llamado a cargar, sin el grid de ceros.
+           Callout informativo neutro (sin franja roja: no es un error). */
+        <section className="mt-8 flex flex-col gap-4 rounded-lg border border-rule bg-surface-el p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <Package
+              className="h-5 w-5 flex-shrink-0 text-ink-faint"
+              strokeWidth={1.75}
+            />
+            <div>
+              <p className="text-[16px] font-bold text-ink">
+                Este entorno está vacío
+              </p>
+              <p className="mt-1 max-w-[60ch] text-[15px] text-ink-soft">
+                Empezá cargando productos en el catálogo para ver costos,
+                márgenes, ventas y el resto.
+              </p>
             </div>
-          ))}
-        </dl>
-        <Link
-          href="/reports"
-          className="mt-6 inline-block font-mono text-[12px] uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-ink"
-        >
-          Ver análisis del mes (tendencias, categorías) →
-        </Link>
-      </section>
-
-      {isEmpty && (
-        <section className="mt-10 flex flex-wrap items-center justify-between gap-4 border-l-2 border-urgent pl-4">
-          <p className="max-w-[60ch] text-[16px] text-ink-soft">
-            Este entorno está vacío. Empezá cargando productos en el catálogo
-            para ver costos, márgenes y el resto.
-          </p>
+          </div>
           <Link
             href="/operations/catalogo"
-            className="font-mono text-[12px] uppercase tracking-[0.18em] text-ink transition-colors hover:text-urgent"
+            className="inline-flex flex-shrink-0 items-center gap-2 rounded-md bg-primary px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover"
           >
             Ir al catálogo →
+          </Link>
+        </section>
+      ) : (
+        /* KPIs como objetos tipográficos (figuras ERP all-time). El análisis
+           mensual con tendencias y gráficos vive en /reports — fuente única. */
+        <section>
+          <HairlineRule label="Resumen del estudio" />
+          <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+            {kpis.map((k) => (
+              <div key={k.label} className="flex flex-col gap-2">
+                <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-ink-faint">
+                  {k.label}
+                </dt>
+                <dd className="text-[34px] font-bold tabular-nums leading-none tracking-[-0.035em] text-ink">
+                  {k.value}
+                </dd>
+                {k.sub && (
+                  <span className="text-[13px] italic text-ink-soft">
+                    {k.sub}
+                  </span>
+                )}
+              </div>
+            ))}
+          </dl>
+          <Link
+            href="/reports"
+            className="mt-6 inline-block font-mono text-[12px] uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-ink"
+          >
+            Ver análisis del mes (tendencias, categorías) →
           </Link>
         </section>
       )}
