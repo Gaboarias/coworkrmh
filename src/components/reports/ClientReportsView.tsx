@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -24,6 +24,7 @@ import {
 } from "@/lib/actions/clientReports";
 import type { ClientReportRow } from "@/lib/actions/clientReports";
 import { FilePreviewButton } from "./FilePreviewButton";
+import { cn } from "@/lib/utils/cn";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -481,6 +482,17 @@ function ReportRow({
 }) {
   const clientName = clients.find((c) => c.id === r.clientId)?.companyName;
 
+  // Expand/colapsar la descripción. El botón "Ver más" solo aparece si el texto
+  // realmente se trunca (medimos overflow mientras está clampeado, al montar).
+  const descRef = useRef<HTMLParagraphElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [clamped, setClamped] = useState(false);
+
+  useEffect(() => {
+    const el = descRef.current;
+    if (el) setClamped(el.scrollHeight > el.clientHeight + 1);
+  }, []);
+
   return (
     <li className="group rounded-xl border border-border bg-surface px-4 py-4 transition-colors hover:border-[var(--project-color,var(--ink))/40]">
       <div className="flex items-start justify-between gap-3">
@@ -518,9 +530,27 @@ function ReportRow({
           </div>
 
           {r.description && (
-            <p className="mt-2 line-clamp-2 text-xs text-text-muted">
-              {r.description}
-            </p>
+            <>
+              <p
+                ref={descRef}
+                className={cn(
+                  "mt-2 text-xs text-text-muted",
+                  expanded ? "whitespace-pre-line" : "line-clamp-2"
+                )}
+              >
+                {r.description}
+              </p>
+              {(clamped || expanded) && (
+                <button
+                  type="button"
+                  onClick={() => setExpanded((v) => !v)}
+                  aria-expanded={expanded}
+                  className="mt-1 text-xs font-medium text-[var(--project-color,var(--ink))] transition-colors hover:underline"
+                >
+                  {expanded ? "Ver menos" : "Ver más"}
+                </button>
+              )}
+            </>
           )}
         </div>
 
