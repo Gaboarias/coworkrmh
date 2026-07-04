@@ -7,6 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { googleConfigured, exchangeGoogleCode } from "@/lib/calendar/google";
 import { encryptToken } from "@/lib/calendar/crypto";
 import { getAppUrl } from "@/lib/email";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -75,7 +76,8 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.redirect(`${base}/settings?calendar=connected`);
-  } catch {
+  } catch (err) {
+    logger.error("gcal_callback_failed", { err: String(err) });
     return NextResponse.redirect(`${base}/settings?calendar=error`);
   }
 }

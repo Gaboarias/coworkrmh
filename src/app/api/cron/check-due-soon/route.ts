@@ -17,7 +17,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { db } from "@/lib/db";
 import { tasks, projects, notifications, taskAssignees } from "@/lib/db/schema";
-import { and, eq, gte, isNotNull, lte, ne, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, lte, ne, sql } from "drizzle-orm";
 import { createNotification } from "@/lib/actions/notifications";
 
 /** Comparación de strings en tiempo constante para evitar timing attacks. */
@@ -79,26 +79,36 @@ export async function GET(request: Request) {
   // Filtrar tareas sin assignee antes de tocar la DB.
   const assignedTasks = dueTasks.filter((t) => t.assigneeId);
 
-  // Paso 1 — dedup checks en paralelo (1 query por tarea, todas al mismo tiempo).
-  const dedupResults = await Promise.all(
-    assignedTasks.map((task) =>
-      db
-        .select({ count: sql<number>`count(*)::int` })
+  // Paso 1 — dedup en UNA sola query (antes: 1 query por tarea = N+1). Con el
+  // driver neon-http cada query es una activación de compute, así que traemos
+  // todas las notifications task_due_soon recientes de los usuarios
+  // involucrados y armamos un set (userId:taskId) en memoria.
+  const involvedUserIds = Array.from(
+    new Set(assignedTasks.map((t) => t.assigneeId!))
+  );
+  const recentNotifs = involvedUserIds.length
+    ? await db
+        .select({
+          userId: notifications.userId,
+          taskId: sql<string>`(${notifications.payload}->'refs'->>'taskId')`,
+        })
         .from(notifications)
         .where(
           and(
-            eq(notifications.userId, task.assigneeId!),
+            inArray(notifications.userId, involvedUserIds),
             eq(notifications.type, "task_due_soon"),
-            gte(notifications.createdAt, dedupCutoff),
-            sql`(${notifications.payload}->'refs'->>'taskId') = ${task.id}`
+            gte(notifications.createdAt, dedupCutoff)
           )
         )
-        .then(([{ count }]) => ({ task, alreadyNotified: count > 0 }))
-    )
+    : [];
+  const alreadyNotified = new Set(
+    recentNotifs.map((n) => `${n.userId}:${n.taskId}`)
   );
 
   // Paso 2 — crear notificaciones para las que pasaron el dedup, en paralelo.
-  const toNotify = dedupResults.filter((r) => !r.alreadyNotified).map((r) => r.task);
+  const toNotify = assignedTasks.filter(
+    (t) => !alreadyNotified.has(`${t.assigneeId}:${t.id}`)
+  );
   await Promise.all(
     toNotify.map((task) =>
       createNotification({
@@ -114,13 +124,16 @@ export async function GET(request: Request) {
     )
   );
 
-  const results = dedupResults.map((r) => ({
-    taskId: r.task.id,
-    title: r.task.title,
-    assigneeId: r.task.assigneeId!,
-    notified: !r.alreadyNotified,
-    ...(r.alreadyNotified ? { reason: "already-notified-24h" as const } : {}),
-  }));
+  const results = assignedTasks.map((task) => {
+    const wasNotified = !alreadyNotified.has(`${task.assigneeId}:${task.id}`);
+    return {
+      taskId: task.id,
+      title: task.title,
+      assigneeId: task.assigneeId!,
+      notified: wasNotified,
+      ...(wasNotified ? {} : { reason: "already-notified-24h" as const }),
+    };
+  });
 
   return NextResponse.json({
     ok: true,

@@ -8,6 +8,7 @@ import {
   fetchGoogleEvents,
   type NormalizedMeeting,
 } from "./google";
+import { logger } from "@/lib/logger";
 
 /**
  * Trae las reuniones del usuario (calendario conectado) en una ventana de
@@ -36,7 +37,8 @@ export async function getUserMeetings(
         )
       )
       .limit(1);
-  } catch {
+  } catch (err) {
+    logger.error("gcal_conn_fetch_failed", { userId, err: String(err) });
     return [];
   }
   if (!conn) return [];
@@ -59,7 +61,8 @@ export async function getUserMeetings(
         .where(eq(calendarConnections.id, conn.id));
     }
     return await fetchGoogleEvents(accessToken, timeMin, timeMax);
-  } catch {
+  } catch (err) {
+    logger.error("gcal_events_failed", { userId, err: String(err) });
     return [];
   }
 }
@@ -88,7 +91,8 @@ export async function getCalendarStatus(
     return conn
       ? { connected: true, provider: conn.provider, email: conn.email }
       : { connected: false, provider: null, email: null };
-  } catch {
+  } catch (err) {
+    logger.error("gcal_status_failed", { userId, err: String(err) });
     return { connected: false, provider: null, email: null };
   }
 }

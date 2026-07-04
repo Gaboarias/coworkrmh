@@ -10,6 +10,7 @@ import {
   sendTaskAssignedEmail,
   sendProjectMemberAddedEmail,
 } from "@/lib/email";
+import { logger } from "@/lib/logger";
 
 /** Tipo (string union) — espejo del enum DB. */
 export type NotificationType =
@@ -101,9 +102,14 @@ async function dispatchEmail(input: {
         projectUrl: url,
       });
     }
-  } catch {
-    // Email failure is non-fatal — log silently, don't surface to caller.
-    // Monitorear desde Resend dashboard si hay entregas fallidas.
+  } catch (err) {
+    // Email failure is non-fatal — no rompe la acción del usuario, pero lo
+    // logueamos para poder diagnosticar entregas fallidas (además del dashboard
+    // de Resend).
+    logger.error("notification_email_failed", {
+      type: input.type,
+      err: String(err),
+    });
   }
 }
 

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getPortalDataByToken } from "@/lib/actions/clients";
 import { listPublishedReportsForClient } from "@/lib/actions/clientReports";
+import { formatDateCR } from "@/lib/utils/datetime";
 import { FilePreviewButton } from "@/components/reports/FilePreviewButton";
 import {
   FileText,
@@ -70,16 +71,10 @@ function formatMoney(amount: string, currency: string) {
 }
 
 function formatDate(iso: string | null) {
-  if (!iso) return null;
-  try {
-    return new Intl.DateTimeFormat("es-CR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
+  // Formateador CR centralizado (fija timeZone America/Costa_Rica).
+  return iso
+    ? formatDateCR(iso, { day: "2-digit", month: "long", year: "numeric" })
+    : null;
 }
 
 function SectionLabel({ icon, title, count }: { icon: React.ReactNode; title: string; count?: number }) {

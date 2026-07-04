@@ -26,6 +26,7 @@ import type { ClientReportRow } from "@/lib/actions/clientReports";
 import { FilePreviewButton } from "./FilePreviewButton";
 import { cn } from "@/lib/utils/cn";
 import { formatDateCR } from "@/lib/utils/datetime";
+import { formatBytes } from "@/lib/utils/format";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -60,13 +61,6 @@ const EMPTY_FORM: FormState = {
 function formatDate(iso: string | null) {
   // Usa el formateador CR centralizado (fija timeZone America/Costa_Rica).
   return iso ? formatDateCR(iso) : "—";
-}
-
-function formatBytes(n: number | null) {
-  if (!n) return "";
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
-  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────

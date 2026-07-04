@@ -5,6 +5,7 @@ import { File, Download, Trash2, Image, FileText, Film, Eye } from "lucide-react
 import { toast } from "sonner";
 import { deleteDocument } from "@/lib/actions/documents";
 import { formatDateCR } from "@/lib/utils/datetime";
+import { formatBytes } from "@/lib/utils/format";
 import { FilePreviewModal } from "./FilePreviewModal";
 
 interface Document {
@@ -30,12 +31,6 @@ function FileIcon({ mimeType }: { mimeType: string }) {
   if (mimeType.startsWith("video/")) return <Film className="h-5 w-5 text-warning" />;
   if (mimeType === "application/pdf") return <FileText className="h-5 w-5 text-danger" />;
   return <File className="h-5 w-5 text-text-tertiary" />;
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
 export function DocumentList({
