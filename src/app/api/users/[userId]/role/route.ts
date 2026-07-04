@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { setUserRoleBodySchema, parseBody } from "@/lib/validation/auth";
 import { logAdminAction } from "@/lib/audit";
 
@@ -26,6 +26,26 @@ export async function PATCH(
     .limit(1);
   if (!target) {
     return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+  }
+
+  // No permitir auto-degradarse ni dejar el sistema sin ningún admin (lockout).
+  if (role !== "admin" && target.role === "admin") {
+    if (target.id === session.user.id) {
+      return NextResponse.json(
+        { error: "No podés quitarte tu propio rol de administrador." },
+        { status: 400 }
+      );
+    }
+    const [{ count: adminCount }] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(users)
+      .where(eq(users.role, "admin"));
+    if (adminCount <= 1) {
+      return NextResponse.json(
+        { error: "Debe quedar al menos un administrador en el sistema." },
+        { status: 400 }
+      );
+    }
   }
 
   await db

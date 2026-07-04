@@ -1,22 +1,27 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
+import { auth } from "@/lib/auth";
 import { requireProjectAccess } from "@/lib/workspace";
+import { isMimeAllowed, UPLOAD_MAX_BYTES } from "@/lib/uploads";
 
 /**
  * Upload de archivos para el report builder — server-side con `put()`.
  * A diferencia de /api/documents/upload, NO inserta en la tabla documents:
  * solo sube el archivo y devuelve la URL para guardarla en client_reports.
  *
- * Límite ~4 MB (cap del body de Vercel Functions). Requiere
- * BLOB_READ_WRITE_TOKEN (inyectado al conectar el Blob store al proyecto).
+ * Validación de MIME y tamaño compartida con documents/upload (lib/uploads.ts).
  */
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const MAX_BYTES = 4 * 1024 * 1024;
-
 export async function POST(request: Request): Promise<NextResponse> {
   try {
+    // Auth temprana: no bufferear el body de un usuario no autenticado.
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+
     const form = await request.formData();
     const file = form.get("file");
     const projectId = String(form.get("projectId") ?? "");
@@ -30,7 +35,15 @@ export async function POST(request: Request): Promise<NextResponse> {
         { status: 400 }
       );
     }
-    if (file.size > MAX_BYTES) {
+
+    const mime = file.type || "application/octet-stream";
+    if (!isMimeAllowed(mime)) {
+      return NextResponse.json(
+        { error: `Tipo de archivo no permitido (${mime})` },
+        { status: 400 }
+      );
+    }
+    if (file.size > UPLOAD_MAX_BYTES) {
       return NextResponse.json(
         { error: "El archivo supera el máximo de 4 MB" },
         { status: 400 }
@@ -39,7 +52,6 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     await requireProjectAccess(projectId);
 
-    const mime = file.type || "application/octet-stream";
     const safeName = file.name.replace(/[^\w.\-]+/g, "_");
     const blob = await put(`reports/${projectId}/${safeName}`, file, {
       access: "public",

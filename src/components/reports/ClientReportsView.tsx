@@ -25,6 +25,7 @@ import {
 import type { ClientReportRow } from "@/lib/actions/clientReports";
 import { FilePreviewButton } from "./FilePreviewButton";
 import { cn } from "@/lib/utils/cn";
+import { formatDateCR } from "@/lib/utils/datetime";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,16 +58,8 @@ const EMPTY_FORM: FormState = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string | null) {
-  if (!iso) return "—";
-  try {
-    return new Intl.DateTimeFormat("es-CR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
+  // Usa el formateador CR centralizado (fija timeZone America/Costa_Rica).
+  return iso ? formatDateCR(iso) : "—";
 }
 
 function formatBytes(n: number | null) {

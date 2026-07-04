@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
+import { auth } from "@/lib/auth";
 import { requireProjectAccess } from "@/lib/workspace";
+import { isMimeAllowed, UPLOAD_MAX_BYTES } from "@/lib/uploads";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -21,34 +23,14 @@ import { revalidatePath } from "next/cache";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const ALLOWED_PREFIXES = ["image/", "video/", "audio/"];
-const ALLOWED_EXACT = new Set<string>([
-  "application/pdf",
-  "application/zip",
-  "application/x-zip-compressed",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "application/msword",
-  "application/vnd.ms-excel",
-  "application/vnd.ms-powerpoint",
-  "text/plain",
-  "text/csv",
-  "text/markdown",
-  "application/json",
-]);
-
-function isMimeAllowed(m: string): boolean {
-  if (!m) return false;
-  if (ALLOWED_PREFIXES.some((p) => m.startsWith(p))) return true;
-  return ALLOWED_EXACT.has(m);
-}
-
-// Cap práctico del body de funciones Vercel (~4.5 MB). Dejamos 4 MB.
-const MAX_BYTES = 4 * 1024 * 1024;
-
 export async function POST(request: Request): Promise<NextResponse> {
   try {
+    // Auth temprana: no bufferear el body de un usuario no autenticado.
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+
     const form = await request.formData();
     const file = form.get("file");
     const projectId = String(form.get("projectId") ?? "");
@@ -73,7 +55,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         { status: 400 }
       );
     }
-    if (file.size > MAX_BYTES) {
+    if (file.size > UPLOAD_MAX_BYTES) {
       return NextResponse.json(
         { error: "El archivo supera el máximo de 4 MB" },
         { status: 400 }
