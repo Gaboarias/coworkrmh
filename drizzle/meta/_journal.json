@@ -15,6 +15,13 @@
       "when": 1781655790619,
       "tag": "0001_kind_energizer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785540494054,
+      "tag": "0002_client_projects_pk_and_payments_idx",
+      "breakpoints": true
     }
   ]
 }

@@ -35,3 +35,9 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# Scratch dev tools que leen credenciales de .env.local (no commitear)
+/_q.mjs
+
+# Artefactos de QA (screenshots, inventarios generados)
+/qa-artifacts/

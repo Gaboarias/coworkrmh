@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { File, Download, Trash2, Image, FileText, Film, Eye } from "lucide-react";
+// `Image` va aliasado: es el ícono de lucide, no next/image. Sin el alias,
+// jsx-a11y/alt-text lo confunde con un <img> y pide una prop `alt`.
+import {
+  File,
+  Download,
+  Trash2,
+  Image as ImageIcon,
+  FileText,
+  Film,
+  Eye,
+} from "lucide-react";
 import { toast } from "sonner";
 import { deleteDocument } from "@/lib/actions/documents";
 import { formatDateCR } from "@/lib/utils/datetime";
@@ -27,7 +37,7 @@ interface DocumentListProps {
 }
 
 function FileIcon({ mimeType }: { mimeType: string }) {
-  if (mimeType.startsWith("image/")) return <Image className="h-5 w-5 text-info" />;
+  if (mimeType.startsWith("image/")) return <ImageIcon className="h-5 w-5 text-info" />;
   if (mimeType.startsWith("video/")) return <Film className="h-5 w-5 text-warning" />;
   if (mimeType === "application/pdf") return <FileText className="h-5 w-5 text-danger" />;
   return <File className="h-5 w-5 text-text-tertiary" />;

@@ -16,5 +16,9 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     role?: string;
+    /** Epoch ms del último refresh del rol contra la DB (ver ROLE_TTL_MS). */
+    roleCheckedAt?: number;
+    /** true si el usuario ya no existe en la DB → la sesión no vale. */
+    invalid?: boolean;
   }
 }

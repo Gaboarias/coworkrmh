@@ -4,7 +4,11 @@ import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { requireProjectAccess } from "@/lib/workspace";
-import { isMimeAllowed, UPLOAD_MAX_BYTES } from "@/lib/uploads";
+import {
+  isMimeAllowed,
+  UPLOAD_MAX_BYTES,
+  uploadErrorResponse,
+} from "@/lib/uploads";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -88,11 +92,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     revalidatePath(`/projects/${projectId}/documents`);
     return NextResponse.json({ document: doc });
   } catch (err) {
-    const e = err as Error;
-    console.error("[documents/upload] fail:", e?.name, "-", e?.message);
-    return NextResponse.json(
-      { error: e.message || "Error al subir el archivo" },
-      { status: 400 }
-    );
+    return uploadErrorResponse("documents/upload", err);
   }
 }

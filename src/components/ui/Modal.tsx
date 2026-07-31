@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { X } from "lucide-react";
@@ -54,7 +54,9 @@ export function Modal({
   const confirmDismissRef = useRef(confirmDismiss);
   confirmDismissRef.current = confirmDismiss;
 
-  function requestClose() {
+  // useCallback para poder listarlo en las deps del effect sin reejecutarlo en
+  // cada render: sólo cambia si cambia onClose, que ya estaba en las deps.
+  const requestClose = useCallback(() => {
     if (
       confirmDismissRef.current &&
       typeof window !== "undefined" &&
@@ -63,7 +65,7 @@ export function Modal({
       return;
     }
     onClose();
-  }
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -78,7 +80,7 @@ export function Modal({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [open, onClose]);
+  }, [open, requestClose]);
 
   if (!open || typeof document === "undefined") return null;
 

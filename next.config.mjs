@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ESLint 9 is incompatible with Next 14's lint runner (unrelated to type safety) — kept off.
-  eslint: { ignoreDuringBuilds: true },
+  // ESLint alineado con Next 14 (eslint 8 + eslint-config-next 14) → `next lint`
+  // vuelve a correr, así que el build lo usa de gate igual que a tsc.
+  eslint: { ignoreDuringBuilds: false },
   // Root-cause debt (snake/camel + as-any) closed → compiler is the safety net again.
   typescript: { ignoreBuildErrors: false },
   images: {

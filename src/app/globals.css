@@ -251,6 +251,17 @@
   color: var(--ink-soft);
   padding-left: 1.2em;
 }
+/* El título del drop-line es un <h1> por semántica. Hereda todo del
+   contenedor para que la regla global de h1-h4 (tracking -0.025em,
+   line-height 1.1) no pise el ritmo del drop-line. */
+.title-drop h1 {
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  margin: 0;
+}
 
 /* Issue numeration (top-right corner) */
 .issue {

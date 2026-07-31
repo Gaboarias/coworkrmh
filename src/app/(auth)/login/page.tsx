@@ -26,7 +26,11 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      toast.error("Credenciales incorrectas");
+      // NextAuth manda "CredentialsSignin" para un fallo genérico; cuando
+      // authorize() lanza un Error propio (ej. rate limit) llega el mensaje
+      // real, y ese sí conviene mostrarlo tal cual.
+      const generic = !result.error || result.error === "CredentialsSignin";
+      toast.error(generic ? "Credenciales incorrectas" : result.error);
       setLoading(false);
       return;
     }

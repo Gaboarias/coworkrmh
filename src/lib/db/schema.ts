@@ -495,26 +495,46 @@ export const clientAccounts = pgTable("client_accounts", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const payments = pgTable("payments", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  clientId: uuid("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
-  projectId: uuid("project_id").references(() => projects.id, { onDelete: "set null" }),
-  description: text("description").notNull(),
-  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
-  currency: currencyEnum("currency").default("CRC").notNull(),
-  status: paymentStatusEnum("status").default("pending").notNull(),
-  dueDate: date("due_date"),
-  paidAt: timestamp("paid_at"),
-  invoiceUrl: text("invoice_url"),
-  createdBy: uuid("created_by").notNull().references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const payments = pgTable(
+  "payments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    clientId: uuid("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+    projectId: uuid("project_id").references(() => projects.id, { onDelete: "set null" }),
+    description: text("description").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+    currency: currencyEnum("currency").default("CRC").notNull(),
+    status: paymentStatusEnum("status").default("pending").notNull(),
+    dueDate: date("due_date"),
+    paidAt: timestamp("paid_at"),
+    invoiceUrl: text("invoice_url"),
+    createdBy: uuid("created_by").notNull().references(() => users.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    // listClientPayments filtra por client_id y ordena por created_at.
+    clientCreatedIdx: index("payments_client_created_idx").on(
+      t.clientId,
+      t.createdAt
+    ),
+  })
+);
 
-export const clientProjects = pgTable("client_projects", {
-  clientId: uuid("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
-  projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
-});
+// PK compuesta: es una tabla de unión y sin ella se podían insertar vínculos
+// duplicados (el onConflictDoNothing de linkClientToProject no tenía ninguna
+// constraint contra la cual conflictuar, así que no hacía nada).
+export const clientProjects = pgTable(
+  "client_projects",
+  {
+    clientId: uuid("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+    projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.clientId, t.projectId] }),
+    projectIdx: index("client_projects_project_idx").on(t.projectId),
+  })
+);
 
 /**
  * Reportes entregables para clientes.

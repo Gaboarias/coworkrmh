@@ -84,37 +84,35 @@ export async function registerFailure(
   const maxAttempts = opts.maxAttempts ?? DEFAULT_MAX;
   const windowMinutes = opts.windowMinutes ?? DEFAULT_WINDOW;
   const lockMinutes = opts.lockMinutes ?? windowMinutes;
-  const now = new Date();
-  const windowStart = new Date(now.getTime() - windowMinutes * 60_000);
 
-  // Lee fila actual (si existe).
-  const [row] = await db
-    .select()
-    .from(rateLimits)
-    .where(eq(rateLimits.key, key))
-    .limit(1);
-
-  // Si la fila es vieja (antes de la ventana), se resetea a count=1.
-  const stale = row && row.updatedAt < windowStart;
-  const nextCount = !row || stale ? 1 : row.count + 1;
-  const shouldLock = nextCount >= maxAttempts;
-  const lockedUntil = shouldLock
-    ? new Date(now.getTime() + lockMinutes * 60_000)
-    : null;
-
-  if (!row) {
-    await db.insert(rateLimits).values({
-      key,
-      count: nextCount,
-      lockedUntil,
-      updatedAt: now,
-    });
-  } else {
-    await db
-      .update(rateLimits)
-      .set({ count: nextCount, lockedUntil, updatedAt: now })
-      .where(eq(rateLimits.key, key));
-  }
+  // Un solo statement atómico: INSERT ... ON CONFLICT DO UPDATE.
+  //
+  // Antes esto era SELECT y después INSERT/UPDATE. Con neon-http cada query es
+  // un round-trip independiente (sin transacción), así que dos fallos
+  // concurrentes leían count=N y ambos escribían N+1 → el contador quedaba
+  // corto y se podía pasar el umbral lanzando requests en paralelo. Resolver
+  // el conteo, el reset de ventana y el lock dentro del propio UPDATE elimina
+  // la ventana de carrera: Postgres serializa por fila.
+  await db.execute(sql`
+    INSERT INTO rate_limits (key, count, locked_until, updated_at)
+    VALUES (${key}, 1, NULL, now())
+    ON CONFLICT (key) DO UPDATE SET
+      count = CASE
+        WHEN rate_limits.updated_at < now() - (${windowMinutes} * INTERVAL '1 minute')
+          THEN 1
+        ELSE rate_limits.count + 1
+      END,
+      locked_until = CASE
+        WHEN (CASE
+                WHEN rate_limits.updated_at < now() - (${windowMinutes} * INTERVAL '1 minute')
+                  THEN 1
+                ELSE rate_limits.count + 1
+              END) >= ${maxAttempts}
+          THEN now() + (${lockMinutes} * INTERVAL '1 minute')
+        ELSE NULL
+      END,
+      updated_at = now()
+  `);
 }
 
 /**

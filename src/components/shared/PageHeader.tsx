@@ -59,8 +59,12 @@ export function PageHeader({
 
       {/* Display title escalado responsive — 36px en mobile 320px (palabras
           como "Operaciones," ahora caben), crece a 84px en desktop xl. */}
+      {/* El título va en <h1>: es el encabezado de la página. Antes era un
+          <span>, así que ninguna pantalla tenía h1 y varias no tenían ningún
+          heading — sin punto de referencia para lectores de pantalla
+          (WCAG 1.3.1 / 2.4.6). El CSS de .title-drop h1 lo deja idéntico. */}
       <div className="title-drop text-[36px] sm:text-[48px] md:text-[60px] lg:text-[72px] xl:text-[84px]">
-        <span>{title}</span>
+        <h1>{title}</h1>
         {subtitle && <span className="l2">{subtitle}</span>}
       </div>
 

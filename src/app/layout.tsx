@@ -28,12 +28,17 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
-        {/* Satoshi (Fontshare) — todos los weights + italics que el sistema usa */}
+        {/* Satoshi (Fontshare) — sólo los pesos roman.
+            OJO: NO agregar tokens de itálica (300i/400i/…). Satoshi no tiene
+            corte itálico en Fontshare y pedirlo hace que la API devuelva 500
+            para la request ENTERA, así que no cargaba ningún peso y toda la
+            app caía al fallback system-ui. La itálica del drop-line de
+            PageHeader la sintetiza el navegador. */}
         <link rel="preconnect" href="https://api.fontshare.com" />
         <link rel="preconnect" href="https://cdn.fontshare.com" crossOrigin="" />
         <link
           rel="stylesheet"
-          href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900,300i,400i,500i,700i,900i&display=swap"
+          href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap"
         />
         {/*
           Theme inicial sincronizado para evitar flash (FOUC). next-themes

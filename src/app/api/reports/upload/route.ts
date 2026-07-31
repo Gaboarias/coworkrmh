@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { auth } from "@/lib/auth";
 import { requireProjectAccess } from "@/lib/workspace";
-import { isMimeAllowed, UPLOAD_MAX_BYTES } from "@/lib/uploads";
+import {
+  isMimeAllowed,
+  UPLOAD_MAX_BYTES,
+  uploadErrorResponse,
+} from "@/lib/uploads";
 
 /**
  * Upload de archivos para el report builder — server-side con `put()`.
@@ -65,11 +69,6 @@ export async function POST(request: Request): Promise<NextResponse> {
       sizeBytes: file.size,
     });
   } catch (err) {
-    const e = err as Error;
-    console.error("[reports/upload] fail:", e?.name, "-", e?.message);
-    return NextResponse.json(
-      { error: e.message || "Error al subir el archivo" },
-      { status: 400 }
-    );
+    return uploadErrorResponse("reports/upload", err);
   }
 }

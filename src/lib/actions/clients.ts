@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { clients, clientProjects, payments, projects } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { getAppUrl, sendPortalInviteEmail } from "@/lib/email";
 import { createClientSchema } from "@/lib/validation/actions";
@@ -14,6 +14,23 @@ async function requireAdmin() {
   const session = await auth();
   if (!session?.user) throw new Error("No autenticado");
   if (session.user.role !== "admin") throw new Error("No autorizado");
+  return session.user;
+}
+
+/**
+ * Gate de lectura del CRM: admin o manager.
+ *
+ * Los clientes son globales (no tienen workspaceId), así que el rol global es
+ * la única barrera. TODA lectura de datos de cliente tiene que pasar por acá —
+ * son server actions, o sea endpoints HTTP que cualquier usuario autenticado
+ * puede invocar con un clientId arbitrario.
+ */
+async function requireClientRead() {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autenticado");
+  if (session.user.role !== "admin" && session.user.role !== "manager") {
+    throw new Error("Permisos insuficientes");
+  }
   return session.user;
 }
 
@@ -50,14 +67,7 @@ export interface ClientPayment {
 
 /** Lista todos los clientes del workspace activo. Admin/manager only. */
 export async function listClients(): Promise<ClientRow[]> {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
-  if (
-    session.user.role !== "admin" &&
-    session.user.role !== "manager"
-  ) {
-    throw new Error("Permisos insuficientes");
-  }
+  await requireClientRead();
 
   const rows = await db
     .select({
@@ -89,8 +99,7 @@ export async function listClients(): Promise<ClientRow[]> {
 export async function listClientProjects(
   clientId: string
 ): Promise<ClientProject[]> {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
+  await requireClientRead();
 
   const rows = await db
     .select({ id: projects.id, name: projects.name, status: projects.status })
@@ -105,8 +114,7 @@ export async function listClientProjects(
 export async function listClientPayments(
   clientId: string
 ): Promise<ClientPayment[]> {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
+  await requireClientRead();
 
   const rows = await db
     .select()
@@ -259,11 +267,16 @@ export async function unlinkClientFromProject(
   projectId: string
 ): Promise<void> {
   await requireAdmin();
+  // `and(...)`, NO `&&`: eq() devuelve un objeto truthy, así que `a && b`
+  // evalúa a `b` y el DELETE se llevaría el vínculo de TODOS los clientes
+  // con ese proyecto.
   await db
     .delete(clientProjects)
     .where(
-      eq(clientProjects.clientId, clientId) &&
-      eq(clientProjects.projectId, projectId)
+      and(
+        eq(clientProjects.clientId, clientId),
+        eq(clientProjects.projectId, projectId)
+      )
     );
   revalidatePath("/clients");
 }
