@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
 import { getQuote } from "@/lib/actions/erpQuotes";
+import { isUuid } from "@/lib/utils/uuid";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { OperationsNav } from "@/components/operations/OperationsNav";
 import { NoEntorno } from "@/components/operations/NoEntorno";
@@ -15,6 +16,10 @@ export default async function EditarCotizacionPage({
 }) {
   const { ws, can } = await getActiveWorkspaceWithPermissions();
   if (!ws) return <NoEntorno title="Cotización" />;
+
+  // erp_quotes.id es uuid: sin este guard, un id como "999" hacía fallar la
+  // query dentro de getQuote y terminaba en pantalla de error.
+  if (!isUuid(params.id)) notFound();
 
   let quote;
   try {

@@ -9,6 +9,7 @@ import { HairlineRule } from "@/components/shared/HairlineRule";
 import { CampaignMetrics } from "@/components/marketing/CampaignMetrics";
 import { formatDateCR } from "@/lib/utils/datetime";
 import { requireFeature } from "@/lib/workspace";
+import { isUuid } from "@/lib/utils/uuid";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,9 @@ export default async function CampaignDetailPage({
   if (!session?.user) redirect("/login");
   if (session.user.role !== "admin") redirect("/dashboard");
   await requireFeature("blaster");
+
+  // campaigns.id es uuid — descartar lo que no lo sea antes de consultar.
+  if (!isUuid(params.id)) notFound();
 
   const [campaign] = await db
     .select()

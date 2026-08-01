@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { ProjectTasksView } from "@/components/projects/ProjectTasksView";
 import { RecentActivityPanel } from "@/components/changelog/RecentActivityPanel";
 import { ensureWorkspaceForResource } from "@/lib/workspace";
+import { isUuid } from "@/lib/utils/uuid";
 import { getAssigneesForTasks } from "@/lib/actions/tasks";
 
 interface PageProps {
@@ -22,6 +23,11 @@ export default async function ProjectPage({ params }: PageProps) {
   const session = await auth();
   const role = (session?.user?.role as string) ?? "";
   const isManager = role === "admin" || role === "manager";
+
+  // projects.id es uuid: comparar contra algo que no lo es hace que Postgres
+  // tire "invalid input syntax for type uuid" y la página reviente con un
+  // "Application error" en vez de un 404. Se descarta antes de consultar.
+  if (!isUuid(params.projectId)) notFound();
 
   const [project] = await db
     .select()

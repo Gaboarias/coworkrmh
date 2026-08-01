@@ -4,8 +4,31 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { erpQuotes, erpQuoteItems } from "@/lib/db/schema";
 import { eq, and, asc, desc, inArray } from "drizzle-orm";
-import { toMoney, fromMoney, fromRate } from "@/lib/utils/money";
+import {
+  toMoney,
+  fromMoney,
+  fromRate,
+  clampRate,
+  clampNonNegative,
+} from "@/lib/utils/money";
 import { ER, requireWs, requireWsCan } from "./erp.helpers";
+
+/**
+ * Saneo de la entrada numérica de una cotización.
+ *
+ * Los `min="0"` / `max="1"` del formulario son sólo del navegador: el input
+ * deja escribir -5 igual, y estos actions son "use server" (endpoints HTTP),
+ * así que el payload puede venir de cualquier lado. Sin esto:
+ *  - ivaRate = 13 → numeric(5,4) overflow al guardar (y 1300% en pantalla).
+ *  - qty negativa → cotización con totales negativos.
+ */
+const sanitizeItems = (items: QuoteItemInput[]): QuoteItemInput[] =>
+  items.map((i) => ({
+    description: i.description,
+    qty: clampNonNegative(i.qty),
+    unitCost: clampNonNegative(i.unitCost),
+    unitPrice: clampNonNegative(i.unitPrice),
+  }));
 
 export interface QuoteItemInput {
   description: string;
@@ -163,7 +186,7 @@ export const createQuote = async (input: {
   items: QuoteItemInput[];
 }): Promise<{ id: string }> => {
   if (!input.title.trim()) throw new Error("El título es obligatorio");
-  const clean = input.items.filter((i) => i.description.trim());
+  const clean = sanitizeItems(input.items.filter((i) => i.description.trim()));
   if (clean.length === 0) throw new Error("Agrega al menos un ítem");
   const { ws, userId } = await requireWsCan("quotes.manage");
   const [q] = await db
@@ -172,7 +195,7 @@ export const createQuote = async (input: {
       workspaceId: ws.id,
       title: input.title.trim(),
       customerName: input.customerName?.trim() || null,
-      ivaRate: fromRate(input.ivaRate),
+      ivaRate: fromRate(clampRate(input.ivaRate)),
       notes: input.notes?.trim() || null,
       createdById: userId,
     })
@@ -200,14 +223,14 @@ export const updateQuote = async (
     .where(and(eq(erpQuotes.id, id), eq(erpQuotes.workspaceId, ws.id)))
     .limit(1);
   if (!q) throw new Error("Cotización no encontrada");
-  const clean = input.items.filter((i) => i.description.trim());
+  const clean = sanitizeItems(input.items.filter((i) => i.description.trim()));
   if (clean.length === 0) throw new Error("Agrega al menos un ítem");
   await db
     .update(erpQuotes)
     .set({
       title: input.title.trim(),
       customerName: input.customerName?.trim() || null,
-      ivaRate: fromRate(input.ivaRate),
+      ivaRate: fromRate(clampRate(input.ivaRate)),
       status: input.status ?? q.status,
       notes: input.notes?.trim() || null,
       updatedAt: new Date(),

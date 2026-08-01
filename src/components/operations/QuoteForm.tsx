@@ -61,6 +61,16 @@ export const QuoteForm = ({
   const setItem = (i: number, patch: Partial<QuoteItemInput>) =>
     setItems((s) => s.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
 
+  /**
+   * Lee un número de un input y lo acota a >= 0. El `min="0"` del navegador
+   * no impide escribir -5: sin esto, una cantidad negativa producía totales
+   * negativos (y un margen bruto que mostraba 0% en vez del valor real).
+   */
+  const nonNeg = (v: string): number => {
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.max(n, 0) : 0;
+  };
+
   const submit = async () => {
     if (!title.trim()) {
       toast.error("Falta el título");
@@ -151,9 +161,7 @@ export const QuoteForm = ({
                 step="0.01"
                 min="0"
                 value={it.qty}
-                onChange={(e) =>
-                  setItem(i, { qty: Number(e.target.value) || 0 })
-                }
+                onChange={(e) => setItem(i, { qty: nonNeg(e.target.value) })}
                 aria-label="Cantidad"
               />
               <Input
@@ -161,9 +169,7 @@ export const QuoteForm = ({
                 step="0.01"
                 min="0"
                 value={it.unitCost}
-                onChange={(e) =>
-                  setItem(i, { unitCost: Number(e.target.value) || 0 })
-                }
+                onChange={(e) => setItem(i, { unitCost: nonNeg(e.target.value) })}
                 aria-label="Costo unitario"
               />
               <Input
@@ -171,9 +177,7 @@ export const QuoteForm = ({
                 step="0.01"
                 min="0"
                 value={it.unitPrice}
-                onChange={(e) =>
-                  setItem(i, { unitPrice: Number(e.target.value) || 0 })
-                }
+                onChange={(e) => setItem(i, { unitPrice: nonNeg(e.target.value) })}
                 aria-label="Precio unitario"
               />
               <button
@@ -198,19 +202,33 @@ export const QuoteForm = ({
         <CardContent className="space-y-3">
           <div className="flex items-center gap-3">
             <label htmlFor="quote-iva" className="text-sm font-medium text-text-muted">
-              Tasa IVA
+              IVA
             </label>
-            <Input
-              id="quote-iva"
-              type="number"
-              step="0.01"
-              min="0"
-              max="1"
-              value={ivaRate}
-              onChange={(e) => setIvaRate(Number(e.target.value) || 0)}
-              className="w-24"
-            />
-            <span className="text-xs text-text-tertiary">(0.13 = 13%)</span>
+            {/* El campo se edita en PORCENTAJE (13 = 13%), que es como se
+                habla del IVA. Antes pedía la fracción (0.13) y escribir 13 —
+                lo natural — daba 1300% de impuesto en pantalla y overflow de
+                numeric(5,4) al guardar. Internamente se sigue guardando como
+                fracción, así que las cotizaciones viejas no se tocan. */}
+            <div className="flex items-center gap-1">
+              <Input
+                id="quote-iva"
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                value={Math.round(ivaRate * 10000) / 100}
+                onChange={(e) => {
+                  const pct = Number(e.target.value);
+                  const safe = Number.isFinite(pct)
+                    ? Math.min(Math.max(pct, 0), 100)
+                    : 0;
+                  setIvaRate(safe / 100);
+                }}
+                className="w-24"
+              />
+              <span className="text-sm text-text-muted">%</span>
+            </div>
+            <span className="text-xs text-text-tertiary">IVA en Costa Rica: 13%</span>
           </div>
           <dl className="space-y-1 text-sm">
             {[
