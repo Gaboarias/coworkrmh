@@ -20,19 +20,7 @@ import {
   type WsRolePermissions,
 } from "@/lib/constants/workspacePermissions";
 import { createNotification } from "@/lib/actions/notifications";
-
-const requireAdmin = async () => {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
-  if (session.user.role !== "admin") throw new Error("No autorizado");
-  return session.user;
-};
-
-const requireUser = async () => {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
-  return session.user;
-};
+import { requireUser, requireAdmin } from "./guards";
 
 // ─── Lecturas (panel admin global) ────────────────────────────────────────────
 

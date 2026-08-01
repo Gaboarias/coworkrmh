@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { formatMoney } from "@/lib/utils/money";
+import { computeQuoteTotals } from "@/lib/quotes/totals";
 import {
   createQuote,
   updateQuote,
@@ -40,23 +41,12 @@ export const QuoteForm = ({
   );
   const [saving, setSaving] = useState(false);
 
-  const totals = useMemo(() => {
-    const productionCost = items.reduce(
-      (s, i) => s + i.qty * i.unitCost,
-      0
-    );
-    const netSales = items.reduce((s, i) => s + i.qty * i.unitPrice, 0);
-    const grossProfit = netSales - productionCost;
-    const ivaAmount = netSales * ivaRate;
-    return {
-      productionCost,
-      netSales,
-      grossProfit,
-      marginPct: netSales > 0 ? grossProfit / netSales : 0,
-      ivaAmount,
-      totalWithIva: netSales + ivaAmount,
-    };
-  }, [items, ivaRate]);
+  // Misma función que usa el servidor al guardar y el listado al mostrar el
+  // total — el preview no puede divergir de lo que se persiste.
+  const totals = useMemo(
+    () => computeQuoteTotals(items, ivaRate),
+    [items, ivaRate]
+  );
 
   const setItem = (i: number, patch: Partial<QuoteItemInput>) =>
     setItems((s) => s.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));

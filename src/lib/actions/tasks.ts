@@ -14,7 +14,8 @@ import {
   users,
 } from "@/lib/db/schema";
 import { and, eq, asc, inArray } from "drizzle-orm";
-import { getActiveWorkspace, getWorkspacePermissions } from "@/lib/workspace";
+import { requireUser, requireWsCan } from "./guards";
+import { getMemberWorkspaces } from "@/lib/workspace";
 import { createNotification } from "@/lib/actions/notifications";
 import { createTaskSchema, updateTaskSchema } from "@/lib/validation/actions";
 
@@ -81,22 +82,12 @@ async function ensureAssigneeIsProjectMember(
     });
 }
 
-async function requireUser() {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
-  return session.user;
-}
-
-/** Usuario autenticado con la capacidad `projects.manage` en el entorno activo. */
+/**
+ * Usuario autenticado con la capacidad `projects.manage` en el entorno activo.
+ * Es exactamente requireWsCan — antes este archivo tenía su propia copia.
+ */
 async function requireProjectsManage() {
-  const [user, ws] = await Promise.all([requireUser(), getActiveWorkspace()]);
-  if (!ws) throw new Error("Selecciona un entorno");
-  const { permissions } = await getWorkspacePermissions(ws.id);
-  if (!permissions.has("projects.manage")) {
-    throw new Error(
-      "No tenés permiso para gestionar tareas en este entorno"
-    );
-  }
+  const { user } = await requireWsCan("projects.manage");
   return user;
 }
 
@@ -174,6 +165,16 @@ export async function getAssigneesForTasks(
   taskIds: string[]
 ): Promise<Record<string, TaskAssigneeProfile[]>> {
   if (taskIds.length === 0) return {};
+
+  // Es un server action: recibe taskIds arbitrarios de quien sea. Sin sesión y
+  // sin scope, cualquiera podía pasar ids al azar y cosechar nombre + EMAIL de
+  // los usuarios asignados. Se exige sesión y se acotan las tareas a los
+  // entornos de los que el usuario es miembro.
+  await requireUser();
+  const { workspaces: myWorkspaces } = await getMemberWorkspaces();
+  if (myWorkspaces.length === 0) return {};
+  const myWsIds = myWorkspaces.map((w) => w.id);
+
   const rows = await db
     .select({
       taskId: taskAssignees.taskId,
@@ -184,7 +185,14 @@ export async function getAssigneesForTasks(
     })
     .from(taskAssignees)
     .innerJoin(users, eq(users.id, taskAssignees.userId))
-    .where(inArray(taskAssignees.taskId, taskIds))
+    .innerJoin(tasks, eq(tasks.id, taskAssignees.taskId))
+    .innerJoin(projects, eq(projects.id, tasks.projectId))
+    .where(
+      and(
+        inArray(taskAssignees.taskId, taskIds),
+        inArray(projects.workspaceId, myWsIds)
+      )
+    )
     .orderBy(asc(taskAssignees.assignedAt));
 
   const map: Record<string, TaskAssigneeProfile[]> = {};

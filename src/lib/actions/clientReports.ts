@@ -4,8 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { clientReports } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
-import { auth } from "@/lib/auth";
-import { requireProjectAccess } from "@/lib/workspace";
+import { requireUser, requireProjectAccess } from "./guards";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -56,8 +55,7 @@ export async function createClientReport(input: {
   sizeBytes?: number;
   reportDate?: string;
 }): Promise<ClientReportRow> {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
+  const user = await requireUser();
   await requireProjectAccess(input.projectId);
 
   const [row] = await db
@@ -72,7 +70,7 @@ export async function createClientReport(input: {
       sizeBytes: input.sizeBytes ?? null,
       reportDate: input.reportDate ?? null,
       isPublished: false,
-      createdBy: session.user.id,
+      createdBy: user.id,
     })
     .returning();
 
@@ -140,9 +138,8 @@ export async function deleteClientReport(
   reportId: string,
   projectId: string
 ): Promise<void> {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
-  const role = session.user.role as string;
+  const user = await requireUser();
+  const role = user.role as string;
   if (role !== "admin" && role !== "manager") {
     throw new Error("Solo admin o manager puede eliminar reportes");
   }

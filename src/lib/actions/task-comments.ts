@@ -2,10 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { and, desc, eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { taskComments, tasks, users } from "@/lib/db/schema";
-import { requireProjectAccess } from "@/lib/workspace";
+import { requireUser, optionalUser, requireProjectAccess } from "./guards";
 
 /**
  * Bitácora append-only de tareas.
@@ -36,8 +35,8 @@ export interface TaskCommentRow {
 export async function listTaskComments(
   taskId: string
 ): Promise<TaskCommentRow[]> {
-  const session = await auth();
-  if (!session?.user) return [];
+  const user = await optionalUser();
+  if (!user) return [];
 
   // Recuperar el projectId de la tarea para verificar acceso.
   const [task] = await db
@@ -65,7 +64,7 @@ export async function listTaskComments(
     .limit(500);
 
   const now = Date.now();
-  const viewerId = session.user.id;
+  const viewerId = user.id;
   return rows.map((r) => ({
     id: r.id,
     body: r.body,
@@ -146,8 +145,7 @@ export async function createTaskComment(
  * Sólo el autor, dentro de la ventana de DELETE_WINDOW_MS.
  */
 export async function deleteTaskComment(commentId: string): Promise<void> {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
+  const user = await requireUser();
 
   const [row] = await db
     .select({
@@ -160,7 +158,7 @@ export async function deleteTaskComment(commentId: string): Promise<void> {
     .limit(1);
   if (!row) throw new Error("Nota no encontrada");
 
-  if (row.authorId !== session.user.id) {
+  if (row.authorId !== user.id) {
     throw new Error("Solo el autor puede borrar su nota");
   }
   if (Date.now() - row.createdAt.getTime() >= DELETE_WINDOW_MS) {
@@ -174,7 +172,7 @@ export async function deleteTaskComment(commentId: string): Promise<void> {
     .where(
       and(
         eq(taskComments.id, commentId),
-        eq(taskComments.authorId, session.user.id)
+        eq(taskComments.authorId, user.id)
       )
     );
 

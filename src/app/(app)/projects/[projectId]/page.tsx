@@ -11,8 +11,7 @@ import { eq, and, isNull, ne, asc, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { ProjectTasksView } from "@/components/projects/ProjectTasksView";
 import { RecentActivityPanel } from "@/components/changelog/RecentActivityPanel";
-import { ensureWorkspaceForResource } from "@/lib/workspace";
-import { isUuid } from "@/lib/utils/uuid";
+import { loadProjectForRoute } from "@/lib/projects/access";
 import { getAssigneesForTasks } from "@/lib/actions/tasks";
 
 interface PageProps {
@@ -24,21 +23,8 @@ export default async function ProjectPage({ params }: PageProps) {
   const role = (session?.user?.role as string) ?? "";
   const isManager = role === "admin" || role === "manager";
 
-  // projects.id es uuid: comparar contra algo que no lo es hace que Postgres
-  // tire "invalid input syntax for type uuid" y la página reviente con un
-  // "Application error" en vez de un 404. Se descarta antes de consultar.
-  if (!isUuid(params.projectId)) notFound();
-
-  const [project] = await db
-    .select()
-    .from(projects)
-    .where(eq(projects.id, params.projectId))
-    .limit(1);
-
-  if (!project) notFound();
-
-  await ensureWorkspaceForResource(
-    project.workspaceId,
+  const project = await loadProjectForRoute(
+    params.projectId,
     `/projects/${params.projectId}`
   );
 

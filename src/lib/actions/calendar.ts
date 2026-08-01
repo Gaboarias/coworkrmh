@@ -1,18 +1,17 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { calendarConnections } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { requireUser } from "./guards";
 
 /** Desconecta el calendario del usuario actual (borra tokens). */
 export async function disconnectCalendar() {
-  const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  const user = await requireUser();
   await db
     .delete(calendarConnections)
-    .where(eq(calendarConnections.userId, session.user.id));
+    .where(eq(calendarConnections.userId, user.id));
   revalidatePath("/settings");
   revalidatePath("/calendar");
 }

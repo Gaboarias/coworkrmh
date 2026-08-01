@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
-import { projects, changelog, users } from "@/lib/db/schema";
+import { changelog, users } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { notFound } from "next/navigation";
+import { loadProject } from "@/lib/projects/access";
 import { ChangelogFeed } from "@/components/changelog/ChangelogFeed";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -11,14 +11,7 @@ interface PageProps {
 }
 
 export default async function ProjectChangelogPage({ params }: PageProps) {
-  // Fetch project
-  const [project] = await db
-    .select({ id: projects.id, name: projects.name })
-    .from(projects)
-    .where(eq(projects.id, params.projectId))
-    .limit(1);
-
-  if (!project) notFound();
+  const project = await loadProject(params.projectId);
 
   // Fetch changelog with user info
   const entryRows = await db

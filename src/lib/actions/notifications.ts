@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { requireUser, optionalUser } from "./guards";
 import { db } from "@/lib/db";
 import { notifications, users, type NotificationPayload } from "@/lib/db/schema";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
@@ -118,15 +118,15 @@ export async function listMyNotifications(): Promise<{
   notifications: NotificationRow[];
   unreadCount: number;
 }> {
-  const session = await auth();
-  if (!session?.user) return { notifications: [], unreadCount: 0 };
+  const user = await optionalUser();
+  if (!user) return { notifications: [], unreadCount: 0 };
 
   // Filas de notificaciones y conteo unread son independientes — paralelizar.
   const [rows, [{ unread }]] = await Promise.all([
     db
       .select()
       .from(notifications)
-      .where(eq(notifications.userId, session.user.id))
+      .where(eq(notifications.userId, user.id))
       .orderBy(desc(notifications.createdAt))
       .limit(50),
     db
@@ -134,7 +134,7 @@ export async function listMyNotifications(): Promise<{
       .from(notifications)
       .where(
         and(
-          eq(notifications.userId, session.user.id),
+          eq(notifications.userId, user.id),
           isNull(notifications.readAt)
         )
       ),
@@ -165,14 +165,14 @@ export async function listAllMyNotifications(
   unreadCount: number;
   total: number;
 }> {
-  const session = await auth();
-  if (!session?.user) return { notifications: [], unreadCount: 0, total: 0 };
+  const user = await optionalUser();
+  if (!user) return { notifications: [], unreadCount: 0, total: 0 };
 
   const [rows, [{ unread }], [{ total }]] = await Promise.all([
     db
       .select()
       .from(notifications)
-      .where(eq(notifications.userId, session.user.id))
+      .where(eq(notifications.userId, user.id))
       .orderBy(desc(notifications.createdAt))
       .limit(limit)
       .offset(offset),
@@ -181,14 +181,14 @@ export async function listAllMyNotifications(
       .from(notifications)
       .where(
         and(
-          eq(notifications.userId, session.user.id),
+          eq(notifications.userId, user.id),
           isNull(notifications.readAt)
         )
       ),
     db
       .select({ total: sql<number>`count(*)::int` })
       .from(notifications)
-      .where(eq(notifications.userId, session.user.id)),
+      .where(eq(notifications.userId, user.id)),
   ]);
 
   return {
@@ -207,14 +207,14 @@ export async function listAllMyNotifications(
 
 /** Cuenta unread (endpoint barato para polling). */
 export async function getUnreadCount(): Promise<number> {
-  const session = await auth();
-  if (!session?.user) return 0;
+  const user = await optionalUser();
+  if (!user) return 0;
   const [{ unread }] = await db
     .select({ unread: sql<number>`count(*)::int` })
     .from(notifications)
     .where(
       and(
-        eq(notifications.userId, session.user.id),
+        eq(notifications.userId, user.id),
         isNull(notifications.readAt)
       )
     );
@@ -223,15 +223,14 @@ export async function getUnreadCount(): Promise<number> {
 
 /** Marcar una notificación como leída. */
 export async function markNotificationRead(notificationId: string) {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
+  const user = await requireUser();
   await db
     .update(notifications)
     .set({ readAt: new Date() })
     .where(
       and(
         eq(notifications.id, notificationId),
-        eq(notifications.userId, session.user.id)
+        eq(notifications.userId, user.id)
       )
     );
   revalidatePath("/");
@@ -239,14 +238,13 @@ export async function markNotificationRead(notificationId: string) {
 
 /** Marcar todas las del usuario como leídas. */
 export async function markAllNotificationsRead() {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
+  const user = await requireUser();
   await db
     .update(notifications)
     .set({ readAt: new Date() })
     .where(
       and(
-        eq(notifications.userId, session.user.id),
+        eq(notifications.userId, user.id),
         isNull(notifications.readAt)
       )
     );

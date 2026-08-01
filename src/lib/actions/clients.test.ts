@@ -72,6 +72,16 @@ const h = vi.hoisted(() => {
 
 vi.mock("@/lib/db", () => ({ db: h.db }));
 vi.mock("@/lib/auth", () => ({ auth: async () => h.state.session }));
+// guards.ts re-exporta helpers de workspace.ts, que usa React `cache()` — no
+// existe fuera de un render de React. Los guards que usa clients.ts sólo miran
+// la sesión, así que el módulo entero se puede stubear.
+vi.mock("@/lib/workspace", () => ({
+  requireProjectAccess: async () => ({ userId: "u1", workspaceId: "ws1" }),
+  requireWorkspaceManage: async () => ({ userId: "u1", role: "owner" }),
+  requireWorkspaceOwner: async () => ({ userId: "u1" }),
+  getActiveWorkspace: async () => null,
+  getWorkspacePermissions: async () => ({ permissions: new Set<string>() }),
+}));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 vi.mock("@/lib/email", () => ({
   getAppUrl: () => "https://cowork-rmh.vercel.app",

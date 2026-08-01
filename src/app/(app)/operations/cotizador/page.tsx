@@ -3,6 +3,7 @@ import { Plus, Calculator } from "lucide-react";
 import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
 import { listQuotes } from "@/lib/actions/erpQuotes";
 import { formatMoney } from "@/lib/utils/money";
+import { quoteTotalWithIva } from "@/lib/quotes/totals";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 import { OperationsNav } from "@/components/operations/OperationsNav";
@@ -57,11 +58,7 @@ export default async function CotizadorPage() {
       ) : (
         <ul className="h-list mt-3">
           {quotes.map((q, i) => {
-            const net = q.items.reduce(
-              (s, it) => s + it.qty * it.unitPrice,
-              0
-            );
-            const total = net + net * q.ivaRate;
+            const total = quoteTotalWithIva(q.items, q.ivaRate);
             const s = STATUS[q.status] ?? STATUS.draft;
             const statusColor =
               s.color === "done"

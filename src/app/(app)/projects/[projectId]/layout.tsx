@@ -1,8 +1,4 @@
-import { db } from "@/lib/db";
-import { projects } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { notFound } from "next/navigation";
-import { isUuid } from "@/lib/utils/uuid";
+import { loadProject } from "@/lib/projects/access";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,17 +20,8 @@ export default async function ProjectLayout({
   params,
 }: LayoutProps) {
   // El layout envuelve TODAS las sub-rutas del proyecto (tareas, documentos,
-  // notas, historial, reportes, settings), así que validar acá cubre a todas:
-  // projects.id es uuid y compararlo con basura hace explotar la query.
-  if (!isUuid(params.projectId)) notFound();
-
-  const [project] = await db
-    .select({ id: projects.id, color: projects.color })
-    .from(projects)
-    .where(eq(projects.id, params.projectId))
-    .limit(1);
-
-  if (!project) notFound();
+  // notas, historial, reportes, settings), así que el guard acá cubre a todas.
+  const project = await loadProject(params.projectId);
 
   const color = project.color ?? "var(--ink)";
 

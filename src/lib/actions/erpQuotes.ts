@@ -30,21 +30,11 @@ const sanitizeItems = (items: QuoteItemInput[]): QuoteItemInput[] =>
     unitPrice: clampNonNegative(i.unitPrice),
   }));
 
-export interface QuoteItemInput {
-  description: string;
-  qty: number;
-  unitCost: number;
-  unitPrice: number;
-}
-
-interface QuoteTotals {
-  productionCost: number;
-  netSales: number;
-  grossProfit: number;
-  marginPct: number;
-  ivaAmount: number;
-  totalWithIva: number;
-}
+// La aritmética y sus tipos viven en lib/quotes/totals.ts — módulo puro que
+// el formulario y los listados también usan. Acá se re-exporta el tipo para
+// no romper los imports existentes.
+import type { QuoteItemInput } from "@/lib/quotes/totals";
+export type { QuoteItemInput };
 
 export interface QuoteRow {
   id: string;
@@ -71,24 +61,6 @@ export async function getQuoteTitle(quoteId: string): Promise<string | null> {
     return null;
   }
 }
-
-export const computeQuoteTotals = async (
-  items: QuoteItemInput[],
-  ivaRate: number
-): Promise<QuoteTotals> => {
-  const productionCost = items.reduce((s, i) => s + i.qty * i.unitCost, 0);
-  const netSales = items.reduce((s, i) => s + i.qty * i.unitPrice, 0);
-  const grossProfit = netSales - productionCost;
-  const ivaAmount = netSales * ivaRate;
-  return {
-    productionCost,
-    netSales,
-    grossProfit,
-    marginPct: netSales > 0 ? grossProfit / netSales : 0,
-    ivaAmount,
-    totalWithIva: netSales + ivaAmount,
-  };
-};
 
 const loadQuoteItems = async (quoteId: string): Promise<QuoteItemInput[]> => {
   const rows = await db

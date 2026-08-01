@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
-import { projects, notes, users } from "@/lib/db/schema";
+import { notes, users } from "@/lib/db/schema";
 import { eq, isNull, desc } from "drizzle-orm";
-import { notFound } from "next/navigation";
+import { loadProject } from "@/lib/projects/access";
 import { NotesListView } from "@/components/notes/NotesListView";
 
 interface PageProps {
@@ -9,14 +9,7 @@ interface PageProps {
 }
 
 export default async function ProjectNotesPage({ params }: PageProps) {
-  // Fetch project
-  const [project] = await db
-    .select({ id: projects.id, name: projects.name })
-    .from(projects)
-    .where(eq(projects.id, params.projectId))
-    .limit(1);
-
-  if (!project) notFound();
+  const project = await loadProject(params.projectId);
 
   // Fetch notes with creator info
   const noteRows = await db

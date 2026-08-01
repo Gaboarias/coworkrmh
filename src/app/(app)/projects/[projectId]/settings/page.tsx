@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
-import { projects, projectMembers, users, buckets } from "@/lib/db/schema";
+import { projectMembers, users, buckets } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
-import { notFound } from "next/navigation";
+import { loadProject } from "@/lib/projects/access";
 import { ProjectSettingsForm } from "@/components/projects/ProjectSettingsForm";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -12,13 +12,7 @@ interface PageProps {
 }
 
 export default async function ProjectSettingsPage({ params }: PageProps) {
-  const [project] = await db
-    .select()
-    .from(projects)
-    .where(eq(projects.id, params.projectId))
-    .limit(1);
-
-  if (!project) notFound();
+  const project = await loadProject(params.projectId);
 
   const memberRows = await db
     .select({

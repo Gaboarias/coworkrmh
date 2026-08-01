@@ -4,35 +4,15 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { clients, clientProjects, payments, projects } from "@/lib/db/schema";
 import { and, eq, desc } from "drizzle-orm";
-import { auth } from "@/lib/auth";
+import { requireUser, requireAdmin, requireManagerOrAdmin } from "./guards";
 import { getAppUrl, sendPortalInviteEmail } from "@/lib/email";
 import { createClientSchema } from "@/lib/validation/actions";
 
 // ─── Auth helpers ─────────────────────────────────────────────────────────────
 
-async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
-  if (session.user.role !== "admin") throw new Error("No autorizado");
-  return session.user;
-}
-
-/**
- * Gate de lectura del CRM: admin o manager.
- *
- * Los clientes son globales (no tienen workspaceId), así que el rol global es
- * la única barrera. TODA lectura de datos de cliente tiene que pasar por acá —
- * son server actions, o sea endpoints HTTP que cualquier usuario autenticado
- * puede invocar con un clientId arbitrario.
- */
-async function requireClientRead() {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
-  if (session.user.role !== "admin" && session.user.role !== "manager") {
-    throw new Error("Permisos insuficientes");
-  }
-  return session.user;
-}
+// Gate de lectura del CRM: admin o manager. Los clientes son globales (sin
+// workspaceId), así que el rol global es la única barrera posible hoy.
+const requireClientRead = requireManagerOrAdmin;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -220,8 +200,7 @@ export async function createClient(input: {
   notes?: string;
 }): Promise<ClientRow> {
   createClientSchema.parse(input);
-  const session = await auth();
-  if (!session?.user) throw new Error("No autenticado");
+  const user = await requireUser();
 
   const [row] = await db
     .insert(clients)
@@ -231,7 +210,7 @@ export async function createClient(input: {
       email: input.email ?? null,
       phone: input.phone ?? null,
       notes: input.notes ?? null,
-      createdBy: session.user.id,
+      createdBy: user.id,
     })
     .returning();
 

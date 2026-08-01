@@ -12,6 +12,7 @@ import {
 } from "@/lib/db/schema";
 import { eq, and, gte, sql, desc } from "drizzle-orm";
 import { getActiveWorkspace } from "@/lib/workspace";
+import { optionalUser } from "./guards";
 
 /**
  * Aggregations para la página /reports (Sunset Aurora · N5).
@@ -54,6 +55,12 @@ const THIRTY_DAYS_AGO_DATE_STR = () => {
 };
 
 export async function getWorkspaceReport(): Promise<WorkspaceReport | null> {
+  // Sin sesión no hay entorno activo, así que esto ya devolvía null — pero de
+  // rebote, por cómo encadena getActiveWorkspace. Explicitarlo evita que un
+  // cambio ahí adentro abra el reporte a cualquiera sin que nadie lo note.
+  const user = await optionalUser();
+  if (!user) return null;
+
   const ws = await getActiveWorkspace();
   if (!ws) return null;
 
