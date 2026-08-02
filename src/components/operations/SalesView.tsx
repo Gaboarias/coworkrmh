@@ -14,6 +14,7 @@ import { formatMoney } from "@/lib/utils/money";
 import { createSale, deleteSale, type SalesResult } from "@/lib/actions/erpSales";
 import { formatDateCR } from "@/lib/utils/datetime";
 import { DensityToggle } from "./DensityToggle";
+import { usePendingRows, pendingRow } from "@/lib/hooks/usePendingRows";
 
 export const SalesView = ({
   data,
@@ -62,15 +63,17 @@ export const SalesView = ({
     }
   };
 
+  // Sin UI optimista a propósito: las filas conviven con totales que calcula
+  // el servidor. Sacar la fila al instante los dejaría sin mover y la pantalla
+  // afirmaría números que no cuadran. Acá se hace legible la espera.
+  const { isPending, busy, run } = usePendingRows();
+
   const remove = async (id: string) => {
     if (!confirm("¿Eliminar esta venta?")) return;
-    try {
-      await deleteSale(id);
-      toast.success("Venta eliminada");
-      router.refresh();
-    } catch (err) {
-      toast.error((err as Error).message);
-    }
+    await run(id, () => deleteSale(id), {
+      success: "Venta eliminada",
+      error: "No se pudo eliminar la venta",
+    });
   };
 
   return (
@@ -177,6 +180,7 @@ export const SalesView = ({
       <StatStrip
         size="md"
         label="Totales de ventas"
+        pending={busy}
         items={[
           { label: "Ventas totales", value: formatMoney(data.totals.sales) },
           {
@@ -203,7 +207,13 @@ export const SalesView = ({
         ) : (
           <div className="divide-y divide-rule">
             {data.rows.map((r) => (
-              <div key={r.id} className="flex items-center gap-4 px-4 py-[var(--erp-row-py)] transition-colors hover:bg-surface-el">
+              <div
+                key={r.id}
+                {...pendingRow(
+                  isPending(r.id),
+                  "flex items-center gap-4 px-4 py-[var(--erp-row-py)] transition-[background-color,opacity] hover:bg-surface-el"
+                )}
+              >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ink">
                     {r.description}

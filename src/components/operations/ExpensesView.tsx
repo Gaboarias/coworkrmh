@@ -17,6 +17,8 @@ import {
 } from "@/lib/actions/erpExpenses";
 import { DensityToggle } from "./DensityToggle";
 import { IconButton } from "@/components/ui/IconButton";
+import { cn } from "@/lib/utils/cn";
+import { usePendingRows, pendingRow } from "@/lib/hooks/usePendingRows";
 
 // ── Subcomponente de sección ──────────────────────────────────────────────────
 // Definido en scope de módulo para que React mantenga identidad estable entre
@@ -27,19 +29,30 @@ function ExpensesSection({
   rows,
   canManage,
   onRemove,
+  isPending,
+  busy,
 }: {
   title: string;
   total: number;
   rows: ExpensesResult["investment"];
   canManage: boolean;
   onRemove: (id: string) => void;
+  isPending: (id: string) => boolean;
+  /** Hay un borrado en vuelo: el total de la sección ya se sabe viejo. */
+  busy: boolean;
 }) {
   return (
     <Card>
       <CardContent>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-ink">{title}</h3>
-          <span className="text-sm font-semibold text-ink">
+          <span
+            aria-busy={busy || undefined}
+            className={cn(
+              "text-sm font-semibold text-ink tabular-nums transition-opacity duration-150",
+              busy && "opacity-45"
+            )}
+          >
             {formatMoney(total)}
           </span>
         </div>
@@ -48,7 +61,13 @@ function ExpensesSection({
         ) : (
           <div className="divide-y divide-rule">
             {rows.map((e) => (
-              <div key={e.id} className="flex items-center gap-3 py-[var(--erp-row-py)] text-sm">
+              <div
+                key={e.id}
+                {...pendingRow(
+                  isPending(e.id),
+                  "flex items-center gap-3 py-[var(--erp-row-py)] text-sm transition-opacity"
+                )}
+              >
                 <span className="flex-1 text-ink">{e.concept}</span>
                 <span className="text-xs text-ink-faint">
                   {e.category ?? "—"}
@@ -120,15 +139,17 @@ export const ExpensesView = ({
     }
   };
 
+  // Sin UI optimista a propósito: los gastos alimentan el total de la sección
+  // y el punto de equilibrio, los dos calculados en el servidor. Sacar la fila
+  // al instante los dejaría sin mover.
+  const { isPending, busy, run } = usePendingRows();
+
   const remove = async (id: string) => {
     if (!confirm("¿Eliminar?")) return;
-    try {
-      await deleteExpense(id);
-      toast.success("Eliminado");
-      router.refresh();
-    } catch (err) {
-      toast.error((err as Error).message);
-    }
+    await run(id, () => deleteExpense(id), {
+      success: "Eliminado",
+      error: "No se pudo eliminar el gasto",
+    });
   };
 
   const saveMargin = async () => {
@@ -213,6 +234,8 @@ export const ExpensesView = ({
         rows={data.investment}
         canManage={canManage}
         onRemove={remove}
+        isPending={isPending}
+        busy={busy}
       />
       <ExpensesSection
         title="Gastos fijos mensuales"
@@ -220,6 +243,8 @@ export const ExpensesView = ({
         rows={data.fixed}
         canManage={canManage}
         onRemove={remove}
+        isPending={isPending}
+        busy={busy}
       />
 
       <Card>
@@ -253,7 +278,15 @@ export const ExpensesView = ({
               <p className="text-xs text-ink-soft">
                 Ventas necesarias para cubrir gastos fijos
               </p>
-              <p className="text-lg font-semibold text-primary">
+              {/* El punto de equilibrio sale de los gastos fijos: si hay un
+                  borrado en vuelo, esta cifra ya se sabe vieja. */}
+              <p
+                aria-busy={busy || undefined}
+                className={cn(
+                  "text-lg font-semibold text-primary tabular-nums transition-opacity duration-150",
+                  busy && "opacity-45"
+                )}
+              >
                 {formatMoney(data.breakEvenSales)}
               </p>
             </div>

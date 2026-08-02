@@ -45,6 +45,15 @@ interface StatStripProps {
   size?: keyof typeof SIZE;
   /** Nombre accesible del grupo de cifras. */
   label?: string;
+  /**
+   * Hay una mutación en vuelo que va a mover estas cifras.
+   *
+   * Mientras sea true la fila deja de afirmar: baja el tono y se marca
+   * `aria-busy`. Es la mitad honesta de no hacer UI optimista en pantallas de
+   * plata — si el total que se está mirando ya se sabe viejo, seguir
+   * mostrándolo con la misma confianza es la parte que engaña.
+   */
+  pending?: boolean;
   className?: string;
 }
 
@@ -52,13 +61,17 @@ export function StatStrip({
   items,
   size = "lg",
   label,
+  pending = false,
   className,
 }: StatStripProps) {
   return (
     <dl
       aria-label={label}
+      aria-busy={pending || undefined}
       className={cn(
         "grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 md:grid-cols-3",
+        "transition-opacity duration-150",
+        pending && "opacity-45",
         className
       )}
     >
