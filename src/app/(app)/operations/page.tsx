@@ -1,11 +1,5 @@
 import Link from "next/link";
-import {
-  Package,
-  Calculator,
-  TrendingUp,
-  Wrench,
-  Users,
-} from "lucide-react";
+import { Package } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/workspace";
 import { listProducts } from "@/lib/actions/erpProducts";
 import { listSales } from "@/lib/actions/erpSales";
@@ -16,52 +10,30 @@ import { buttonVariants } from "@/components/ui/Button";
 import { StatStrip } from "@/components/ui/StatStrip";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
-import { OperationsNav } from "@/components/operations/OperationsNav";
+import {
+  OperationsNav,
+  OPERATIONS_MODULE_COUNT,
+} from "@/components/operations/OperationsNav";
 import { NoEntorno } from "@/components/operations/NoEntorno";
 import { formatDateCR } from "@/lib/utils/datetime";
 
-// Constante de módulo — los módulos de navegación son estáticos.
-const OPERATIONS_MODULES = [
-  {
-    href: "/operations/catalogo",
-    label: "Catálogo",
-    desc: "Productos, costos y margen",
-    icon: Package,
-  },
-  {
-    href: "/operations/cotizador",
-    label: "Cotizador",
-    desc: "Cotizaciones con IVA",
-    icon: Calculator,
-  },
-  {
-    href: "/operations/ventas",
-    label: "Ventas",
-    desc: "Registro y resumen por categoría",
-    icon: TrendingUp,
-  },
-  {
-    href: "/operations/gastos",
-    label: "Gastos",
-    desc: "Inversión, fijos y equilibrio",
-    icon: Wrench,
-  },
-  {
-    href: "/operations/equipo",
-    label: "Equipo",
-    desc: "Roles, responsabilidades, acuerdos",
-    icon: Users,
-  },
-] as const;
-
 /**
- * Operations dashboard (Edition 04).
+ * Operations dashboard.
  *
  * Layout:
  *   - PageHeader drop-line "Operaciones," "del estudio"
- *   - OperationsNav (tabs)
- *   - KPI grid 6 columnas tipografía pura
- *   - Asymmetric: módulos como lista (no card grid)
+ *   - OperationsNav — la única navegación a los módulos
+ *   - Resumen de cifras
+ *
+ * Acá vivía además una lista "Módulos" con los mismos cinco destinos que ya
+ * ofrece OperationsNav unos centímetros más arriba, y de forma permanente en
+ * todas las sub-páginas del ERP. Se eliminó: era navegación duplicada y, de
+ * paso, la anti-referencia que PRODUCT.md nombra primero — una grilla de
+ * tarjetas idénticas con icono + título + texto de apoyo.
+ *
+ * Las descripciones ("Productos, costos y margen") no se reubicaron. En una
+ * herramienta que se aprende una vez y se usa mil, explicar qué es el catálogo
+ * en cada visita es ruido, no ayuda.
  */
 export default async function OperationsDashboard() {
   const ws = await getActiveWorkspace();
@@ -118,7 +90,7 @@ export default async function OperationsDashboard() {
         subtitle="del estudio."
         issueLines={[
           `Ed. 04 · ${monthShort}`,
-          `${kpis.length} KPIs · ${OPERATIONS_MODULES.length} módulos`,
+          `${kpis.length} KPIs · ${OPERATIONS_MODULE_COUNT} módulos`,
         ]}
       />
       <OperationsNav />
@@ -154,11 +126,9 @@ export default async function OperationsDashboard() {
            mensual con tendencias y gráficos vive en /reports — fuente única. */
         <section>
           <HairlineRule label="Resumen del estudio" />
-          <StatStrip
-            items={kpis}
-            label="Resumen del estudio"
-            className="mt-6 lg:grid-cols-6"
-          />
+          {/* Sin `lg:grid-cols-6`: forzaba seis columnas y las cifras de
+              dinero no entraban. StatStrip ahora reparte las que quepan. */}
+          <StatStrip items={kpis} label="Resumen del estudio" className="mt-6" />
           <Link
             href="/reports"
             className="mt-6 inline-block font-mono text-[12px] uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-ink"
@@ -168,36 +138,15 @@ export default async function OperationsDashboard() {
         </section>
       )}
 
-      {/* Módulos — lista (NO card grid genérico) */}
-      <section className="mt-12">
-        <HairlineRule label="Módulos" count={`${OPERATIONS_MODULES.length}`} />
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {OPERATIONS_MODULES.map((m) => (
-            <li key={m.href}>
-              <Link
-                href={m.href}
-                className="row-hover -mx-3 flex items-center gap-3 rounded-md px-3 py-3"
-              >
-                <m.icon
-                  className="h-4 w-4 flex-shrink-0 text-ink-faint"
-                  strokeWidth={1.75}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-bold text-ink">
-                    {m.label}
-                  </p>
-                  <p className="truncate text-[14px] text-ink-soft">
-                    {m.desc}
-                  </p>
-                </div>
-                <span className="font-mono text-[12px] uppercase tracking-[0.18em] text-ink-faint">
-                  →
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* La lista "Módulos" vivía acá y se eliminó: repetía exactamente los
+          mismos cinco destinos que ya ofrece OperationsNav, tres centímetros
+          más arriba y de forma permanente en todas las sub-páginas del ERP.
+
+          Además era, literalmente, la anti-referencia que PRODUCT.md nombra
+          primero: una grilla de tarjetas idénticas con icono + título + texto
+          de apoyo. Las descripciones ("Productos, costos y margen") no se
+          reubicaron: en una herramienta que se aprende una vez y se usa mil,
+          explicar el catálogo en cada visita es ruido, no ayuda. */}
     </div>
   );
 }

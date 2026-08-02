@@ -11,4 +11,13 @@ const tabs = [
   { href: "/operations/equipo", label: "Roles & acuerdos" },
 ];
 
+/**
+ * Cuántos módulos tiene el ERP, sin contar "Resumen", que es el índice.
+ *
+ * Sale de acá porque esta lista es la navegación real: el dashboard tenía su
+ * propia copia de los cinco módulos y las dos podían separarse sin que nada
+ * fallara.
+ */
+export const OPERATIONS_MODULE_COUNT = tabs.length - 1;
+
 export const OperationsNav = () => <TabNav tabs={tabs} />;

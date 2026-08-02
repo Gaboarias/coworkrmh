@@ -69,7 +69,14 @@ export function StatStrip({
       aria-label={label}
       aria-busy={pending || undefined}
       className={cn(
-        "grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 md:grid-cols-3",
+        // `auto-fit` con un mínimo, y no un número fijo de columnas.
+        //
+        // El caller no puede saber cuánto mide una cifra: `₡1.250.000` en mono
+        // a 22px pide ~145px, y seis columnas fijas en el área de contenido dan
+        // ~155px por celda. Las cifras se tocaban entre sí — pasó en el resumen
+        // de Operaciones. Con un mínimo, la grilla reparte las columnas que
+        // entren y nunca aprieta por debajo de lo legible.
+        "grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-x-8 gap-y-8",
         "transition-opacity duration-150",
         pending && "opacity-45",
         className
