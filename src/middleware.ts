@@ -47,6 +47,6 @@ export default function middleware(req: NextRequest) {
 // token — y aceptar sí exige sesión (ver acceptInvite).
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|login|signup|reset-password|portal|invite).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|login|signup|reset-password|portal|invite|share).*)",
   ],
 };

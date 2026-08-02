@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Copy, Link2, Mail, Trash2, Check } from "lucide-react";
+import { Link2, Mail, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Field } from "@/components/ui/Field";
 import { IconButton } from "@/components/ui/IconButton";
+import { OneTimeSecret } from "@/components/ui/OneTimeSecret";
 import { SegmentedNav } from "@/components/ui/SegmentedNav";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { formatDateCR } from "@/lib/utils/datetime";
@@ -53,7 +54,6 @@ export const WorkspaceInvites = ({
   const [creating, setCreating] = useState(false);
   const [invites, setInvites] = useState<InviteRow[]>(initialInvites);
   const [freshUrl, setFreshUrl] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
   const [revoking, setRevoking] = useState<string | null>(null);
 
   const create = async (e: React.FormEvent) => {
@@ -74,7 +74,6 @@ export const WorkspaceInvites = ({
       });
       // El link se muestra ACÁ y nunca más: en la base sólo queda el hash.
       setFreshUrl(res.url);
-      setCopied(false);
       toast.success(
         res.emailSent
           ? `Invitación enviada a ${email}`
@@ -91,17 +90,6 @@ export const WorkspaceInvites = ({
       toast.error((err as Error).message);
     } finally {
       setCreating(false);
-    }
-  };
-
-  const copy = async () => {
-    if (!freshUrl) return;
-    try {
-      await navigator.clipboard.writeText(freshUrl);
-      setCopied(true);
-      toast.success("Link copiado");
-    } catch {
-      toast.error("No se pudo copiar — seleccionalo y copialo a mano");
     }
   };
 
@@ -203,30 +191,7 @@ export const WorkspaceInvites = ({
           </div>
         </form>
 
-        {freshUrl && (
-          <div className="mt-4 rounded-md border border-accent/40 bg-accent-soft px-4 py-3">
-            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-soft">
-              Copialo ahora — no se vuelve a mostrar
-            </p>
-            <div className="flex items-center gap-2">
-              <code className="min-w-0 flex-1 truncate rounded-sm bg-surface px-2 py-1.5 text-xs text-ink">
-                {freshUrl}
-              </code>
-              <Button size="sm" variant="outline" onClick={copy} type="button">
-                {copied ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  <Copy className="h-3.5 w-3.5" />
-                )}
-                {copied ? "Copiado" : "Copiar"}
-              </Button>
-            </div>
-            <p className="mt-2 text-xs text-ink-soft">
-              En la base sólo queda el hash del token. Si se pierde, se da de
-              baja esta invitación y se genera otra.
-            </p>
-          </div>
-        )}
+        {freshUrl && <OneTimeSecret url={freshUrl} className="mt-4" />}
 
         <div className="mt-6 border-t border-rule pt-4">
           <h4 className="mb-3 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">

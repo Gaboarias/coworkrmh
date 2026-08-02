@@ -303,6 +303,54 @@ export const projectMembers = pgTable(
   })
 );
 
+/**
+ * Links de sólo lectura a un proyecto.
+ *
+ * Acá SÍ es una llave, no una invitación — al revés que workspace_invitations,
+ * y a propósito. Lo que justifica la diferencia es qué hay del otro lado: la
+ * pantalla compartida muestra avance, tareas y fechas, y nada más. Sin plata,
+ * sin documentos, sin notas, sin comentarios. Es el mismo trato que
+ * clients.portal_token, que ya lleva tiempo funcionando así.
+ *
+ * Un entorno no puede tener una llave porque adentro está Operaciones entero.
+ * Un proyecto en modo lectura sí, porque lo que se ve es exactamente lo que le
+ * mostrarías a esa persona en una llamada.
+ *
+ * `expiresAt` es nullable —"sin vencimiento" es una opción— y eso también es
+ * deliberado: el caso real es mandarle el avance a un cliente y que le sirva
+ * mientras dure el proyecto. Forzar rotación cada 30 días sobre algo de sólo
+ * lectura no compra seguridad, compra que la gente deje de usarlo y mande
+ * capturas de pantalla por WhatsApp.
+ *
+ * `viewCount` / `lastViewedAt` existen para que revocar sea una decisión con
+ * información: saber que un link no se abre hace seis meses es lo que hace que
+ * alguien lo dé de baja.
+ */
+export const projectShares = pgTable(
+  "project_shares",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    /** Para acordarse a quién se le dio. No se muestra del lado público. */
+    label: text("label"),
+    /** null = sin vencimiento. */
+    expiresAt: timestamp("expires_at"),
+    revokedAt: timestamp("revoked_at"),
+    viewCount: integer("view_count").default(0).notNull(),
+    lastViewedAt: timestamp("last_viewed_at"),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    projectIdx: index("project_shares_project_idx").on(t.projectId),
+  })
+);
+
 // ─── Tasks ────────────────────────────────────────────────────────────────────
 
 export const tasks = pgTable(

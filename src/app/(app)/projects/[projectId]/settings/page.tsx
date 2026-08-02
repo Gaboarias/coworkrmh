@@ -3,8 +3,11 @@ import { projectMembers, users, buckets } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { loadProject } from "@/lib/projects/access";
 import { ProjectSettingsForm } from "@/components/projects/ProjectSettingsForm";
+import { ProjectShareLinks } from "@/components/projects/ProjectShareLinks";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { getWorkspacePermissions } from "@/lib/workspace";
+import { listProjectShares } from "@/lib/actions/projectShares";
 import type { ProjectStatus } from "@/lib/types";
 
 interface PageProps {
@@ -56,6 +59,13 @@ export default async function ProjectSettingsPage({ params }: PageProps) {
     .from(buckets)
     .orderBy(asc(buckets.position));
 
+  // Compartir por link exige `projects.manage` en el entorno DEL proyecto (no
+  // en el activo — se puede haber llegado por deep-link desde otro). El action
+  // vuelve a chequearlo; esto sólo decide si se dibuja la sección.
+  const { permissions } = await getWorkspacePermissions(project.workspaceId);
+  const puedeCompartir = permissions.has("projects.manage");
+  const shares = puedeCompartir ? await listProjectShares(project.id) : [];
+
   const parts = project.name.split(/\s+[—-]\s+/);
   const titleText = parts[0] ?? project.name;
   const subtitleText =
@@ -91,6 +101,9 @@ export default async function ProjectSettingsPage({ params }: PageProps) {
           allUsers={allUsers}
           buckets={bucketRows}
         />
+        {puedeCompartir && (
+          <ProjectShareLinks projectId={project.id} initialShares={shares} />
+        )}
       </div>
     </div>
   );
