@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent } from "@/components/ui/Card";
+import { safeInternalPath } from "@/lib/utils/url";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,7 +36,15 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    // `next` devuelve a donde la persona iba — hoy lo usa la pantalla de
+    // invitación. Se lee acá y no con useSearchParams porque el hook obliga a
+    // un boundary de Suspense en el build, y sólo hace falta al enviar.
+    //
+    // Pasa por safeInternalPath: un `next` sin validar es un open redirect de
+    // manual. /login?next=//sitio-falso.com mandaría a alguien recién
+    // autenticado fuera del dominio, y con la confianza puesta.
+    const url = new URL(window.location.href);
+    router.push(safeInternalPath(url.searchParams.get("next"), url));
     router.refresh();
   }
 

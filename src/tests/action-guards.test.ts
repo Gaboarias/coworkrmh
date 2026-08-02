@@ -47,6 +47,8 @@ const EXEMPT: Record<string, string> = {
     "Helper interno: lo llaman otros actions ya autorizados, nunca el cliente directo.",
   "clientReports.ts:listPublishedReportsForClient":
     "La consume el portal del cliente, que por diseño no tiene sesión. El gate es el portalToken que ya validó getPortalDataByToken, y sólo devuelve reportes con published=true.",
+  "invitations.ts:getInvitePreview":
+    "La pantalla /invite tiene que poder mostrar A QUÉ te invitan antes de que te registres — quien llega puede no tener cuenta todavía. El gate es el token (256 bits, guardado hasheado), y sólo devuelve nombre del entorno, quién invita y vencimiento: nada del contenido. ACEPTAR sí exige sesión (acceptInvite → requireUser).",
 };
 
 /** Extrae los actions exportados y el cuerpo de cada uno. */

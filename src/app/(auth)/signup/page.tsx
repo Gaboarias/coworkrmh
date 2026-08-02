@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent } from "@/components/ui/Card";
+import { safeInternalPath } from "@/lib/utils/url";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -34,7 +35,10 @@ export default function SignupPage() {
     }
 
     await signIn("credentials", { email, password, redirect: false });
-    router.push("/dashboard");
+    // Ver el comentario en /login: `next` vuelve a la invitación después de
+    // crear la cuenta, y se valida para que no pueda salir del dominio.
+    const url = new URL(window.location.href);
+    router.push(safeInternalPath(url.searchParams.get("next"), url));
     router.refresh();
   }
 

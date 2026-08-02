@@ -20,6 +20,24 @@ export function getAppUrl(): string {
 
 // ─── Layout compartido ────────────────────────────────────────────────────────
 
+/**
+ * Escapa texto que va interpolado en el HTML del correo.
+ *
+ * Todo lo que se interpola acá lo escribió alguien: nombre del entorno, del
+ * proyecto, de la persona que invita, razón social del cliente. Sin escapar,
+ * un nombre con `<a href=...>` adentro se convierte en un link real dentro de
+ * un correo que sale con nuestro dominio en el From. No es XSS en la app —
+ * es peor de explicar: es phishing con nuestra firma.
+ */
+function esc(raw: string | null | undefined): string {
+  return String(raw ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function htmlWrap(body: string): string {
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#1a1a24">
@@ -86,8 +104,10 @@ export async function sendTaskAssignedEmail(params: {
 }) {
   const resend = getResend();
   const { to, recipientName, taskAndProject, assignerName, taskUrl } = params;
-  const greeting = recipientName ? `Hola ${recipientName},` : "Hola,";
-  const byLine = assignerName ? ` · asignado por <strong>${assignerName}</strong>` : "";
+  const greeting = recipientName ? `Hola ${esc(recipientName)},` : "Hola,";
+  const byLine = assignerName
+    ? ` · asignado por <strong>${esc(assignerName)}</strong>`
+    : "";
 
   await resend.emails.send({
     from: FROM,
@@ -108,7 +128,7 @@ export async function sendTaskAssignedEmail(params: {
       </h1>
       <p style="font-size:14px;line-height:1.6;color:#444;margin:0 0 6px">${greeting}</p>
       <p style="font-size:14px;line-height:1.6;color:#444;margin:0 0 24px">
-        Te asignaron: <strong>${taskAndProject}</strong>${byLine}.
+        Te asignaron: <strong>${esc(taskAndProject)}</strong>${byLine}.
       </p>
       <a href="${taskUrl}"
          style="display:inline-block;background:#6B5FE4;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px">
@@ -131,8 +151,8 @@ export async function sendProjectMemberAddedEmail(params: {
 }) {
   const resend = getResend();
   const { to, recipientName, projectName, inviterName, projectUrl } = params;
-  const greeting = recipientName ? `Hola ${recipientName},` : "Hola,";
-  const byLine = inviterName ? ` por <strong>${inviterName}</strong>` : "";
+  const greeting = recipientName ? `Hola ${esc(recipientName)},` : "Hola,";
+  const byLine = inviterName ? ` por <strong>${esc(inviterName)}</strong>` : "";
 
   await resend.emails.send({
     from: FROM,
@@ -153,12 +173,68 @@ export async function sendProjectMemberAddedEmail(params: {
       </h1>
       <p style="font-size:14px;line-height:1.6;color:#444;margin:0 0 6px">${greeting}</p>
       <p style="font-size:14px;line-height:1.6;color:#444;margin:0 0 24px">
-        Ahora sos miembro de <strong>${projectName}</strong>${byLine}.
+        Ahora sos miembro de <strong>${esc(projectName)}</strong>${byLine}.
       </p>
       <a href="${projectUrl}"
          style="display:inline-block;background:#6B5FE4;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px">
         Ir al proyecto
       </a>
+    `),
+  });
+}
+
+/**
+ * Invitación a un entorno.
+ *
+ * Correo propio y no el de "restablecé tu contraseña" que reusa hoy
+ * POST /api/users: a alguien que nunca tuvo cuenta, pedirle que "restablezca"
+ * su contraseña no le dice nada, y el asunto no menciona quién lo invitó ni a
+ * qué. Acá lo primero que se lee es el nombre del entorno y quién lo mandó,
+ * que es lo único que necesita para decidir si hace clic.
+ */
+export async function sendWorkspaceInviteEmail(params: {
+  to: string;
+  workspaceName: string;
+  inviterName: string | null;
+  inviteUrl: string;
+  expiresInDays: number;
+}) {
+  const resend = getResend();
+  const { to, workspaceName, inviterName, inviteUrl, expiresInDays } = params;
+  const vence =
+    expiresInDays === 1 ? "24 horas" : `${expiresInDays} días`;
+  const by = inviterName ? `${inviterName} te invitó` : "Te invitaron";
+
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `${by} a "${workspaceName}" — Pistachio`,
+    text: [
+      "Hola,",
+      "",
+      `${by} a trabajar en "${workspaceName}" dentro de Pistachio.`,
+      "",
+      `Aceptar la invitación: ${inviteUrl}`,
+      "",
+      `El link vence en ${vence}. Si ya tenés cuenta, iniciá sesión con este mismo correo.`,
+      "",
+      "— Pistachio · RMH Studio",
+    ].join("\n"),
+    html: htmlWrap(`
+      <h1 style="font-size:20px;font-weight:700;margin:0 0 12px;letter-spacing:-0.02em">
+        ${esc(by)} a un entorno
+      </h1>
+      <p style="font-size:14px;line-height:1.6;color:#444;margin:0 0 24px">
+        ${esc(by)} a trabajar en <strong>${esc(workspaceName)}</strong> dentro de Pistachio.
+      </p>
+      <a href="${inviteUrl}"
+         style="display:inline-block;background:#6B5FE4;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px">
+        Aceptar invitación
+      </a>
+      <p style="font-size:12px;line-height:1.6;color:#9090a8;margin:20px 0 0">
+        El link vence en ${esc(vence)}. Si ya tenés cuenta, iniciá sesión con este mismo correo.<br />
+        Si no esperabas esto, ignorá el mensaje — sin hacer clic no pasa nada.
+      </p>
     `),
   });
 }
@@ -194,7 +270,7 @@ export async function sendPortalInviteEmail(params: {
         Tu portal está listo
       </h1>
       <p style="font-size:14px;line-height:1.6;color:#444;margin:0 0 24px">
-        Hola, te compartimos acceso al portal de <strong>${companyName}</strong>.
+        Hola, te compartimos acceso al portal de <strong>${esc(companyName)}</strong>.
         Desde acá podés ver el avance de tus proyectos, descargar reportes y revisar el estado de tus facturas.
       </p>
       <a href="${portalUrl}"

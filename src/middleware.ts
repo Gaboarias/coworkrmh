@@ -41,8 +41,12 @@ export default function middleware(req: NextRequest) {
   return nextAuthMiddleware(req as Parameters<typeof nextAuthMiddleware>[0], {} as Parameters<typeof nextAuthMiddleware>[1]);
 }
 
+// `invite` es público a propósito: quien recibe una invitación puede no tener
+// cuenta todavía, así que la pantalla tiene que poder mostrarle a QUÉ lo
+// invitan antes de mandarlo a registrarse. El gate no es la sesión, es el
+// token — y aceptar sí exige sesión (ver acceptInvite).
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|login|signup|reset-password|portal).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|login|signup|reset-password|portal|invite).*)",
   ],
 };

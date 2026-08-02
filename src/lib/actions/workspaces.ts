@@ -8,6 +8,7 @@ import { eq, and, asc, sql } from "drizzle-orm";
 import {
   requireWorkspaceManage,
   requireWorkspaceOwner,
+  assertAssignableRole,
   type WorkspaceRole,
 } from "@/lib/workspace";
 import { createWorkspaceSchema, updateWorkspaceSchema } from "@/lib/validation/actions";
@@ -318,24 +319,10 @@ export const setMemberRole = async (
   userId: string,
   role: WorkspaceRole
 ) => {
-  if (role === "owner") {
-    throw new Error("No se puede asignar el rol \"owner\"");
-  }
   await requireWorkspaceManage(workspaceId);
-  // El rol debe existir: built-in o custom registrado en la matriz.
-  const [wsRow] = await db
-    .select({ rp: workspaces.rolePermissions })
-    .from(workspaces)
-    .where(eq(workspaces.id, workspaceId))
-    .limit(1);
-  const matrix = (wsRow?.rp ?? DEFAULT_WS_ROLE_PERMISSIONS) as WsRolePermissions;
-  const valid = new Set<string>([
-    ...BUILTIN_ROLE_KEYS,
-    ...Object.keys(matrix),
-  ]);
-  if (!valid.has(role)) {
-    throw new Error(`El rol "${role}" no existe en este entorno`);
-  }
+  // Rechaza "owner" y los roles que no existen en la matriz. Compartido con
+  // las invitaciones — es la misma decisión y no debería tener dos copias.
+  await assertAssignableRole(workspaceId, role);
   const [target] = await db
     .select({ role: workspaceMembers.role })
     .from(workspaceMembers)

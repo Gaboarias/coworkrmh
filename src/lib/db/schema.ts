@@ -218,6 +218,58 @@ export const workspaceMembers = pgTable(
   })
 );
 
+/**
+ * Invitaciones a un entorno.
+ *
+ * Dos formas con una sola tabla, y la diferencia es `email`:
+ *  - `email` con valor → invitación dirigida. Sólo la canjea quien tenga ese
+ *    correo; el link reenviado a otra persona no sirve.
+ *  - `email` null → link abierto. Cualquiera con el link entra, con el rol y
+ *    el vencimiento que se fijaron al crearlo.
+ *
+ * Por qué una tabla propia y no reusar password_reset_tokens (que es lo que
+ * hace hoy POST /api/users): ahí la fila de `users` se crea ANTES de que la
+ * persona acepte, así que un correo mal escrito deja un usuario fantasma sin
+ * contraseña, visible en todos los selectores de asignación y con 409 en cada
+ * reintento. Acá no existe nadie hasta que alguien acepta.
+ *
+ * El token NUNCA se guarda: sólo su sha256, igual que password_reset_tokens.
+ * Quien lea la base no puede entrar a ningún entorno.
+ *
+ * Es lo contrario de clients.portal_token, y a propósito: el portal es una
+ * LLAVE (sirve siempre, sin cuenta, sólo lectura sobre contenido curado); esto
+ * es una INVITACIÓN (se canjea, exige cuenta, vence, y deja rastro de quién
+ * entró y cuándo).
+ */
+export const workspaceInvitations = pgTable(
+  "workspace_invitations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    // null = link abierto. Con valor = dirigida a ese correo (normalizado).
+    email: text("email"),
+    // Mismo vocabulario que workspace_members.role: built-in o custom de la
+    // matriz del entorno. Nunca "owner" — se valida al crear.
+    role: text("role").default("member").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at").notNull(),
+    // null = sin tope de usos hasta que venza. 1 = un solo uso.
+    maxUses: integer("max_uses"),
+    usedCount: integer("used_count").default(0).notNull(),
+    revokedAt: timestamp("revoked_at"),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    // Hot path: listar las invitaciones vigentes de un entorno.
+    wsIdx: index("workspace_invitations_ws_idx").on(t.workspaceId),
+  })
+);
+
 // ─── Projects ─────────────────────────────────────────────────────────────────
 
 export const projects = pgTable("projects", {

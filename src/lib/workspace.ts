@@ -8,6 +8,7 @@ import { eq, and, asc, inArray } from "drizzle-orm";
 import {
   ALL_WS_PERMISSIONS,
   DEFAULT_WS_ROLE_PERMISSIONS,
+  BUILTIN_ROLE_KEYS,
 } from "@/lib/constants/workspacePermissions";
 import { hasFeature, type Feature } from "@/lib/entitlements";
 
@@ -168,6 +169,41 @@ export const requireWorkspaceOwner = async (
     throw new Error("Solo el propietario del entorno puede hacer esto");
   }
   return { userId };
+};
+
+/**
+ * Valida que un rol se pueda asignar en un entorno.
+ *
+ * Dos reglas: "owner" nunca se asigna (es bypass total y se define al crear el
+ * entorno), y el rol tiene que existir de verdad — built-in o custom de la
+ * matriz. Sin la segunda, un rol mal escrito entra a workspace_members y
+ * `getWorkspacePermissions` no lo encuentra en la matriz, así que la persona
+ * queda con permisos vacíos: adentro del entorno y sin ver nada. Falla en
+ * silencio y parece un bug de la app.
+ *
+ * Vive acá y no en actions/workspaces.ts porque ese archivo es `"use server"`
+ * y no puede exportar helpers no-action sin volverlos endpoints.
+ */
+export const assertAssignableRole = async (
+  workspaceId: string,
+  role: WorkspaceRole
+): Promise<void> => {
+  if (role === "owner") {
+    throw new Error("No se puede asignar el rol \"owner\"");
+  }
+  const [row] = await db
+    .select({ rp: workspaces.rolePermissions })
+    .from(workspaces)
+    .where(eq(workspaces.id, workspaceId))
+    .limit(1);
+  const matrix = (row?.rp ?? DEFAULT_WS_ROLE_PERMISSIONS) as Record<
+    string,
+    string[]
+  >;
+  const valid = new Set<string>([...BUILTIN_ROLE_KEYS, ...Object.keys(matrix)]);
+  if (!valid.has(role)) {
+    throw new Error(`El rol "${role}" no existe en este entorno`);
+  }
 };
 
 /**
