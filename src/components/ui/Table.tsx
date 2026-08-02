@@ -12,6 +12,10 @@ import { cn } from "@/lib/utils/cn";
  * `Table` ya trae el contenedor con scroll horizontal: una tabla ancha dentro
  * de una pantalla angosta tiene que scrollear en su propia caja, nunca empujar
  * el ancho de la página.
+ *
+ * El encabezado queda pegado al scrollear (`sticky`). Es barato y cambia el uso
+ * real: en una tabla de doscientos productos, sin eso hay que subir a releer
+ * qué columna era cuál.
  */
 
 export function Table({
@@ -24,12 +28,14 @@ export function Table({
   return (
     <div
       className={cn(
-        "overflow-x-auto rounded-lg border border-rule bg-surface",
+        "overflow-auto rounded-lg border border-rule bg-surface",
         containerClassName
       )}
     >
+      {/* 13px y no 14: la mono avanza ~20% más ancha, así que al mismo cuerpo
+          entran menos columnas sin que se lea mejor. */}
       <table
-        className={cn("w-full text-left text-sm", className)}
+        className={cn("w-full text-left text-[13px]", className)}
         {...props}
       />
     </div>
@@ -40,7 +46,14 @@ export function TableHead({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead className={className} {...props} />;
+  return (
+    <thead
+      // `bg-surface` explícito: sin fondo propio, las filas se ven pasar por
+      // debajo del encabezado pegado.
+      className={cn("sticky top-0 z-10 bg-surface", className)}
+      {...props}
+    />
+  );
 }
 
 export function TableBody({
@@ -62,8 +75,10 @@ export function TableRow({
     <tr
       className={cn(
         head
-          ? "border-b border-rule text-xs text-ink-soft"
-          : "border-b border-rule last:border-0",
+          ? "border-b border-rule-strong"
+          : // El realce al pasar por encima no es decoración: en una tabla ancha
+            // es lo que evita perder el renglón a mitad de camino.
+            "border-b border-rule transition-colors last:border-0 hover:bg-surface-2",
         className
       )}
       {...props}
@@ -71,7 +86,13 @@ export function TableRow({
   );
 }
 
-/** Celda de encabezado. */
+/**
+ * Celda de encabezado.
+ *
+ * La etiqueta va en el vocabulario técnico del sistema —caja alta, tracking
+ * ancho, tenue— para que la fila de encabezado se distinga del dato por forma y
+ * no sólo por posición.
+ */
 export function TableHeadCell({
   className,
   align = "left",
@@ -82,7 +103,7 @@ export function TableHeadCell({
   return (
     <th
       className={cn(
-        "px-3 py-[var(--erp-row-py)] font-medium",
+        "px-3 py-[var(--erp-row-py)] text-[11px] font-medium uppercase tracking-[0.14em] text-ink-faint",
         align === "center" && "text-center",
         align === "right" && "text-right",
         className
@@ -104,7 +125,10 @@ export function TableCell({
       className={cn(
         "px-3 py-[var(--erp-row-py)] text-ink",
         align === "center" && "text-center",
-        align === "right" && "text-right",
+        // Una celda alineada a la derecha es, en esta app, siempre un número.
+        // Las cifras se comparan de a columnas, así que van tabulares por
+        // definición en vez de depender de que el caller se acuerde.
+        align === "right" && "text-right tabular-nums",
         className
       )}
       {...props}

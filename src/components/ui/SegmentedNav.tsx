@@ -46,9 +46,16 @@ interface SegmentedNavProps {
   className?: string;
 }
 
+/**
+ * En Consola el radio casi no existe, así que la forma dejó de poder separar
+ * los dos tonos: `rounded-full` contra `rounded-md` a dos píxeles es el mismo
+ * rectángulo. La distinción pasa entera a la caja y al estado activo —caja baja
+ * con tinte suave para navegar, caja alta invertida para filtrar—, que además
+ * es la misma regla que usa Button.
+ */
 const SHAPE = {
-  pill: "inline-flex items-center gap-2 rounded-full px-3 py-2 text-[13px] font-medium transition-colors",
-  chip: "inline-flex items-center gap-2 rounded-md px-2.5 py-1 font-mono text-[12px] uppercase tracking-[0.14em] transition-colors",
+  pill: "inline-flex items-center gap-2 rounded-md px-3 py-2 text-[13px] font-medium transition-colors",
+  chip: "inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em] transition-colors",
 } as const;
 
 const STATE = {

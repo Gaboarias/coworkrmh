@@ -76,8 +76,11 @@ export function StatStrip({
           >
             {s.value}
           </dd>
+          {/* Sin itálica: JetBrains Mono no tiene corte itálico y el navegador
+              la sintetiza inclinando el glifo, que en monoespaciada se nota
+              feo. El contraste con la cifra lo hace el tamaño. */}
           {s.sub && (
-            <span className="text-[13px] italic text-ink-soft">{s.sub}</span>
+            <span className="text-[12px] text-ink-soft">{s.sub}</span>
           )}
         </div>
       ))}

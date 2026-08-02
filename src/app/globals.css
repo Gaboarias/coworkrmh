@@ -254,6 +254,22 @@
     font-variant-numeric: tabular-nums lining-nums;
   }
 
+  /* Consola no tiene itálica.
+     JetBrains Mono no trae corte itálico, así que el navegador la sintetiza
+     inclinando el glifo — y en monoespaciada, donde todos los avances son
+     iguales, la falsificación se nota. El énfasis lo hacen el color y el
+     tamaño, que es lo que la dirección ya usaba.
+
+     Sólo se neutraliza la utilidad `.italic` (énfasis decorativo del cromo).
+     La itálica REAL del contenido —`<em>` dentro de una nota— vive en `.prose`,
+     donde manda Satoshi, que sí tiene corte itálico, y no la toca esta regla.
+
+     Pendiente: hay ~21 usos de `.italic` en el árbol de la app que quedan como
+     no-op. Se limpian pantalla por pantalla; hasta entonces esta regla evita
+     que se publique la oblicua sintetizada. */
+  .italic { font-style: normal; }
+  .prose em, .prose i, .reading em, .reading i { font-style: italic; }
+
   /* Etiqueta técnica: la caja alta con tracking ancho es el único lugar donde
      Consola levanta la voz fuera del CTA. */
   .mono, .eyebrow, .issue-num {
@@ -332,7 +348,6 @@
 }
 .title-drop .l2 {
   font-weight: 400;
-  font-style: italic;
   color: var(--ink-soft);
   padding-left: 1.2em;
 }
