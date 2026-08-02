@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils/cn";
 import { IssueNumber } from "./IssueNumber";
+import { TerritoryTag } from "./TerritoryTag";
 
 interface PageHeaderProps {
   /**
@@ -55,7 +56,15 @@ export function PageHeader({
         <IssueNumber lines={issueLines} className="absolute right-0 top-0" />
       )}
 
-      {eyebrow && <div className="eyebrow-line mb-4">{eyebrow}</div>}
+      {/* El territorio se antepone solo, sin que las 32 llamadas a PageHeader
+          tengan que pasarlo — un parámetro que hay que acordarse de pasar es
+          un parámetro que alguien no pasa. Sale del pathname. */}
+      {eyebrow && (
+        <div className="eyebrow-line mb-4">
+          <TerritoryTag />
+          {eyebrow}
+        </div>
+      )}
 
       {/* Display title escalado responsive — 36px en mobile 320px (palabras
           como "Operaciones," ahora caben), crece a 84px en desktop xl. */}

@@ -87,7 +87,7 @@ export default async function OperationsDashboard() {
   return (
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <PageHeader
-        eyebrow="/ operations · resumen"
+        eyebrow="/ operaciones · resumen"
         title="Operaciones,"
         subtitle="del estudio."
         issueLines={[

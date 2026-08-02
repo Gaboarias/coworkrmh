@@ -14,7 +14,7 @@ export default async function GastosPage() {
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <PageHeader
-        eyebrow="/ operations / gastos"
+        eyebrow="/ operaciones / gastos"
         title="Gastos,"
         subtitle="inversión, fijos, equilibrio."
         issueLines={[

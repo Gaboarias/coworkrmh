@@ -45,7 +45,7 @@ export default async function SettingsPage() {
   return (
     <div className="animate-fade-in mx-auto max-w-2xl px-8 py-10 md:px-12">
       <PageHeader
-        eyebrow="/ settings"
+        eyebrow="/ configuración"
         title="Configuración,"
         subtitle="perfil y cuenta."
         issueLines={[user.email ?? "", (user.role ?? "member").toUpperCase()]}

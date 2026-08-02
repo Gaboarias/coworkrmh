@@ -14,7 +14,7 @@ export default async function CatalogoPage() {
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <PageHeader
-        eyebrow="/ operations / catálogo"
+        eyebrow="/ operaciones / catálogo"
         title="Catálogo,"
         subtitle="productos del estudio."
         issueLines={[`${products.length} PRODUCTOS`, ws.name.toUpperCase()]}

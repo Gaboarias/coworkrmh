@@ -3,25 +3,18 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  FolderKanban,
-  CheckSquare,
-  Settings,
-  Briefcase,
-  BarChart3,
-  Shield,
-  Building2,
-  Mail,
-  PanelLeftClose,
-  PanelLeftOpen,
-} from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useUser } from "@/lib/hooks/useUser";
 import { EntornoSwitcher, type WsData } from "@/components/layout/EntornoSwitcher";
 import { useSidebarState } from "./SidebarStateContext";
-import { hasFeature, type Feature, type Tier } from "@/lib/entitlements";
+import { hasFeature, type Tier } from "@/lib/entitlements";
 import { IconButton } from "@/components/ui/IconButton";
+import {
+  TERRITORIES,
+  SETTINGS_ENTRY,
+  territoryOf,
+} from "@/lib/constants/navigation";
 
 /**
  * Sidebar (Edition 04).
@@ -36,66 +29,14 @@ import { IconButton } from "@/components/ui/IconButton";
  *   typography aire respire), 52px collapsed.
  */
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: typeof LayoutDashboard;
-  exact?: boolean;
-  badge?: number | "soon";
-  adminOnly?: boolean;
-  /** Si está, el item solo aparece si el tier del entorno activo lo habilita. */
-  feature?: Feature;
-}
-
-interface NavSection {
-  id: string;
-  label: string;
-  items: NavItem[];
-}
-
 /**
- * IA por modo mental (reorg agresivo):
- *  TRABAJO     → hacer el día a día
- *  NEGOCIO     → operar el estudio
- *  CRECIMIENTO → analítica + marketing (premium)
- *  SISTEMA     → administración
+ * Los cuatro territorios y sus rutas viven en @/lib/constants/navigation.
+ *
+ * Estaban acá adentro, y este archivo es `"use client"`: cualquier Server
+ * Component que quisiera saber en qué territorio está parado habría recibido
+ * una referencia de cliente en vez de los datos. Es el mismo bug que publicó
+ * un `[object Object]` en el encabezado de Operaciones.
  */
-const sections: NavSection[] = [
-  {
-    id: "work",
-    label: "Trabajo",
-    items: [
-      { href: "/dashboard", label: "Resumen", icon: LayoutDashboard, exact: true },
-      { href: "/projects", label: "Proyectos", icon: FolderKanban, feature: "projects" },
-      { href: "/my-tasks", label: "Mis tareas", icon: CheckSquare, feature: "tasks" },
-      // Calendario ya no es ítem top-level: vive como vista dentro de Mis tareas
-      // (switch Lista | Calendario). Reduce saturación del sidebar.
-    ],
-  },
-  {
-    id: "business",
-    label: "Negocio",
-    items: [
-      { href: "/operations", label: "Operaciones", icon: Briefcase, feature: "operations" },
-      { href: "/clients", label: "Clientes", icon: Building2, adminOnly: true, feature: "clients" },
-    ],
-  },
-  {
-    id: "growth",
-    label: "Crecimiento",
-    items: [
-      { href: "/reports", label: "Reportes", icon: BarChart3, feature: "analytics" },
-      { href: "/marketing", label: "Campañas", icon: Mail, adminOnly: true, feature: "blaster" },
-    ],
-  },
-  {
-    id: "system",
-    label: "Sistema",
-    items: [
-      { href: "/admin", label: "Admin", icon: Shield, adminOnly: true },
-    ],
-  },
-];
 
 /**
  * Receta compartida por los items de navegación y por el enlace de
@@ -135,6 +76,11 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
     if (exact) return pathname === href;
     return pathname.startsWith(href);
   }
+
+  // En qué territorio está parada la persona. Se resuelve por prefijo más
+  // largo (ver territoryOf), no por el ítem activo: /projects/<id>/notas no es
+  // ítem de nav y aun así es Trabajo.
+  const activeTerritory = territoryOf(pathname);
 
   // Close mobile drawer cuando navego a otra ruta (auto-close UX).
   // Llamar setMobileOpen(false) en desktop es no-op.
@@ -227,43 +173,70 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
       {/* Entorno (collapsed lo oculta) */}
       {!collapsed && <EntornoSwitcher initialData={wsData} />}
 
-      {/* Navigation */}
+      {/* Navegación — cuatro territorios separados por regla, no por aire.
+          El margen solo no alcanzaba: a 24px de separación entre grupos, la
+          lista se leía como una sola columna de siete cosas. Y al colapsar, el
+          rótulo desaparece y no quedaba NINGUNA señal de que hubiera grupos —
+          la regla es lo único que sobrevive a 56px de ancho. */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
-        {sections.map((section) => {
-          const visibleItems = section.items.filter(
+        {TERRITORIES.map((territory) => {
+          const visibleItems = territory.items.filter(
             (it) =>
               (!it.adminOnly || isAdmin) &&
               (!it.feature || hasFeature(activeTier, it.feature))
           );
           if (visibleItems.length === 0) return null;
+          const here = activeTerritory?.id === territory.id;
           return (
-            <div key={section.id} className="mb-6 last:mb-0">
+            <div
+              key={territory.id}
+              className={cn(
+                "border-t border-rule pt-4",
+                collapsed ? "mt-4" : "mt-5",
+                // El primero no lleva regla arriba: ya está el borde del
+                // bloque de entorno.
+                "first:mt-0 first:border-t-0 first:pt-0"
+              )}
+            >
               {!collapsed && (
-                <div className="mb-2 px-2 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-ink-faint">
-                  {section.label}
+                <div
+                  className={cn(
+                    "mb-2 flex items-baseline gap-2 px-2 font-mono text-[11px] font-medium uppercase tracking-[0.18em] transition-colors",
+                    // El territorio donde estás parado se enciende. Es la
+                    // diferencia entre cuatro rótulos decorativos y saber en
+                    // cuál de los cuatro estás sin leer el ítem activo.
+                    here ? "text-ink" : "text-ink-faint"
+                  )}
+                >
+                  {here && (
+                    <span
+                      aria-hidden
+                      className="h-1 w-1 flex-shrink-0 rounded-full bg-accent"
+                    />
+                  )}
+                  {territory.label}
                 </div>
               )}
               <ul className="space-y-1">
+                {/* Había una rama de `badge` acá — un pill numérico y una
+                    etiqueta "Pronto" para items deshabilitados. Ningún item la
+                    usó nunca, así que era código que no se ejecutó jamás. Se
+                    fue con el tipo: los contadores de no leídas los muestra
+                    NotificationsBell, no el sidebar. */}
                 {visibleItems.map((item) => {
                   const active = isActive(item.href, item.exact);
                   const Icon = item.icon;
-                  const isPlaceholder = item.badge === "soon";
                   return (
                     <li key={item.href}>
                       <Link
-                        href={isPlaceholder ? "#" : item.href}
-                        aria-disabled={isPlaceholder}
-                        onClick={(e) => {
-                          if (isPlaceholder) e.preventDefault();
-                        }}
+                        href={item.href}
                         title={collapsed ? item.label : undefined}
                         className={cn(
                           "group relative",
-                          navItemClass(collapsed, active),
-                          isPlaceholder && "opacity-50 cursor-not-allowed"
+                          navItemClass(collapsed, active)
                         )}
                       >
-                        {/* Active accent bar (left), usa project-color */}
+                        {/* Barra de acento a la izquierda, en project-color */}
                         {active && !collapsed && (
                           <span
                             aria-hidden
@@ -282,18 +255,6 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
                             {item.label}
                           </span>
                         )}
-                        {!collapsed && item.badge === "soon" && (
-                          <span className="rounded-sm bg-accent-soft px-1 py-1 font-mono text-[8px] uppercase tracking-[0.1em] text-ink-faint">
-                            Pronto
-                          </span>
-                        )}
-                        {!collapsed &&
-                          typeof item.badge === "number" &&
-                          item.badge > 0 && (
-                            <span className="pill pill-urgent">
-                              {item.badge > 99 ? "99+" : item.badge}
-                            </span>
-                          )}
                       </Link>
                     </li>
                   );
@@ -312,14 +273,20 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
         )}
       >
         <Link
-          href="/settings"
-          title={collapsed ? "Configuración" : undefined}
-          className={navItemClass(collapsed, isActive("/settings", true))}
+          href={SETTINGS_ENTRY.href}
+          title={collapsed ? SETTINGS_ENTRY.label : undefined}
+          className={navItemClass(
+            collapsed,
+            isActive(SETTINGS_ENTRY.href, SETTINGS_ENTRY.exact)
+          )}
         >
-          <Settings className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.75} />
+          <SETTINGS_ENTRY.icon
+            className="h-3.5 w-3.5 flex-shrink-0"
+            strokeWidth={1.75}
+          />
           {!collapsed && (
             <span className="text-[13px] font-medium leading-none">
-              Configuración
+              {SETTINGS_ENTRY.label}
             </span>
           )}
         </Link>

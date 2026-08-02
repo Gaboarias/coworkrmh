@@ -32,7 +32,7 @@ export default async function EditarCotizacionPage({
       <OperationsNav />
       <BackLink href="/operations/cotizador">Cotizador</BackLink>
       <PageHeader
-        eyebrow="/ operations / cotizador"
+        eyebrow="/ operaciones / cotizador"
         title={`${quote.title},`}
         subtitle={quote.customerName ?? "cotización."}
         issueLines={[`${quote.items.length} ÍTEMS`, quote.status.toUpperCase()]}

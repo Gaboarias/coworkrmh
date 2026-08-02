@@ -15,7 +15,7 @@ export default async function NuevaCotizacionPage() {
       <OperationsNav />
       <BackLink href="/operations/cotizador">Cotizador</BackLink>
       <PageHeader
-        eyebrow="/ operations / cotizador / nueva"
+        eyebrow="/ operaciones / cotizador / nueva"
         title="Nueva cotización,"
         subtitle="pedido personalizado."
       />

@@ -48,7 +48,7 @@ export default async function DashboardPage() {
     return (
       <div className="animate-fade-in px-8 py-10 md:px-12">
         <PageHeader
-          eyebrow="/ dashboard"
+          eyebrow="/ resumen"
           title="Sin entorno."
           subtitle="todavía."
         />
@@ -151,7 +151,7 @@ export default async function DashboardPage() {
   return (
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <PageHeader
-        eyebrow="/ dashboard"
+        eyebrow="/ resumen"
         title={`Hola, ${firstName},`}
         subtitle={`buen ${today}.`}
         issueLines={[

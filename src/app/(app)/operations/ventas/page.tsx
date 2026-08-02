@@ -14,7 +14,7 @@ export default async function VentasPage() {
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <PageHeader
-        eyebrow="/ operations / ventas"
+        eyebrow="/ operaciones / ventas"
         title="Ventas,"
         subtitle="registro y resumen."
         issueLines={[`${data.rows.length} REGISTROS`, ws.name.toUpperCase()]}

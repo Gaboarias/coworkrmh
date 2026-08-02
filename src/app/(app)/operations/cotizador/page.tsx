@@ -39,7 +39,7 @@ export default async function CotizadorPage() {
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
       <PageHeader
-        eyebrow="/ operations / cotizador"
+        eyebrow="/ operaciones / cotizador"
         title="Cotizador,"
         subtitle="pedidos personalizados."
         issueLines={[`${quotes.length} COTIZACIONES`, ws.name.toUpperCase()]}

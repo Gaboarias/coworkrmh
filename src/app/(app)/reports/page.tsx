@@ -20,7 +20,7 @@ export default async function ReportsPage() {
   if (!report) {
     return (
       <div className="animate-fade-in px-8 py-10 md:px-12">
-        <PageHeader eyebrow="/ reports" title="Reportes." />
+        <PageHeader eyebrow="/ reportes" title="Reportes." />
         <EmptyState
           icon={<BarChart3 className="h-12 w-12" />}
           title="Sin entorno activo"
@@ -39,7 +39,7 @@ export default async function ReportsPage() {
   return (
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <PageHeader
-        eyebrow="/ reports"
+        eyebrow="/ reportes"
         title={`${monthCap},`}
         subtitle="en números."
         issueLines={[
