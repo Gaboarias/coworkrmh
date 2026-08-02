@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { Package } from "lucide-react";
 import { formatMoney } from "@/lib/utils/money";
 import { DensityToggle } from "./DensityToggle";
+import { useOptimisticList } from "@/lib/hooks/useOptimisticList";
 import {
   createProduct,
   updateProduct,
@@ -98,6 +99,16 @@ export const CatalogView = ({
   const [editDraft, setEditDraft] = useState<Draft>(empty);
   const [busy, setBusy] = useState(false);
 
+  // La vista renderizaba `products` directo de props, así que cada edición y
+  // cada borrado costaban la ida y vuelta completa antes de mover un píxel.
+  // Con la lista local, el cambio se ve al instante y se revierte si el
+  // servidor lo rechaza. La firma incluye los campos editables: si sólo mirara
+  // los ids, guardar una edición no traería el valor confirmado del servidor.
+  const { items, apply, remove: dropRow } = useOptimisticList(
+    products,
+    (p) => `${p.id}:${p.name}:${p.price}:${p.materialsCost}:${p.laborCost}:${p.category ?? ""}`
+  );
+
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!draft.name.trim()) return;
@@ -127,27 +138,31 @@ export const CatalogView = ({
 
   const saveEdit = async (id: string) => {
     setBusy(true);
-    try {
-      await updateProduct(id, editDraft);
-      toast.success("Producto actualizado");
-      setEditId(null);
-      router.refresh();
-    } catch (err) {
-      toast.error((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    // La fila sale de edición y muestra los valores nuevos de inmediato; si el
+    // servidor rechaza, vuelve sola a lo anterior con un toast.
+    setEditId(null);
+    const ok = await apply(
+      id,
+      {
+        name: editDraft.name,
+        category: editDraft.category || null,
+        materialsCost: editDraft.materialsCost,
+        laborCost: editDraft.laborCost,
+        price: editDraft.price,
+      } as Partial<ProductRow>,
+      () => updateProduct(id, editDraft),
+      { errorMessage: "No se pudo actualizar el producto" }
+    );
+    if (ok) toast.success("Producto actualizado");
+    setBusy(false);
   };
 
   const remove = async (id: string) => {
     if (!confirm("¿Eliminar este producto?")) return;
-    try {
-      await deleteProduct(id);
-      toast.success("Producto eliminado");
-      router.refresh();
-    } catch (err) {
-      toast.error((err as Error).message);
-    }
+    const ok = await dropRow(id, () => deleteProduct(id), {
+      errorMessage: "No se pudo eliminar el producto",
+    });
+    if (ok) toast.success("Producto eliminado");
   };
 
   return (
@@ -179,7 +194,7 @@ export const CatalogView = ({
       )}
 
       <Card>
-        {products.length === 0 ? (
+        {items.length === 0 ? (
           <EmptyState
             icon={<Package className="h-10 w-10" />}
             title="Sin productos"
@@ -187,7 +202,7 @@ export const CatalogView = ({
           />
         ) : (
           <div className="divide-y divide-rule">
-            {products.map((p) =>
+            {items.map((p) =>
               editId === p.id ? (
                 <div key={p.id} className="space-y-3 bg-surface-el/40 p-4">
                   <Fields

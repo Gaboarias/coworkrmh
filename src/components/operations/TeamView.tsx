@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 import { IconButton } from "@/components/ui/IconButton";
 import { DensityToggle } from "./DensityToggle";
+import { useOptimisticList } from "@/lib/hooks/useOptimisticList";
 import {
   createTeamMember,
   updateTeamMember,
@@ -97,6 +98,14 @@ export const TeamView = ({
   const [ag, setAg] = useState(agreements);
   const [savingAg, setSavingAg] = useState(false);
 
+  // Igual que en Catálogo: la lista se mueve antes de que conteste el servidor.
+  // La firma incluye los campos editables para que, al guardar, la fila adopte
+  // lo que el servidor confirmó y no se quede con el valor optimista.
+  const { items, apply, remove: dropRow } = useOptimisticList(
+    members,
+    (m) => `${m.id}:${m.name}:${m.role}:${m.status}:${m.compensation}`
+  );
+
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!draft.name.trim()) return;
@@ -115,27 +124,23 @@ export const TeamView = ({
 
   const saveEdit = async (id: string) => {
     setBusy(true);
-    try {
-      await updateTeamMember(id, editDraft);
-      toast.success("Actualizado");
-      setEditId(null);
-      router.refresh();
-    } catch (err) {
-      toast.error((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    setEditId(null);
+    const ok = await apply(
+      id,
+      { ...editDraft } as Partial<TeamMemberRow>,
+      () => updateTeamMember(id, editDraft),
+      { errorMessage: "No se pudo actualizar el miembro" }
+    );
+    if (ok) toast.success("Actualizado");
+    setBusy(false);
   };
 
   const remove = async (id: string) => {
     if (!confirm("¿Eliminar miembro?")) return;
-    try {
-      await deleteTeamMember(id);
-      toast.success("Eliminado");
-      router.refresh();
-    } catch (err) {
-      toast.error((err as Error).message);
-    }
+    const ok = await dropRow(id, () => deleteTeamMember(id), {
+      errorMessage: "No se pudo eliminar el miembro",
+    });
+    if (ok) toast.success("Eliminado");
   };
 
   const saveAgreements = async () => {
@@ -173,17 +178,17 @@ export const TeamView = ({
         </Card>
       )}
 
-      {members.length > 0 && (
+      {items.length > 0 && (
         <div className="flex justify-end">
           <DensityToggle />
         </div>
       )}
       <Card>
-        {members.length === 0 ? (
+        {items.length === 0 ? (
           <p className="p-5 text-sm text-ink-soft">Sin miembros todavía.</p>
         ) : (
           <div className="divide-y divide-rule">
-            {members.map((m) =>
+            {items.map((m) =>
               editId === m.id ? (
                 <div key={m.id} className="space-y-3 bg-surface-el/40 p-4">
                   <Fields
