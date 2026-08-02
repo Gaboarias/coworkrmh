@@ -109,13 +109,13 @@ export function TaskExtras({
   return (
     <>
       <div>
-        <span className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+        <span className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-ink-faint">
           <TagIcon className="h-3 w-3" />
           Etiquetas
         </span>
         <div className="mb-2 flex flex-wrap gap-2">
           {tags.length === 0 && (
-            <span className="text-xs text-text-tertiary">Sin etiquetas aún</span>
+            <span className="text-xs text-ink-faint">Sin etiquetas aún</span>
           )}
           {tags.map((t) => {
             const on = selected.includes(t.id);
@@ -128,7 +128,7 @@ export function TaskExtras({
                   "rounded-full border px-2 py-1 text-xs transition",
                   on
                     ? "border-transparent text-white"
-                    : "border-border text-text-muted hover:text-text"
+                    : "border-rule text-ink-soft hover:text-ink"
                 )}
                 style={on ? { backgroundColor: t.color } : undefined}
               >
@@ -158,12 +158,12 @@ export function TaskExtras({
       </div>
 
       <div>
-        <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+        <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-ink-faint">
           Subtareas
         </span>
         <div className="space-y-1">
           {subtasks.length === 0 && (
-            <p className="text-xs text-text-tertiary">Sin subtareas</p>
+            <p className="text-xs text-ink-faint">Sin subtareas</p>
           )}
           {subtasks.map((s) => (
             <div
@@ -173,15 +173,15 @@ export function TaskExtras({
               <span
                 className={cn(
                   "h-1.5 w-1.5 rounded-full",
-                  s.status === "done" ? "bg-success" : "bg-text-tertiary"
+                  s.status === "done" ? "bg-done" : "bg-text-tertiary"
                 )}
               />
               <span
                 className={cn(
                   "flex-1 truncate",
                   s.status === "done"
-                    ? "text-text-tertiary line-through"
-                    : "text-text"
+                    ? "text-ink-faint line-through"
+                    : "text-ink"
                 )}
               >
                 {s.title}

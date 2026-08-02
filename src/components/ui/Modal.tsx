@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { IconButton } from "@/components/ui/IconButton";
 
 interface ModalProps {
   open: boolean;
@@ -120,14 +121,9 @@ export function Modal({
                 <p className="mt-1 text-[15px] text-ink-soft">{description}</p>
               )}
             </div>
-            <button
-              type="button"
-              onClick={requestClose}
-              aria-label="Cerrar"
-              className="rounded-md p-1 text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
-            >
+            <IconButton tone="faint" size="sm" onClick={requestClose} label="Cerrar">
               <X className="h-4 w-4" />
-            </button>
+            </IconButton>
           </div>
         )}
         <div className="px-5 py-4">{children}</div>

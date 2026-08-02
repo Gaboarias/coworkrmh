@@ -10,14 +10,14 @@ export const Select = forwardRef<
     <select
       ref={ref}
       className={cn(
-        "h-9 w-full appearance-none rounded-lg border border-border bg-surface-el backdrop-blur-md px-3 pr-9 text-sm text-text transition-colors duration-200 ease-out focus:border-primary focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] disabled:cursor-not-allowed disabled:opacity-60",
+        "h-9 w-full appearance-none rounded-lg border border-rule bg-surface-el backdrop-blur-md px-3 pr-9 text-sm text-ink transition-colors duration-200 ease-out focus:border-primary focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] disabled:cursor-not-allowed disabled:opacity-60",
         className
       )}
       {...props}
     >
       {children}
     </select>
-    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
+    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
   </div>
 ));
 Select.displayName = "Select";

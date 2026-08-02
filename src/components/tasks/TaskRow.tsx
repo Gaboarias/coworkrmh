@@ -71,7 +71,7 @@ export function TaskRow({
 
   return (
     <div
-      className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-3 transition-colors duration-200 ease-out hover:border-border hover:bg-surface-el"
+      className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-3 transition-colors duration-200 ease-out hover:border-rule hover:bg-surface-el"
       onClick={onClick}
       style={{ cursor: onClick ? "pointer" : "default" }}
     >
@@ -91,7 +91,7 @@ export function TaskRow({
 
       <span
         className={`flex-1 truncate text-sm ${
-          status === "done" ? "text-text-tertiary line-through" : "text-text"
+          status === "done" ? "text-ink-faint line-through" : "text-ink"
         }`}
       >
         {task.title}
@@ -115,7 +115,7 @@ export function TaskRow({
               </span>
             ))}
             {shown.length > 3 && (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-el text-[9px] font-bold text-text-tertiary ring-2 ring-bg">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-el text-[9px] font-bold text-ink-faint ring-2 ring-bg">
                 +{shown.length - 3}
               </span>
             )}
@@ -126,7 +126,7 @@ export function TaskRow({
       {task.dueDate && (
         <div
           className={`flex items-center gap-1 text-xs ${
-            isOverdue ? "text-danger" : "text-text-tertiary"
+            isOverdue ? "text-urgent" : "text-ink-faint"
           }`}
         >
           <CalendarDays className="h-3 w-3" />
@@ -139,7 +139,7 @@ export function TaskRow({
           type="button"
           onClick={handleDelete}
           aria-label="Eliminar tarea"
-          className="hidden text-text-tertiary transition-colors hover:text-danger group-hover:block"
+          className="hidden text-ink-faint transition-colors hover:text-urgent group-hover:block"
           title="Eliminar"
         >
           <Trash2 className="h-4 w-4" />

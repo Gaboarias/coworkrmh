@@ -69,10 +69,10 @@ export function ChangelogFeed({ entries }: ChangelogFeedProps) {
                     size="xs"
                   />
                 )}
-                <span className="text-sm font-medium text-text">
+                <span className="text-sm font-medium text-ink">
                   {entry.user?.name ?? "Sistema"}
                 </span>
-                <span className="text-xs text-text-tertiary">
+                <span className="text-xs text-ink-faint">
                   {entry.createdAt &&
                     formatDistanceToNow(new Date(entry.createdAt), {
                       addSuffix: true,
@@ -80,7 +80,7 @@ export function ChangelogFeed({ entries }: ChangelogFeedProps) {
                     })}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-text-muted">{entry.description}</p>
+              <p className="mt-1 text-sm text-ink-soft">{entry.description}</p>
               <Badge variant="neutral" className="mt-1">
                 {entry.entityType}
               </Badge>

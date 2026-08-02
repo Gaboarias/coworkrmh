@@ -17,7 +17,8 @@ import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils/cn";
 import type { ProjectStatus } from "@/lib/types";
-import { ENTORNO_SWATCHES } from "@/lib/constants/entornoColors";
+import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
+import { SwatchPicker } from "@/components/ui/SwatchPicker";
 
 interface Profile {
   id: string;
@@ -43,7 +44,6 @@ interface ProjectSettingsFormProps {
 }
 
 // Paleta canónica Edition 04 — compartida con EntornoSwitcher y NewProject
-const COLORS = ENTORNO_SWATCHES;
 
 export function ProjectSettingsForm({
   project,
@@ -56,7 +56,7 @@ export function ProjectSettingsForm({
     name: project.name,
     description: project.description ?? "",
     bucketId: project.bucketId ?? "",
-    color: project.color ?? COLORS[0],
+    color: project.color ?? DEFAULT_ENTORNO_COLOR,
     status: project.status,
     startDate: project.startDate ?? "",
     endDate: project.endDate ?? "",
@@ -152,14 +152,14 @@ export function ProjectSettingsForm({
     <div className="space-y-6">
       <Card>
         <CardContent className="p-5">
-          <h3 className="mb-4 text-sm font-semibold text-text">
+          <h3 className="mb-4 text-sm font-semibold text-ink">
             Información del proyecto
           </h3>
           <form onSubmit={handleSave} className="space-y-4">
             <div>
               <label
                 htmlFor="ps-name"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Nombre
               </label>
@@ -176,7 +176,7 @@ export function ProjectSettingsForm({
             <div>
               <label
                 htmlFor="ps-desc"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Descripción
               </label>
@@ -194,7 +194,7 @@ export function ProjectSettingsForm({
               <div>
                 <label
                   htmlFor="ps-bucket"
-                  className="mb-2 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-ink-soft"
                 >
                   Categoría
                 </label>
@@ -271,7 +271,7 @@ export function ProjectSettingsForm({
               <div>
                 <label
                   htmlFor="ps-start"
-                  className="mb-2 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-ink-soft"
                 >
                   Fecha de inicio
                 </label>
@@ -287,7 +287,7 @@ export function ProjectSettingsForm({
               <div>
                 <label
                   htmlFor="ps-end"
-                  className="mb-2 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-ink-soft"
                 >
                   Fecha de fin
                 </label>
@@ -303,25 +303,14 @@ export function ProjectSettingsForm({
             </div>
 
             <div>
-              <span className="mb-2 block text-sm font-medium text-text-muted">
+              <span className="mb-2 block text-sm font-medium text-ink-soft">
                 Color
               </span>
-              <div className="flex gap-2">
-                {COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    aria-label={`Color ${c}`}
-                    onClick={() => setForm((p) => ({ ...p, color: c }))}
-                    className={cn(
-                      "h-7 w-7 rounded-lg transition-transform hover:scale-110",
-                      form.color === c &&
-                        "ring-2 ring-text ring-offset-2 ring-offset-surface"
-                    )}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
+              <SwatchPicker
+                value={form.color}
+                onChange={(c) => setForm((p) => ({ ...p, color: c }))}
+                label="Color"
+              />
             </div>
 
             <div className="flex items-center gap-3 pt-1">
@@ -353,7 +342,7 @@ export function ProjectSettingsForm({
 
       <Card>
         <CardContent className="p-5">
-          <h3 className="mb-4 text-sm font-semibold text-text">
+          <h3 className="mb-4 text-sm font-semibold text-ink">
             Miembros del proyecto
           </h3>
 
@@ -389,10 +378,10 @@ export function ProjectSettingsForm({
                   size="sm"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-text">
+                  <p className="truncate text-sm font-medium text-ink">
                     {member.name ?? member.email}
                   </p>
-                  <p className="truncate text-xs text-text-muted">
+                  <p className="truncate text-xs text-ink-soft">
                     {member.email}
                   </p>
                 </div>
@@ -400,7 +389,7 @@ export function ProjectSettingsForm({
                   type="button"
                   onClick={() => handleRemoveMember(member.id)}
                   aria-label={`Remover a ${member.name ?? member.email}`}
-                  className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface hover:text-danger"
+                  className="rounded-md p-1 text-ink-faint transition-colors hover:bg-surface hover:text-urgent"
                   title="Remover"
                 >
                   <Trash2 className="h-4 w-4" />

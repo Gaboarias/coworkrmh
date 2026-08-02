@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CalendarClock, Check, Unlink } from "lucide-react";
 import { toast } from "sonner";
 import { disconnectCalendar } from "@/lib/actions/calendar";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 
 interface CalendarConnectionsProps {
@@ -79,20 +80,21 @@ export function CalendarConnections({
                 <Check className="h-3.5 w-3.5 text-[var(--done)]" />
                 Conectado{email ? ` · ${email}` : ""}
               </span>
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleDisconnect}
                 disabled={busy}
-                className="inline-flex items-center gap-2 rounded-md border border-rule px-2.5 py-2 text-[12px] font-medium text-ink-soft transition-colors hover:border-urgent hover:text-urgent disabled:opacity-50"
+                className="hover:border-urgent hover:text-urgent"
               >
                 <Unlink className="h-3.5 w-3.5" />
                 {busy ? "Desconectando…" : "Desconectar"}
-              </button>
+              </Button>
             </div>
           ) : (
             <a
               href="/api/calendar/google/connect"
-              className="mt-3 inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover"
+              className={buttonVariants({ className: "mt-3" })}
             >
               <CalendarClock className="h-3.5 w-3.5" />
               Conectar Google Calendar

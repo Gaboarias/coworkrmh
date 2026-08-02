@@ -3,21 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import Link from "next/link";
-import { ChevronLeft, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { createProject, createBucket } from "@/lib/actions/projects";
+import { BackLink } from "@/components/shared/BackLink";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils/cn";
-import { ENTORNO_SWATCHES } from "@/lib/constants/entornoColors";
-
-// Reusamos la paleta canónica Edition 04 (vermillion/emerald/saffron/cobalt+).
-// Antes había una paleta separada hardcoded — ahora consistencia con
-// EntornoSwitcher + ProjectSettings.
-const COLORS = ENTORNO_SWATCHES;
+import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
+import { SwatchPicker } from "@/components/ui/SwatchPicker";
 
 interface NewProjectClientProps {
   initialBuckets: { id: string; name: string }[];
@@ -28,7 +24,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [bucketId, setBucketId] = useState("");
-  const [color, setColor] = useState<string>(COLORS[0]);
+  const [color, setColor] = useState<string>(DEFAULT_ENTORNO_COLOR);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [buckets, setBuckets] = useState(initialBuckets);
@@ -73,13 +69,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
 
   return (
     <div className="animate-fade-in mx-auto max-w-xl px-8 py-10 md:px-12">
-      <Link
-        href="/projects"
-        className="mb-6 inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.16em] text-ink-soft transition-colors hover:text-ink"
-      >
-        <ChevronLeft className="h-3 w-3" />
-        Volver a proyectos
-      </Link>
+      <BackLink href="/projects">Volver a proyectos</BackLink>
       <PageHeader
         eyebrow="/ proyectos / nuevo"
         title="Nuevo proyecto,"
@@ -92,7 +82,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
             <div>
               <label
                 htmlFor="np-name"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Nombre del proyecto *
               </label>
@@ -109,7 +99,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
             <div>
               <label
                 htmlFor="np-desc"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Descripción
               </label>
@@ -125,7 +115,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
             <div>
               <label
                 htmlFor="np-bucket"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Categoría
               </label>
@@ -177,32 +167,17 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
             </div>
 
             <div>
-              <span className="mb-2 block text-sm font-medium text-text-muted">
+              <span className="mb-2 block text-sm font-medium text-ink-soft">
                 Color
               </span>
-              <div className="flex flex-wrap gap-2">
-                {COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    aria-label={`Color ${c}`}
-                    onClick={() => setColor(c)}
-                    className={cn(
-                      "h-7 w-7 rounded-lg transition-transform hover:scale-110",
-                      color === c &&
-                        "ring-2 ring-text ring-offset-2 ring-offset-surface"
-                    )}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
+              <SwatchPicker value={color} onChange={setColor} label="Color" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label
                   htmlFor="np-start"
-                  className="mb-2 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-ink-soft"
                 >
                   Inicio
                 </label>
@@ -216,7 +191,7 @@ export function NewProjectClient({ initialBuckets }: NewProjectClientProps) {
               <div>
                 <label
                   htmlFor="np-end"
-                  className="mb-2 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-ink-soft"
                 >
                   Fin
                 </label>

@@ -6,6 +6,7 @@ import { Key, Link2, Copy, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { IconButton } from "@/components/ui/IconButton";
 import { Modal } from "@/components/ui/Modal";
 
 interface Props {
@@ -37,24 +38,20 @@ export function AdminUserPasswordActions({ userId, userEmail, userName }: Props)
   return (
     <>
       <div className="flex items-center gap-1">
-        <button
-          type="button"
+        <IconButton
           onClick={() => setSetPwdOpen(true)}
           title="Asignar contraseña directa"
-          aria-label="Asignar contraseña"
-          className="rounded-md p-2 text-ink-soft transition-colors hover:bg-accent-soft hover:text-ink"
+          label="Asignar contraseña"
         >
           <Key className="h-4 w-4" strokeWidth={1.75} />
-        </button>
-        <button
-          type="button"
+        </IconButton>
+        <IconButton
           onClick={() => setResetOpen(true)}
           title="Generar enlace de reset"
-          aria-label="Generar reset link"
-          className="rounded-md p-2 text-ink-soft transition-colors hover:bg-accent-soft hover:text-ink"
+          label="Generar reset link"
         >
           <Link2 className="h-4 w-4" strokeWidth={1.75} />
-        </button>
+        </IconButton>
       </div>
 
       {setPwdOpen && (
@@ -143,7 +140,7 @@ function SetPasswordModal({
         <div>
           <label
             htmlFor="admin-pwd"
-            className="mb-2 block text-xs font-medium text-text-muted"
+            className="mb-2 block text-xs font-medium text-ink-soft"
           >
             Nueva contraseña (mín. {minLen} caracteres)
           </label>
@@ -158,7 +155,7 @@ function SetPasswordModal({
             aria-invalid={tooShort}
           />
           {tooShort && (
-            <p className="mt-1 text-xs text-danger">
+            <p className="mt-1 text-xs text-urgent">
               Faltan {minLen - pwd.length} caracteres.
             </p>
           )}
@@ -166,7 +163,7 @@ function SetPasswordModal({
         <div>
           <label
             htmlFor="admin-pwd-confirm"
-            className="mb-2 block text-xs font-medium text-text-muted"
+            className="mb-2 block text-xs font-medium text-ink-soft"
           >
             Confirmar contraseña
           </label>
@@ -180,7 +177,7 @@ function SetPasswordModal({
             aria-invalid={mismatch}
           />
           {mismatch && (
-            <p className="mt-1 text-xs text-danger">
+            <p className="mt-1 text-xs text-urgent">
               Las contraseñas no coinciden.
             </p>
           )}

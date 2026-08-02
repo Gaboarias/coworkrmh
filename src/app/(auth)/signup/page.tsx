@@ -46,19 +46,19 @@ export default function SignupPage() {
           alt="Pistachio"
           className="mx-auto mb-4 h-12 w-12 rounded-xl"
         />
-        <h1 className="text-2xl font-bold text-text">Pistachio</h1>
-        <p className="mt-1 text-sm text-text-muted">Rewind Media House</p>
+        <h1 className="text-2xl font-bold text-ink">Pistachio</h1>
+        <p className="mt-1 text-sm text-ink-soft">Rewind Media House</p>
       </div>
 
       <Card>
         <CardContent className="p-8">
-          <h2 className="mb-6 text-xl font-semibold text-text">Crear cuenta</h2>
+          <h2 className="mb-6 text-xl font-semibold text-ink">Crear cuenta</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
                 htmlFor="name"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Nombre completo
               </label>
@@ -75,7 +75,7 @@ export default function SignupPage() {
             <div>
               <label
                 htmlFor="email"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Correo electrónico
               </label>
@@ -92,7 +92,7 @@ export default function SignupPage() {
             <div>
               <label
                 htmlFor="password"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Contraseña
               </label>
@@ -117,7 +117,7 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-text-muted">
+          <p className="mt-6 text-center text-sm text-ink-soft">
             ¿Ya tienes cuenta?{" "}
             <Link
               href="/login"

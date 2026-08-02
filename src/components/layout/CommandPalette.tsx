@@ -212,7 +212,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       <Command
         label="Command Menu"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-surface-el shadow-elev-3 backdrop-blur-2xl backdrop-saturate-150 animate-slide-up"
+        className="w-full max-w-2xl overflow-hidden rounded-xl border border-rule bg-surface-el shadow-elev-3 backdrop-blur-2xl backdrop-saturate-150 animate-slide-up"
         // El filter built-in de cmdk usa Sift4 fuzzy match.
         filter={(value, search, keywords) => {
           const haystack = `${value} ${keywords?.join(" ") ?? ""}`.toLowerCase();
@@ -222,23 +222,23 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         }}
       >
         {/* Input row */}
-        <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-          <Search className="h-4 w-4 flex-shrink-0 text-text-tertiary" />
+        <div className="flex items-center gap-2 border-b border-rule px-4 py-3">
+          <Search className="h-4 w-4 flex-shrink-0 text-ink-faint" />
           <Command.Input
             value={query}
             onValueChange={setQuery}
             autoFocus
             placeholder="Buscar acciones, páginas, proyectos..."
-            className="flex-1 bg-transparent text-sm text-text placeholder:text-text-tertiary outline-none"
+            className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
           />
-          <kbd className="hidden rounded border border-border bg-surface px-1.5 py-1 text-[12px] font-medium text-text-tertiary sm:inline-block">
+          <kbd className="hidden rounded border border-rule bg-surface px-1.5 py-1 text-[12px] font-medium text-ink-faint sm:inline-block">
             ESC
           </kbd>
         </div>
 
         {/* Results */}
         <Command.List className="max-h-[60vh] overflow-y-auto py-2">
-          <Command.Empty className="px-4 py-8 text-center text-sm text-text-muted">
+          <Command.Empty className="px-4 py-8 text-center text-sm text-ink-soft">
             Sin resultados para &quot;{query}&quot;
           </Command.Empty>
 
@@ -246,7 +246,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             <Command.Group
               key={group.id}
               heading={group.heading}
-              className="px-2 py-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-[12px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-text-tertiary"
+              className="px-2 py-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-[12px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-ink-faint"
             >
               {group.items.map((item) => {
                 const Icon = item.icon;
@@ -256,9 +256,9 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                     value={item.label}
                     keywords={item.keywords?.split(" ") ?? []}
                     onSelect={item.action}
-                    className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm text-text-muted aria-selected:bg-[color-mix(in_oklab,var(--coral)_18%,transparent)] aria-selected:text-text"
+                    className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm text-ink-soft aria-selected:bg-[color-mix(in_oklab,var(--coral)_18%,transparent)] aria-selected:text-ink"
                   >
-                    <Icon className="h-4 w-4 flex-shrink-0 text-text-tertiary aria-selected:text-coral" />
+                    <Icon className="h-4 w-4 flex-shrink-0 text-ink-faint aria-selected:text-coral" />
                     <span className="flex-1 truncate">{item.label}</span>
                   </Command.Item>
                 );
@@ -268,7 +268,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         </Command.List>
 
         {/* Footer hint */}
-        <div className="flex items-center justify-between border-t border-border px-4 py-2 text-[12px] text-text-tertiary">
+        <div className="flex items-center justify-between border-t border-rule px-4 py-2 text-[12px] text-ink-faint">
           <span>
             <kbd className="rounded bg-surface px-1">↑↓</kbd> navegar ·{" "}
             <kbd className="rounded bg-surface px-1">Enter</kbd> seleccionar

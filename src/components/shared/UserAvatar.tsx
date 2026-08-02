@@ -28,8 +28,8 @@ function getColor(name?: string | null): string {
   const colors = [
     "bg-primary/30 text-primary",
     "bg-secondary/30 text-secondary",
-    "bg-success/30 text-success",
-    "bg-warning/30 text-warning",
+    "bg-done/30 text-done",
+    "bg-warn/30 text-warn",
     "bg-info/30 text-info",
   ];
   if (!name) return colors[0];
@@ -50,7 +50,7 @@ export function UserAvatar({
         src={avatarUrl}
         alt={name ?? "User"}
         className={cn(
-          "rounded-full object-cover ring-2 ring-border",
+          "rounded-full object-cover ring-2 ring-rule",
           sizes[size],
           className
         )}

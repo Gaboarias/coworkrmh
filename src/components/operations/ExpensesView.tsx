@@ -16,6 +16,7 @@ import {
   type ExpensesResult,
 } from "@/lib/actions/erpExpenses";
 import { DensityToggle } from "./DensityToggle";
+import { IconButton } from "@/components/ui/IconButton";
 
 // ── Subcomponente de sección ──────────────────────────────────────────────────
 // Definido en scope de módulo para que React mantenga identidad estable entre
@@ -37,32 +38,32 @@ function ExpensesSection({
     <Card>
       <CardContent>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-text">{title}</h3>
-          <span className="text-sm font-semibold text-text">
+          <h3 className="text-sm font-semibold text-ink">{title}</h3>
+          <span className="text-sm font-semibold text-ink">
             {formatMoney(total)}
           </span>
         </div>
         {rows.length === 0 ? (
-          <p className="text-sm text-text-muted">Sin registros.</p>
+          <p className="text-sm text-ink-soft">Sin registros.</p>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-rule">
             {rows.map((e) => (
               <div key={e.id} className="flex items-center gap-3 py-[var(--erp-row-py)] text-sm">
-                <span className="flex-1 text-text">{e.concept}</span>
-                <span className="text-xs text-text-tertiary">
+                <span className="flex-1 text-ink">{e.concept}</span>
+                <span className="text-xs text-ink-faint">
                   {e.category ?? "—"}
                   {e.priority ? ` · ${e.priority}` : ""}
                 </span>
-                <span className="text-text">{formatMoney(e.amount)}</span>
+                <span className="text-ink">{formatMoney(e.amount)}</span>
                 {canManage && (
-                  <button
-                    type="button"
+                  <IconButton
+                    size="lg"
+                    tone="danger"
                     onClick={() => onRemove(e.id)}
-                    aria-label="Eliminar"
-                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
+                    label={`Eliminar gasto: ${e.concept}`}
                   >
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </IconButton>
                 )}
               </div>
             ))}
@@ -151,7 +152,7 @@ export const ExpensesView = ({
       {canManage && (
       <Card>
         <CardContent>
-          <h3 className="mb-3 text-sm font-semibold text-text">
+          <h3 className="mb-3 text-sm font-semibold text-ink">
             Registrar gasto / inversión
           </h3>
           <form onSubmit={add} className="grid gap-3 sm:grid-cols-2">
@@ -223,12 +224,12 @@ export const ExpensesView = ({
 
       <Card>
         <CardContent>
-          <h3 className="mb-3 text-sm font-semibold text-text">
+          <h3 className="mb-3 text-sm font-semibold text-ink">
             Punto de equilibrio mensual
           </h3>
           <div className="flex flex-wrap items-end gap-3">
             <div>
-              <label htmlFor="expenses-margin" className="mb-2 block text-xs font-medium text-text-muted">
+              <label htmlFor="expenses-margin" className="mb-2 block text-xs font-medium text-ink-soft">
                 Margen promedio (0–1)
               </label>
               <Input
@@ -249,7 +250,7 @@ export const ExpensesView = ({
               </Button>
             )}
             <div className="ml-auto text-right">
-              <p className="text-xs text-text-muted">
+              <p className="text-xs text-ink-soft">
                 Ventas necesarias para cubrir gastos fijos
               </p>
               <p className="text-lg font-semibold text-primary">

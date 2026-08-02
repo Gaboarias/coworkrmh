@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Download, FileQuestion } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
+import { IconButton, iconButtonVariants } from "@/components/ui/IconButton";
 
 interface PreviewDoc {
   name: string;
@@ -93,20 +95,15 @@ export function FilePreviewModal({
               download={doc.name}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md p-2 text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
+              className={iconButtonVariants({ tone: "faint" })}
+              aria-label="Descargar"
               title="Descargar"
             >
               <Download className="h-4 w-4" />
             </a>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Cerrar"
-              title="Cerrar"
-              className="rounded-md p-2 text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
-            >
+            <IconButton tone="faint" label="Cerrar" onClick={onClose}>
               <X className="h-4 w-4" />
-            </button>
+            </IconButton>
           </div>
         </header>
 
@@ -165,7 +162,7 @@ export function FilePreviewModal({
                 download={doc.name}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover"
+                className={buttonVariants()}
               >
                 <Download className="h-3.5 w-3.5" />
                 Descargar

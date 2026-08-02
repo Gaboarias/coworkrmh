@@ -108,6 +108,10 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
     if (!element) return;
 
     try {
+      // color-literal-ok: el PDF se imprime sobre papel blanco, no sobre la
+      // superficie de la app. html2canvas rasteriza fuera del árbol de
+      // Tailwind, así que un token no se resolvería, y heredar el tema oscuro
+      // daría un PDF con fondo negro.
       const canvas = await html2canvas(element as HTMLElement, {
         backgroundColor: "#ffffff",
         scale: 2,
@@ -159,7 +163,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
     };
   }, []);
 
-  const toolbarBtn = "flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition hover:bg-surface-el hover:text-text disabled:opacity-40";
+  const toolbarBtn = "flex h-7 w-7 items-center justify-center rounded-md text-ink-soft transition hover:bg-surface-el hover:text-ink disabled:opacity-40";
   const activeBtn = "bg-primary-muted text-primary";
 
   if (!editor) return null;
@@ -167,12 +171,12 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
   return (
     <div className="animate-fade-in flex h-full flex-col">
       {/* Breadcrumb */}
-      <div className="mb-4 flex items-center gap-2 text-sm text-text-muted">
-        <Link href={`/projects/${project.id}`} className="hover:text-text">
+      <div className="mb-4 flex items-center gap-2 text-sm text-ink-soft">
+        <Link href={`/projects/${project.id}`} className="hover:text-ink">
           {project.name}
         </Link>
         <span>/</span>
-        <Link href={`/projects/${project.id}/notes`} className="hover:text-text">
+        <Link href={`/projects/${project.id}/notes`} className="hover:text-ink">
           Notas
         </Link>
       </div>
@@ -183,12 +187,12 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onBlur={handleTitleBlur}
-        className="mb-4 w-full border-none bg-transparent text-3xl font-bold text-text placeholder-text-tertiary outline-none"
+        className="mb-4 w-full border-none bg-transparent text-3xl font-bold text-ink placeholder-text-tertiary outline-none"
         placeholder="Título de la nota"
       />
 
       {/* Toolbar */}
-      <div className="mb-4 flex items-center gap-1 rounded-lg border border-border bg-surface p-2">
+      <div className="mb-4 flex items-center gap-1 rounded-lg border border-rule bg-surface p-2">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -271,7 +275,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
         </button>
 
         <div className="ml-auto flex items-center gap-1">
-          <span className="text-xs text-text-tertiary">
+          <span className="text-xs text-ink-faint">
             {saving
               ? "Guardando..."
               : lastSaved
@@ -313,7 +317,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
       </div>
 
       {/* Editor */}
-      <div className="flex-1 rounded-xl border border-border bg-surface p-6">
+      <div className="flex-1 rounded-xl border border-rule bg-surface p-6">
         <EditorContent editor={editor} className="tiptap-editor" />
       </div>
     </div>

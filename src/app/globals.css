@@ -23,7 +23,7 @@
 
     --ink: #161412;
     --ink-soft: #524d44;
-    --ink-faint: #8a8378;
+    --ink-faint: #6d675f;  /* 4.5:1 sobre la superficie más oscura (bg-2) — SC-005 */
 
     --rule: rgba(22, 20, 18, 0.09);
     --rule-strong: rgba(22, 20, 18, 0.22);
@@ -35,14 +35,29 @@
     --project-color: var(--accent);
 
     /* Estados — committed pero refinados */
-    --urgent: #e8281c;
-    --urgent-soft: rgba(232, 40, 28, 0.1);
+    --urgent: #d22419;    /* 4.4:1 → 5.0:1 con texto blanco (SC-005) */
+    --urgent-soft: rgba(210, 36, 25, 0.1);
     --done: #1f7a4d;
     --done-soft: rgba(31, 122, 77, 0.1);
     --info: #2e52d9;
     --info-soft: rgba(46, 82, 217, 0.1);
     --warn: #e89a0d;
     --warn-soft: rgba(232, 154, 13, 0.1);
+
+    /* Tinta sobre superficies sólidas semánticas (urgent/done/info).
+       En claro el blanco contrasta; en oscuro los semánticos son más brillantes
+       y el blanco baja de 4.5:1, así que se invierte. Mismo patrón que
+       --primary-foreground, que ya lo hacía. */
+    --on-solid: #ffffff;
+
+    /* Color del TEXTO semántico sobre su propio tinte (Badge).
+       Separado del acento porque el acento vive en puntos, barras y bordes,
+       donde el brillo es correcto; como texto sobre un tinte del mismo tono no
+       llega a AA. Donde el acento ya alcanza, el token lo referencia. */
+    --done-text: var(--done);
+    --warn-text: #9a6609;  /* el ámbar como texto da 2.1:1 */
+    --urgent-text: var(--urgent);
+    --info-text: var(--info);
 
     /* Notificaciones — warm terracotta (dot + badge) */
     --coral: #c96b35;
@@ -100,7 +115,7 @@
 
     --ink: #f0ede5;
     --ink-soft: #a39d92;
-    --ink-faint: #6a655c;
+    --ink-faint: #8c8579;  /* 4.5:1 sobre la superficie más clara (surface-el) — SC-005 */
 
     --rule: rgba(240, 237, 229, 0.08);
     --rule-strong: rgba(240, 237, 229, 0.2);
@@ -117,6 +132,12 @@
     --info-soft: rgba(85, 119, 238, 0.14);
     --warn: #f5af2e;
     --warn-soft: rgba(245, 175, 46, 0.14);
+
+    --on-solid: #161412;
+    --done-text: var(--done);
+    --warn-text: var(--warn);
+    --urgent-text: var(--urgent);
+    --info-text: #5c81ff;  /* 4.0:1 → 4.6:1 sobre --info-soft */
 
     --coral: #e07a4a;
 
@@ -298,9 +319,9 @@
   text-transform: uppercase;
   line-height: 1;
 }
-.pill-urgent { background: var(--urgent); color: #ffffff; }
-.pill-done { background: var(--done); color: #ffffff; }
-.pill-info { background: var(--info); color: #ffffff; }
+.pill-urgent { background: var(--urgent); color: var(--on-solid); }
+.pill-done { background: var(--done); color: var(--on-solid); }
+.pill-info { background: var(--info); color: var(--on-solid); }
 .pill-warn { background: var(--warn); color: #161412; }
 .pill-outline {
   background: transparent;
@@ -352,6 +373,11 @@
   position: relative;
 }
 .h-list-item + .h-list-item { border-top: 1px solid var(--rule); }
+/* Opt-in a la preferencia de densidad del usuario.
+   `.h-list` la usan seis vistas y solo una es del ERP; FR-006 acota la densidad
+   a las tablas de Operaciones, así que la lista se apunta explícitamente en vez
+   de que el padding cambie en dashboard y mis-tareas sin control del usuario. */
+.h-list-dense .h-list-item { padding: var(--erp-row-py) 0; }
 .h-list-item-n {
   position: absolute;
   left: -2.25rem;
@@ -375,3 +401,46 @@
 /* Hover surface (filas clickeables) */
 .row-hover { transition: background-color 0.15s ease-out; }
 .row-hover:hover { background: var(--accent-soft); }
+
+/* ── Reduced motion ──────────────────────────────────────────────
+   Constitución v1.0.1, principio III: las animaciones DEBEN respetar
+   `prefers-reduced-motion`.
+
+   Por qué existe este bloque teniendo `MotionConfig reducedMotion="user"`:
+   MotionConfig solo gobierna componentes `motion.*`, y en el repo hay uno
+   (ui/Modal.tsx). Las otras ~50 animaciones son clases de Tailwind, que
+   MotionConfig no alcanza. Sin esto, la app decía respetar la preferencia
+   y la ignoraba en el 98% de los casos.
+
+   Se neutraliza MOVIMIENTO, no color. Las transiciones de color, fondo,
+   borde y opacidad son feedback de estado (hover, focus, disabled): sacarlas
+   empeora la legibilidad de la interfaz sin ganar nada de accesibilidad.
+   `prefers-reduced-motion` pide menos movimiento, no menos contraste.
+   ──────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Animaciones con keyframes: todas fuera. La regla apunta a `*` en vez de
+     a nombres concretos para que una animación nueva en tailwind.config
+     quede cubierta desde el día uno, sin que nadie tenga que acordarse. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  /* Transiciones: se recorta la lista de propiedades animables a las que no
+     mueven nada. `transform` queda fuera, así que `hover:scale-110` y
+     cualquier translate saltan al estado final en vez de desplazarse.
+     El resto sigue transicionando con su duración original. */
+  *,
+  *::before,
+  *::after {
+    transition-property: color, background-color, border-color, outline-color,
+      fill, stroke, opacity, box-shadow !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+}

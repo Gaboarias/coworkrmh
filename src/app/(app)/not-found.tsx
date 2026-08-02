@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/Button";
 import { PageHeader } from "@/components/shared/PageHeader";
 
 /**
@@ -20,16 +21,10 @@ export default function AppNotFound() {
         description="El enlace puede estar viejo, o el recurso pertenece a otro entorno. Revisá el entorno activo en la barra lateral."
       />
       <div className="flex flex-wrap items-center gap-3">
-        <Link
-          href="/dashboard"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover"
-        >
+        <Link href="/dashboard" className={buttonVariants()}>
           Ir al resumen
         </Link>
-        <Link
-          href="/projects"
-          className="rounded-md border border-rule px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-accent-soft hover:text-ink"
-        >
+        <Link href="/projects" className={buttonVariants({ variant: "outline" })}>
           Ver proyectos
         </Link>
       </div>

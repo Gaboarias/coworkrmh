@@ -39,7 +39,7 @@ export const AdminPanel = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-1 border-b border-border">
+      <div className="flex gap-1 border-b border-rule">
         {(
           [
             ["workspaces", "Entornos", Layers],
@@ -54,7 +54,7 @@ export const AdminPanel = ({
               "flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors",
               tab === key
                 ? "border-primary text-primary"
-                : "border-transparent text-text-muted hover:text-text"
+                : "border-transparent text-ink-soft hover:text-ink"
             )}
           >
             <Icon className="h-4 w-4" />

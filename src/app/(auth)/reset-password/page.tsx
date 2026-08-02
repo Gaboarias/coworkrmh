@@ -17,7 +17,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           alt="Pistachio"
           className="mx-auto mb-4 h-12 w-12 rounded-xl"
         />
-        <h1 className="text-2xl font-bold text-text">Pistachio</h1>
+        <h1 className="text-2xl font-bold text-ink">Pistachio</h1>
       </div>
       <Card>
         <CardContent className="p-8">{children}</CardContent>
@@ -52,16 +52,16 @@ function RequestForm() {
 
   return (
     <>
-      <h2 className="mb-2 text-xl font-semibold text-text">
+      <h2 className="mb-2 text-xl font-semibold text-ink">
         Recuperar contraseña
       </h2>
-      <p className="mb-6 text-sm text-text-muted">
+      <p className="mb-6 text-sm text-ink-soft">
         Ingresa tu correo y te enviaremos un enlace para crear una nueva
         contraseña.
       </p>
 
       {sent ? (
-        <div className="rounded-lg bg-success/10 p-4 text-center text-sm text-success">
+        <div className="rounded-lg bg-done/10 p-4 text-center text-sm text-done">
           ✓ Si existe una cuenta con ese correo, recibirás un enlace en unos
           minutos. Revisa también spam.
         </div>
@@ -70,7 +70,7 @@ function RequestForm() {
           <div>
             <label
               htmlFor="reset-email"
-              className="mb-2 block text-sm font-medium text-text-muted"
+              className="mb-2 block text-sm font-medium text-ink-soft"
             >
               Correo electrónico
             </label>
@@ -89,7 +89,7 @@ function RequestForm() {
         </form>
       )}
 
-      <p className="mt-6 text-center text-sm text-text-muted">
+      <p className="mt-6 text-center text-sm text-ink-soft">
         <Link href="/login" className="text-primary hover:text-primary-hover">
           ← Volver al inicio
         </Link>
@@ -137,17 +137,17 @@ function SetPasswordForm({ token }: { token: string }) {
 
   return (
     <>
-      <h2 className="mb-2 text-xl font-semibold text-text">
+      <h2 className="mb-2 text-xl font-semibold text-ink">
         Nueva contraseña
       </h2>
-      <p className="mb-6 text-sm text-text-muted">
+      <p className="mb-6 text-sm text-ink-soft">
         Crea una contraseña nueva para tu cuenta.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
             htmlFor="new-password"
-            className="mb-2 block text-sm font-medium text-text-muted"
+            className="mb-2 block text-sm font-medium text-ink-soft"
           >
             Nueva contraseña
           </label>
@@ -164,7 +164,7 @@ function SetPasswordForm({ token }: { token: string }) {
         <div>
           <label
             htmlFor="confirm-password"
-            className="mb-2 block text-sm font-medium text-text-muted"
+            className="mb-2 block text-sm font-medium text-ink-soft"
           >
             Confirmar contraseña
           </label>
@@ -182,7 +182,7 @@ function SetPasswordForm({ token }: { token: string }) {
           {loading ? "Guardando…" : "Restablecer contraseña"}
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-text-muted">
+      <p className="mt-6 text-center text-sm text-ink-soft">
         <Link href="/login" className="text-primary hover:text-primary-hover">
           ← Volver al inicio
         </Link>
@@ -199,7 +199,7 @@ function ResetPasswordInner() {
 export default function ResetPasswordPage() {
   return (
     <Shell>
-      <Suspense fallback={<p className="text-sm text-text-muted">Cargando…</p>}>
+      <Suspense fallback={<p className="text-sm text-ink-soft">Cargando…</p>}>
         <ResetPasswordInner />
       </Suspense>
     </Shell>

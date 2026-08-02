@@ -35,6 +35,8 @@ import {
   TASK_STATUS_CONFIG,
   TASK_STATUS_ORDER,
 } from "@/lib/constants/taskStatus";
+import { IconButton } from "@/components/ui/IconButton";
+import { Button } from "@/components/ui/Button";
 
 interface Task {
   id: string;
@@ -95,6 +97,16 @@ const PRIORITY_VAR: Record<TaskPriority, string> = {
 };
 
 const PRIORITY_ORDER: TaskPriority[] = ["low", "medium", "high", "urgent"];
+
+/**
+ * Estado inactivo de los selectores de estado y prioridad.
+ *
+ * Las dos grillas difieren en forma (`rounded-md px-3 py-3` vs
+ * `rounded-full px-3.5 py-2`) pero comparten cómo se ve lo no seleccionado.
+ * El hover pasa a `accent-soft`, que es el que usan los primitivos de `ui/`;
+ * antes era `surface-el`, un gris neutro distinto sin ninguna razón.
+ */
+const pickerIdle = "text-ink-soft hover:bg-accent-soft hover:text-ink";
 
 // ── Component ──────────────────────────────────────────────────────────
 
@@ -323,14 +335,9 @@ export function TaskDetail({
               </p>
             )}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar detalle"
-            className="flex-shrink-0 rounded-md p-2 text-ink-faint transition-colors hover:bg-surface-el hover:text-ink"
-          >
+          <IconButton tone="faint" onClick={onClose} label="Cerrar detalle">
             <X className="h-5 w-5" />
-          </button>
+          </IconButton>
         </div>
 
         <div className="space-y-10 px-8 pb-16 pt-10 md:px-12">
@@ -352,7 +359,7 @@ export function TaskDetail({
                       "group/status flex items-center gap-2 rounded-md border px-3 py-3 text-left font-mono text-[11px] font-bold uppercase tracking-[0.14em] transition-all duration-200 ease-out",
                       isActive
                         ? "text-bg shadow-elev-1"
-                        : "text-ink-soft hover:bg-surface-el hover:text-ink"
+                        : pickerIdle
                     )}
                     style={{
                       borderColor: isActive
@@ -393,7 +400,7 @@ export function TaskDetail({
                       "flex items-center gap-2 rounded-full border px-3.5 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] transition-all duration-200 ease-out",
                       isActive
                         ? "text-bg"
-                        : "text-ink-soft hover:bg-surface-el hover:text-ink"
+                        : pickerIdle
                     )}
                     style={{
                       borderColor: isActive ? color : "var(--rule)",
@@ -496,14 +503,14 @@ export function TaskDetail({
                 <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-faint">
                   ⌘ + Enter para enviar
                 </span>
-                <button
+                <Button
                   type="submit"
+                  size="sm"
                   disabled={!newComment.trim() || postingComment}
-                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Send className="h-3.5 w-3.5" />
                   {postingComment ? "Guardando…" : "Agregar nota"}
-                </button>
+                </Button>
               </div>
             </form>
 

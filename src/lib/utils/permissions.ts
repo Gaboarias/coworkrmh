@@ -11,8 +11,8 @@ export function getRoleLabel(role: UserRole): string {
 
 export function getRoleColor(role: UserRole): string {
   const colors: Record<UserRole, string> = {
-    admin: "text-danger bg-danger/10",
-    manager: "text-warning bg-warning/10",
+    admin: "text-urgent bg-urgent/10",
+    manager: "text-warn bg-warn/10",
     member: "text-info bg-info/10",
   };
   return colors[role];

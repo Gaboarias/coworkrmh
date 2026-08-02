@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
 import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
 import { getQuote } from "@/lib/actions/erpQuotes";
 import { isUuid } from "@/lib/utils/uuid";
+import { BackLink } from "@/components/shared/BackLink";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { OperationsNav } from "@/components/operations/OperationsNav";
 import { NoEntorno } from "@/components/operations/NoEntorno";
@@ -31,13 +30,7 @@ export default async function EditarCotizacionPage({
   return (
     <div className="animate-fade-in px-8 py-10 md:px-12 lg:px-14">
       <OperationsNav />
-      <Link
-        href="/operations/cotizador"
-        className="mb-6 inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.16em] text-ink-soft transition-colors hover:text-ink"
-      >
-        <ChevronLeft className="h-3 w-3" />
-        Cotizador
-      </Link>
+      <BackLink href="/operations/cotizador">Cotizador</BackLink>
       <PageHeader
         eyebrow="/ operations / cotizador"
         title={`${quote.title},`}

@@ -97,7 +97,7 @@ export const QuoteForm = ({
       <Card>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="quote-title" className="mb-2 block text-sm font-medium text-text-muted">
+            <label htmlFor="quote-title" className="mb-2 block text-sm font-medium text-ink-soft">
               Título *
             </label>
             <Input
@@ -108,7 +108,7 @@ export const QuoteForm = ({
             />
           </div>
           <div>
-            <label htmlFor="quote-customer" className="mb-2 block text-sm font-medium text-text-muted">
+            <label htmlFor="quote-customer" className="mb-2 block text-sm font-medium text-ink-soft">
               Cliente
             </label>
             <Input
@@ -124,7 +124,7 @@ export const QuoteForm = ({
       <Card>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-text">Ítems</h3>
+            <h3 className="text-sm font-semibold text-ink">Ítems</h3>
             <Button
               type="button"
               variant="outline"
@@ -176,13 +176,13 @@ export const QuoteForm = ({
                   setItems((s) => s.filter((_, idx) => idx !== i))
                 }
                 aria-label="Quitar ítem"
-                className="flex h-9 items-center justify-center rounded-md text-text-tertiary hover:bg-surface-el hover:text-danger"
+                className="flex h-9 items-center justify-center rounded-md text-ink-faint hover:bg-surface-el hover:text-urgent"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
           ))}
-          <p className="text-xs text-text-tertiary">
+          <p className="text-xs text-ink-faint">
             descripción · cantidad · costo unit · precio unit
           </p>
         </CardContent>
@@ -191,7 +191,7 @@ export const QuoteForm = ({
       <Card>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-3">
-            <label htmlFor="quote-iva" className="text-sm font-medium text-text-muted">
+            <label htmlFor="quote-iva" className="text-sm font-medium text-ink-soft">
               IVA
             </label>
             {/* El campo se edita en PORCENTAJE (13 = 13%), que es como se
@@ -216,9 +216,9 @@ export const QuoteForm = ({
                 }}
                 className="w-24"
               />
-              <span className="text-sm text-text-muted">%</span>
+              <span className="text-sm text-ink-soft">%</span>
             </div>
-            <span className="text-xs text-text-tertiary">IVA en Costa Rica: 13%</span>
+            <span className="text-xs text-ink-faint">IVA en Costa Rica: 13%</span>
           </div>
           <dl className="space-y-1 text-sm">
             {[
@@ -229,19 +229,19 @@ export const QuoteForm = ({
               ["IVA", formatMoney(totals.ivaAmount)],
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between">
-                <dt className="text-text-muted">{k}</dt>
-                <dd className="text-text">{v}</dd>
+                <dt className="text-ink-soft">{k}</dt>
+                <dd className="text-ink">{v}</dd>
               </div>
             ))}
-            <div className="flex justify-between border-t border-border pt-1 font-semibold">
-              <dt className="text-text">Total con IVA</dt>
+            <div className="flex justify-between border-t border-rule pt-1 font-semibold">
+              <dt className="text-ink">Total con IVA</dt>
               <dd className="text-primary">
                 {formatMoney(totals.totalWithIva)}
               </dd>
             </div>
           </dl>
           <div>
-            <label htmlFor="quote-notes" className="mb-2 block text-sm font-medium text-text-muted">
+            <label htmlFor="quote-notes" className="mb-2 block text-sm font-medium text-ink-soft">
               Notas
             </label>
             <Textarea

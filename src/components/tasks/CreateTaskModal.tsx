@@ -128,7 +128,7 @@ export function CreateTaskModal({
           <div>
             <label
               htmlFor="task-priority"
-              className="mb-1 block text-xs font-medium text-text-muted"
+              className="mb-1 block text-xs font-medium text-ink-soft"
             >
               Prioridad
             </label>
@@ -149,7 +149,7 @@ export function CreateTaskModal({
           <div>
             <label
               htmlFor="task-due"
-              className="mb-1 block text-xs font-medium text-text-muted"
+              className="mb-1 block text-xs font-medium text-ink-soft"
             >
               Fecha límite
             </label>
@@ -163,7 +163,7 @@ export function CreateTaskModal({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-text-muted">
+          <label className="mb-1 block text-xs font-medium text-ink-soft">
             Asignar a {assigneeIds.length > 0 && `(${assigneeIds.length})`}
           </label>
           <AssigneePicker

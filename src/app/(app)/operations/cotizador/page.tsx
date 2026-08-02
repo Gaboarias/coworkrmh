@@ -4,9 +4,11 @@ import { getActiveWorkspaceWithPermissions } from "@/lib/workspace";
 import { listQuotes } from "@/lib/actions/erpQuotes";
 import { formatMoney } from "@/lib/utils/money";
 import { quoteTotalWithIva } from "@/lib/quotes/totals";
+import { buttonVariants } from "@/components/ui/Button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 import { OperationsNav } from "@/components/operations/OperationsNav";
+import { DensityToggle } from "@/components/operations/DensityToggle";
 import { NoEntorno } from "@/components/operations/NoEntorno";
 import { EmptyState } from "@/components/shared/EmptyState";
 
@@ -27,10 +29,7 @@ export default async function CotizadorPage() {
   const quotes = await listQuotes();
 
   const newButton = canManage ? (
-    <Link
-      href="/operations/cotizador/nuevo"
-      className="inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover"
-    >
+    <Link href="/operations/cotizador/nuevo" className={buttonVariants()}>
       <Plus className="h-3 w-3" />
       Nueva cotización
     </Link>
@@ -49,6 +48,12 @@ export default async function CotizadorPage() {
 
       <HairlineRule label="Cotizaciones" count={`${quotes.length}`} />
 
+      {quotes.length > 0 && (
+        <div className="mt-2 flex justify-end">
+          <DensityToggle />
+        </div>
+      )}
+
       {quotes.length === 0 ? (
         <EmptyState
           icon={<Calculator className="h-10 w-10" />}
@@ -56,7 +61,7 @@ export default async function CotizadorPage() {
           description="Creá la primera cotización del entorno."
         />
       ) : (
-        <ul className="h-list mt-3">
+        <ul className="h-list h-list-dense mt-3">
           {quotes.map((q, i) => {
             const total = quoteTotalWithIva(q.items, q.ivaRate);
             const s = STATUS[q.status] ?? STATUS.draft;

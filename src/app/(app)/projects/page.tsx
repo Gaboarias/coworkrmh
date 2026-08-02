@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { projects, buckets, tasks } from "@/lib/db/schema";
 import { eq, ne, and, asc, desc, sql, inArray } from "drizzle-orm";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { buttonVariants } from "@/components/ui/Button";
 import Link from "next/link";
 import { Plus, FolderKanban, Layers } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -117,10 +118,7 @@ export default async function ProjectsPage() {
   }));
 
   const newProjectButton = (
-    <Link
-      href="/projects/new"
-      className="inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover"
-    >
+    <Link href="/projects/new" className={buttonVariants()}>
       <Plus className="h-3 w-3" />
       Nuevo proyecto
     </Link>

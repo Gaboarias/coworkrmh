@@ -135,10 +135,10 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
               />
             </div>
             <div>
-              <h3 className="font-semibold text-text">
+              <h3 className="font-semibold text-ink">
                 {profile.name ?? profile.email}
               </h3>
-              <p className="text-sm text-text-muted">{profile.email}</p>
+              <p className="text-sm text-ink-soft">{profile.email}</p>
               <div className="mt-1">
                 <RoleBadge
                   role={profile.role as "admin" | "manager" | "member"}
@@ -151,7 +151,7 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
             <div>
               <label
                 htmlFor="us-name"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Nombre completo
               </label>
@@ -165,12 +165,12 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
             <div>
               <label
                 htmlFor="us-email"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Correo electrónico
               </label>
               <Input id="us-email" type="email" value={profile.email} disabled />
-              <p className="mt-1 text-xs text-text-tertiary">
+              <p className="mt-1 text-xs text-ink-faint">
                 El correo no se puede cambiar
               </p>
             </div>
@@ -184,14 +184,14 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
 
       <Card>
         <CardContent className="p-6">
-          <h3 className="mb-4 text-sm font-semibold text-text">
+          <h3 className="mb-4 text-sm font-semibold text-ink">
             Cambiar contraseña
           </h3>
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div>
               <label
                 htmlFor="us-cur-pw"
-                className="mb-2 block text-sm font-medium text-text-muted"
+                className="mb-2 block text-sm font-medium text-ink-soft"
               >
                 Contraseña actual
               </label>
@@ -208,7 +208,7 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
               <div>
                 <label
                   htmlFor="us-new-pw"
-                  className="mb-2 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-ink-soft"
                 >
                   Nueva contraseña
                 </label>
@@ -224,7 +224,7 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
               <div>
                 <label
                   htmlFor="us-conf-pw"
-                  className="mb-2 block text-sm font-medium text-text-muted"
+                  className="mb-2 block text-sm font-medium text-ink-soft"
                 >
                   Confirmar contraseña
                 </label>
@@ -238,7 +238,7 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
                 />
               </div>
             </div>
-            <p className="text-xs text-text-tertiary">
+            <p className="text-xs text-ink-faint">
               Mínimo 8 caracteres.
             </p>
             <Button type="submit" loading={pwLoading}>

@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { deleteDocument } from "@/lib/actions/documents";
 import { formatDateCR } from "@/lib/utils/datetime";
 import { formatBytes } from "@/lib/utils/format";
+import { IconButton, iconButtonVariants } from "@/components/ui/IconButton";
 import { FilePreviewModal } from "./FilePreviewModal";
 
 interface Document {
@@ -38,9 +39,9 @@ interface DocumentListProps {
 
 function FileIcon({ mimeType }: { mimeType: string }) {
   if (mimeType.startsWith("image/")) return <ImageIcon className="h-5 w-5 text-info" />;
-  if (mimeType.startsWith("video/")) return <Film className="h-5 w-5 text-warning" />;
-  if (mimeType === "application/pdf") return <FileText className="h-5 w-5 text-danger" />;
-  return <File className="h-5 w-5 text-text-tertiary" />;
+  if (mimeType.startsWith("video/")) return <Film className="h-5 w-5 text-warn" />;
+  if (mimeType === "application/pdf") return <FileText className="h-5 w-5 text-urgent" />;
+  return <File className="h-5 w-5 text-ink-faint" />;
 }
 
 export function DocumentList({
@@ -65,7 +66,7 @@ export function DocumentList({
 
   if (!documents.length) {
     return (
-      <p className="py-8 text-center text-sm text-text-muted">
+      <p className="py-8 text-center text-sm text-ink-soft">
         No hay documentos adjuntos
       </p>
     );
@@ -77,7 +78,7 @@ export function DocumentList({
       {documents.map((doc) => (
         <div
           key={doc.id}
-          className="group flex items-center gap-3 rounded-lg border border-border bg-surface p-3 transition hover:border-border-strong"
+          className="group flex items-center gap-3 rounded-lg border border-rule bg-surface p-3 transition hover:border-rule-strong"
         >
           <button
             type="button"
@@ -87,10 +88,10 @@ export function DocumentList({
           >
             <FileIcon mimeType={doc.mimeType} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-text">
+              <p className="truncate text-sm font-medium text-ink">
                 {doc.name}
               </p>
-              <p className="text-xs text-text-tertiary">
+              <p className="text-xs text-ink-faint">
                 {formatBytes(doc.sizeBytes)}
                 {doc.createdAt && ` · ${formatDateCR(doc.createdAt)}`}
               </p>
@@ -98,15 +99,13 @@ export function DocumentList({
           </button>
 
           <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-            <button
-              type="button"
+            <IconButton
               onClick={() => setPreview(doc)}
-              aria-label={`Vista previa de ${doc.name}`}
-              className="rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+              label={`Vista previa de ${doc.name}`}
               title="Vista previa"
             >
               <Eye className="h-4 w-4" />
-            </button>
+            </IconButton>
 
             <a
               href={doc.blobUrl}
@@ -114,7 +113,7 @@ export function DocumentList({
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`Descargar ${doc.name}`}
-              className="rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+              className={iconButtonVariants()}
               title="Descargar"
             >
               <Download className="h-4 w-4" />
@@ -125,7 +124,7 @@ export function DocumentList({
                 type="button"
                 onClick={() => handleDelete(doc)}
                 aria-label={`Eliminar ${doc.name}`}
-                className="rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-el hover:text-danger"
+                className="rounded-lg p-2 text-ink-soft transition-colors hover:bg-surface-el hover:text-urgent"
                 title="Eliminar"
               >
                 <Trash2 className="h-4 w-4" />

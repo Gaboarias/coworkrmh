@@ -116,19 +116,19 @@ export function FileUploadDropzone({
         className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition ${
           isDragActive
             ? "border-primary bg-primary-muted"
-            : "border-border hover:border-primary/50 hover:bg-surface-el"
+            : "border-rule hover:border-primary/50 hover:bg-surface-el"
         }`}
       >
         <input {...getInputProps()} />
         <Upload
           className={`mx-auto mb-3 h-8 w-8 ${
-            isDragActive ? "text-primary" : "text-text-tertiary"
+            isDragActive ? "text-primary" : "text-ink-faint"
           }`}
         />
-        <p className="text-sm font-medium text-text">
+        <p className="text-sm font-medium text-ink">
           {isDragActive ? "Suelta aquí" : "Arrastra archivos o haz clic"}
         </p>
-        <p className="mt-1 text-xs text-text-muted">Máximo 4 MB por archivo</p>
+        <p className="mt-1 text-xs text-ink-soft">Máximo 4 MB por archivo</p>
       </div>
 
       {uploadingFiles.length > 0 && (
@@ -136,11 +136,11 @@ export function FileUploadDropzone({
           {uploadingFiles.map((f, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-3 rounded-lg border border-border bg-surface-el px-3 py-2"
+              className="flex items-center gap-3 rounded-lg border border-rule bg-surface-el px-3 py-2"
             >
-              <File className="h-4 w-4 flex-shrink-0 text-text-tertiary" />
+              <File className="h-4 w-4 flex-shrink-0 text-ink-faint" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs text-text">{f.file.name}</p>
+                <p className="truncate text-xs text-ink">{f.file.name}</p>
                 {!f.done && !f.error && (
                   <div className="mt-1 h-1 overflow-hidden rounded-full bg-border">
                     <div
@@ -149,10 +149,10 @@ export function FileUploadDropzone({
                     />
                   </div>
                 )}
-                {f.error && <p className="text-xs text-danger">{f.error}</p>}
+                {f.error && <p className="text-xs text-urgent">{f.error}</p>}
               </div>
               {f.done && (
-                <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-success" />
+                <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-done" />
               )}
             </div>
           ))}

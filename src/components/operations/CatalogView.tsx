@@ -7,6 +7,7 @@ import { Plus, Trash2, Pencil, X, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { IconButton } from "@/components/ui/IconButton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Package } from "lucide-react";
 import { formatMoney } from "@/lib/utils/money";
@@ -157,13 +158,13 @@ export const CatalogView = ({
       {canManage && (
       <Card>
         <CardContent>
-          <h3 className="mb-3 text-sm font-semibold text-text">
+          <h3 className="mb-3 text-sm font-semibold text-ink">
             Agregar producto
           </h3>
           <form onSubmit={add} className="space-y-3">
             <Fields d={draft} set={(p) => setDraft((s) => ({ ...s, ...p }))} />
             <div className="flex items-center justify-between">
-              <p className="text-xs text-text-tertiary">
+              <p className="text-xs text-ink-faint">
                 Costo total = materiales + mano de obra · margen = ganancia /
                 precio
               </p>
@@ -185,7 +186,7 @@ export const CatalogView = ({
             description="Agregá el primer producto del catálogo."
           />
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-rule">
             {products.map((p) =>
               editId === p.id ? (
                 <div key={p.id} className="space-y-3 bg-surface-el/40 p-4">
@@ -218,44 +219,44 @@ export const CatalogView = ({
                   className="flex items-center gap-4 px-4 py-[var(--erp-row-py)] text-sm transition-colors hover:bg-surface-el"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-text">{p.name}</p>
-                    <p className="truncate text-xs text-text-muted">
+                    <p className="truncate font-medium text-ink">{p.name}</p>
+                    <p className="truncate text-xs text-ink-soft">
                       {p.category ?? "Sin categoría"} · costo{" "}
                       {formatMoney(p.totalCost)}
                     </p>
                   </div>
-                  <span className="hidden w-28 text-right text-text sm:block">
+                  <span className="hidden w-28 text-right text-ink sm:block">
                     {formatMoney(p.price)}
                   </span>
                   <span
                     className={`w-16 text-right font-medium ${
                       p.marginPct >= 0.4
-                        ? "text-success"
+                        ? "text-done"
                         : p.marginPct >= 0.15
-                          ? "text-warning"
-                          : "text-danger"
+                          ? "text-warn"
+                          : "text-urgent"
                     }`}
                   >
                     {Math.round(p.marginPct * 100)}%
                   </span>
                   {canManage && (
                     <>
-                      <button
-                        type="button"
+                      <IconButton
+                        size="lg"
+                        tone="faint"
                         onClick={() => startEdit(p)}
-                        aria-label={`Editar ${p.name}`}
-                        className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-text"
+                        label={`Editar ${p.name}`}
                       >
                         <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
+                      </IconButton>
+                      <IconButton
+                        size="lg"
+                        tone="danger"
                         onClick={() => remove(p.id)}
-                        aria-label={`Eliminar ${p.name}`}
-                        className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
+                        label={`Eliminar ${p.name}`}
                       >
                         <Trash2 className="h-4 w-4" />
-                      </button>
+                      </IconButton>
                     </>
                   )}
                 </div>

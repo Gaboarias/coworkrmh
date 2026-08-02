@@ -30,6 +30,9 @@ import { cn } from "@/lib/utils/cn";
 import { formatDateCR, formatTimeCR } from "@/lib/utils/datetime";
 import { Modal } from "@/components/ui/Modal";
 import type { TaskPriority } from "@/lib/types";
+import { IconButton } from "@/components/ui/IconButton";
+import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
+import { SegmentedNav } from "@/components/ui/SegmentedNav";
 
 // Constante de módulo — no recrear en cada render de CalendarView.
 const WEEK_DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"] as const;
@@ -91,13 +94,23 @@ interface CalendarViewProps {
 }
 
 const priorityDot: Record<TaskPriority, string> = {
-  urgent: "bg-danger",
-  high: "bg-warning",
+  urgent: "bg-urgent",
+  high: "bg-warn",
   medium: "bg-primary",
   low: "bg-text-tertiary",
 };
 
-const DEFAULT_COLOR = "#ff6b6b"; // coral (Sunset Aurora primary)
+/**
+ * Color de un proyecto que no tiene uno asignado.
+ *
+ * Era `#ff6b6b`, comentado como "coral (Sunset Aurora primary)" — de una edición
+ * anterior del sistema, y ni siquiera coincide con el `--coral` de Edition 04
+ * (#c96b35). El dashboard resolvía lo mismo con otro valor distinto (`#161412`),
+ * así que el mismo proyecto sin color se veía de dos colores según la pantalla.
+ *
+ * Ahora los dos usan la constante canónica.
+ */
+const DEFAULT_COLOR = DEFAULT_ENTORNO_COLOR;
 
 export function CalendarView({
   tasks,
@@ -155,57 +168,54 @@ export function CalendarView({
       <TasksViewSwitch />
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
             Calendario
           </h1>
-          <p className="mt-1 text-sm capitalize text-text-muted">
+          <p className="mt-1 text-sm capitalize text-ink-soft">
             {format(currentDate, "MMMM yyyy", { locale: es })}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
-            className={cn(
-              "rounded-full px-3 py-2 text-xs font-medium transition-colors duration-200 ease-out",
-              showMyTasksOnly
-                ? "bg-primary text-primary-foreground"
-                : "bg-surface-el text-text-muted hover:text-text"
-            )}
-          >
-            {showMyTasksOnly ? "Mis tareas" : "Todas las tareas"}
-          </button>
+          <SegmentedNav
+            tone="chip"
+            label="Filtrar tareas del calendario"
+            className="gap-1"
+            active={showMyTasksOnly ? "mias" : "todas"}
+            onSelect={(k) => setShowMyTasksOnly(k === "mias")}
+            items={[
+              { key: "mias", label: "Mis tareas" },
+              { key: "todas", label: "Todas" },
+            ]}
+          />
 
-          <div className="flex items-center gap-1 rounded-lg border border-border bg-surface p-1">
-            <button
-              type="button"
+          <div className="flex items-center gap-1 rounded-lg border border-rule bg-surface p-1">
+            <IconButton
+              size="sm"
               onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-              aria-label="Mes anterior"
-              className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+              label="Mes anterior"
             >
               <ChevronLeft className="h-4 w-4" />
-            </button>
+            </IconButton>
             <button
               type="button"
               onClick={() => setCurrentDate(new Date())}
-              className="px-2 text-xs font-medium text-text-muted transition-colors hover:text-text"
+              className="px-2 text-xs font-medium text-ink-soft transition-colors hover:text-ink"
             >
               Hoy
             </button>
-            <button
-              type="button"
+            <IconButton
+              size="sm"
               onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-              aria-label="Mes siguiente"
-              className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+              label="Mes siguiente"
             >
               <ChevronRight className="h-4 w-4" />
-            </button>
+            </IconButton>
           </div>
         </div>
       </div>
 
-      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-tertiary">
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-faint">
         <span className="inline-flex items-center gap-2">
           <span className="h-2 w-3 rounded-sm bg-primary/60" />
           Duración de proyecto
@@ -224,12 +234,12 @@ export function CalendarView({
         </span>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-elev-1">
-        <div className="grid grid-cols-7 border-b border-border">
+      <div className="overflow-hidden rounded-xl border border-rule bg-surface shadow-elev-1">
+        <div className="grid grid-cols-7 border-b border-rule">
           {WEEK_DAYS.map((day) => (
             <div
               key={day}
-              className="px-3 py-2 text-center text-xs font-semibold text-text-tertiary"
+              className="px-3 py-2 text-center text-xs font-semibold text-ink-faint"
             >
               {day}
             </div>
@@ -258,11 +268,14 @@ export function CalendarView({
               <div
                 key={idx}
                 className={cn(
-                  "group/cell relative min-h-[128px] border-b border-r border-border p-2 last:border-r-0",
+                  "group/cell relative min-h-[128px] border-b border-r border-rule p-2 last:border-r-0",
                   !isCurrentMonth && "bg-surface-el/40",
                   idx % 7 === 6 && "border-r-0"
                 )}
               >
+                {/* conformidad-botones: el `bg-primary` acá no es un CTA, es el
+                    marcador de HOY en la grilla del mes. El número del día es el
+                    contenido, no una acción — no puede vestirse de botón. */}
                 <button
                   type="button"
                   onClick={() => hasContent && setSelectedDay(day)}
@@ -273,8 +286,8 @@ export function CalendarView({
                     isCurrentDay
                       ? "bg-primary text-primary-foreground"
                       : isCurrentMonth
-                        ? "text-text"
-                        : "text-text-tertiary",
+                        ? "text-ink"
+                        : "text-ink-faint",
                     hasContent
                       ? "cursor-pointer hover:bg-accent-soft"
                       : "cursor-default"
@@ -296,7 +309,7 @@ export function CalendarView({
                           href={`/projects/${p.id}`}
                           title={`${p.name} · ${formatDateCR(p.startDate)} – ${formatDateCR(p.endDate)}`}
                           className={cn(
-                            "block h-4 truncate px-1 text-[12px] font-medium leading-4 text-text/90 transition-opacity hover:opacity-80",
+                            "block h-4 truncate px-1 text-[12px] font-medium leading-4 text-ink/90 transition-opacity hover:opacity-80",
                             isStart ? "rounded-l-sm" : "",
                             isEnd ? "rounded-r-sm" : "",
                             !isStart && !isEnd && "rounded-none"
@@ -313,13 +326,9 @@ export function CalendarView({
                       );
                     })}
                     {dayProjects.length > 2 && (
-                      <button
-                        type="button"
-                        onClick={() => setSelectedDay(day)}
-                        className="block w-full rounded px-1 text-left text-[12px] font-medium text-primary transition-colors hover:bg-accent-soft hover:text-text"
-                      >
+                      <DayOverflowButton onClick={() => setSelectedDay(day)}>
                         +{dayProjects.length - 2} proyectos →
-                      </button>
+                      </DayOverflowButton>
                     )}
                   </div>
                 )}
@@ -330,7 +339,7 @@ export function CalendarView({
                       key={task.id}
                       href={`/projects/${task.projectId}`}
                       title={task.title}
-                      className="flex items-center gap-1 rounded px-1 py-1 text-xs transition-colors hover:bg-surface-el"
+                      className={dayChip}
                     >
                       <span
                         className={cn(
@@ -342,8 +351,8 @@ export function CalendarView({
                         className={cn(
                           "truncate",
                           task.status === "done"
-                            ? "text-text-tertiary line-through"
-                            : "text-text-muted"
+                            ? "text-ink-faint line-through"
+                            : "text-ink-soft"
                         )}
                       >
                         {task.title}
@@ -351,13 +360,9 @@ export function CalendarView({
                     </Link>
                   ))}
                   {dayTasks.length > 2 && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedDay(day)}
-                      className="block w-full rounded px-1 py-1 text-left text-xs font-medium text-primary transition-colors hover:bg-accent-soft hover:text-text"
-                    >
+                    <DayOverflowButton onClick={() => setSelectedDay(day)}>
                       +{dayTasks.length - 2} más →
-                    </button>
+                    </DayOverflowButton>
                   )}
                 </div>
 
@@ -370,7 +375,7 @@ export function CalendarView({
                         target={m.url ? "_blank" : undefined}
                         rel="noopener noreferrer"
                         title={`${m.title}${m.allDay ? "" : ` · ${formatTimeCR(m.start)}`}`}
-                        className="flex items-center gap-1 rounded px-1 py-1 text-xs transition-colors hover:bg-surface-el"
+                        className={dayChip}
                         style={{
                           backgroundColor:
                             "color-mix(in oklab, var(--info) 12%, transparent)",
@@ -380,19 +385,15 @@ export function CalendarView({
                           className="h-2.5 w-2.5 flex-shrink-0"
                           style={{ color: "var(--info)" }}
                         />
-                        <span className="truncate text-text-muted">
+                        <span className="truncate text-ink-soft">
                           {m.title}
                         </span>
                       </a>
                     ))}
                     {dayMeetings.length > 2 && (
-                      <button
-                        type="button"
-                        onClick={() => setSelectedDay(day)}
-                        className="block w-full rounded px-1 py-1 text-left text-xs font-medium text-primary transition-colors hover:bg-accent-soft hover:text-text"
-                      >
+                      <DayOverflowButton onClick={() => setSelectedDay(day)}>
                         +{dayMeetings.length - 2} reuniones →
-                      </button>
+                      </DayOverflowButton>
                     )}
                   </div>
                 )}
@@ -404,7 +405,7 @@ export function CalendarView({
                         key={n.id}
                         href={`/projects/${n.projectId}/notes`}
                         title={`Nota: ${n.title}`}
-                        className="inline-flex max-w-full items-center gap-1 rounded bg-surface-el px-1 py-1 text-[12px] text-text-muted transition-colors hover:text-text"
+                        className="inline-flex max-w-full items-center gap-1 rounded bg-surface-el px-1 py-1 text-[12px] text-ink-soft transition-colors hover:text-ink"
                       >
                         <FileText className="h-2.5 w-2.5 flex-shrink-0" />
                         <span className="truncate">{n.title}</span>
@@ -418,7 +419,7 @@ export function CalendarView({
                             : "#"
                         }
                         title={`${dayChanges.length} cambio(s)`}
-                        className="inline-flex items-center gap-1 rounded bg-surface-el px-1 py-1 text-[12px] text-text-muted transition-colors hover:text-text"
+                        className="inline-flex items-center gap-1 rounded bg-surface-el px-1 py-1 text-[12px] text-ink-soft transition-colors hover:text-ink"
                       >
                         <History className="h-2.5 w-2.5" />
                         {dayChanges.length}
@@ -448,6 +449,62 @@ export function CalendarView({
 // ── Day-detail modal ───────────────────────────────────────────────
 // Se abre al click en el número del día o en "+N más" cuando hay más
 // items de los que caben en la celda.
+
+/**
+ * Recetas compartidas del calendario.
+ *
+ * Cada una estaba escrita a mano en varios lugares con variaciones triviales:
+ * el `<h3>` de sección aparecía idéntico cinco veces, y la fila del modal cinco
+ * veces con cinco alineaciones distintas. No son primitivos de la app —solo
+ * tienen sentido dentro de esta pantalla—, así que viven acá y no en `ui/`.
+ */
+
+/** Fila clickeable del modal de día. La alineación la pone cada caller. */
+const detailRow =
+  "rounded px-2 py-2 text-sm transition-colors hover:bg-surface-el";
+
+/** Chip de evento dentro de una celda del mes (tarea o reunión). */
+const dayChip =
+  "flex items-center gap-1 rounded px-1 py-1 text-xs transition-colors hover:bg-surface-el";
+
+/** Encabezado de una sección del modal de día. */
+function DetailSection({
+  label,
+  count,
+  children,
+}: {
+  label: string;
+  count: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
+        {label} ({count})
+      </h3>
+      {children}
+    </section>
+  );
+}
+
+/** "+N más →" al pie de una celda cuando hay más elementos de los que entran. */
+function DayOverflowButton({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="block w-full rounded px-1 py-1 text-left text-xs font-medium text-primary transition-colors hover:bg-accent-soft hover:text-ink"
+    >
+      {children}
+    </button>
+  );
+}
 
 function DayDetailModal({
   day,
@@ -483,10 +540,7 @@ function DayDetailModal({
     >
       <div className="space-y-5">
         {meetings.length > 0 && (
-          <section>
-            <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
-              Reuniones ({meetings.length})
-            </h3>
+          <DetailSection label="Reuniones" count={meetings.length}>
             <ul className="space-y-1">
               {meetings.map((m) => {
                 const inner = (
@@ -495,10 +549,10 @@ function DayDetailModal({
                       className="h-3.5 w-3.5 flex-shrink-0"
                       style={{ color: "var(--info)" }}
                     />
-                    <span className="min-w-0 flex-1 truncate font-medium text-text">
+                    <span className="min-w-0 flex-1 truncate font-medium text-ink">
                       {m.title}
                     </span>
-                    <span className="text-xs text-text-tertiary">
+                    <span className="text-xs text-ink-faint">
                       {m.allDay ? "Todo el día" : formatTimeCR(m.start)}
                     </span>
                   </span>
@@ -510,7 +564,7 @@ function DayDetailModal({
                         href={m.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block rounded px-2 py-2 text-sm transition-colors hover:bg-surface-el"
+                        className={cn(detailRow, "block")}
                       >
                         {inner}
                       </a>
@@ -521,14 +575,11 @@ function DayDetailModal({
                 );
               })}
             </ul>
-          </section>
+          </DetailSection>
         )}
 
         {projects.length > 0 && (
-          <section>
-            <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
-              Proyectos activos ({projects.length})
-            </h3>
+          <DetailSection label="Proyectos activos" count={projects.length}>
             <ul className="space-y-2">
               {projects.map((p) => {
                 const color = p.color ?? DEFAULT_COLOR;
@@ -537,14 +588,14 @@ function DayDetailModal({
                     <Link
                       href={`/projects/${p.id}`}
                       onClick={onClose}
-                      className="flex items-center gap-2 rounded px-2 py-2 text-sm text-text transition-colors hover:bg-surface-el"
+                      className={cn(detailRow, "flex items-center gap-2 text-ink")}
                     >
                       <span
                         className="h-2 w-2 flex-shrink-0 rounded-full"
                         style={{ backgroundColor: color }}
                       />
                       <span className="truncate font-medium">{p.name}</span>
-                      <span className="ml-auto text-xs text-text-tertiary">
+                      <span className="ml-auto text-xs text-ink-faint">
                         {formatDateCR(p.startDate)} – {formatDateCR(p.endDate)}
                       </span>
                     </Link>
@@ -552,21 +603,18 @@ function DayDetailModal({
                 );
               })}
             </ul>
-          </section>
+          </DetailSection>
         )}
 
         {tasks.length > 0 && (
-          <section>
-            <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
-              Tareas ({tasks.length})
-            </h3>
+          <DetailSection label="Tareas" count={tasks.length}>
             <ul className="space-y-1">
               {tasks.map((t) => (
                 <li key={t.id}>
                   <Link
                     href={`/projects/${t.projectId}`}
                     onClick={onClose}
-                    className="flex items-center gap-2 rounded px-2 py-2 text-sm transition-colors hover:bg-surface-el"
+                    className={cn(detailRow, "flex items-center gap-2")}
                   >
                     <span
                       className={cn(
@@ -578,14 +626,14 @@ function DayDetailModal({
                       className={cn(
                         "min-w-0 flex-1 truncate font-medium",
                         t.status === "done"
-                          ? "text-text-tertiary line-through"
-                          : "text-text"
+                          ? "text-ink-faint line-through"
+                          : "text-ink"
                       )}
                     >
                       {t.title}
                     </span>
                     {t.project?.name && (
-                      <span className="flex items-center gap-1 text-xs text-text-tertiary">
+                      <span className="flex items-center gap-1 text-xs text-ink-faint">
                         <span
                           className="h-1.5 w-1.5 rounded-full"
                           style={{
@@ -602,26 +650,23 @@ function DayDetailModal({
                 </li>
               ))}
             </ul>
-          </section>
+          </DetailSection>
         )}
 
         {notes.length > 0 && (
-          <section>
-            <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
-              Notas ({notes.length})
-            </h3>
+          <DetailSection label="Notas" count={notes.length}>
             <ul className="space-y-1">
               {notes.map((n) => (
                 <li key={n.id}>
                   <Link
                     href={`/projects/${n.projectId}/notes`}
                     onClick={onClose}
-                    className="flex items-center gap-2 rounded px-2 py-2 text-sm text-text transition-colors hover:bg-surface-el"
+                    className={cn(detailRow, "flex items-center gap-2 text-ink")}
                   >
-                    <FileText className="h-3.5 w-3.5 flex-shrink-0 text-text-tertiary" />
+                    <FileText className="h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
                     <span className="min-w-0 flex-1 truncate">{n.title}</span>
                     {n.projectName && (
-                      <span className="text-xs text-text-tertiary">
+                      <span className="text-xs text-ink-faint">
                         {n.projectName}
                       </span>
                     )}
@@ -629,14 +674,11 @@ function DayDetailModal({
                 </li>
               ))}
             </ul>
-          </section>
+          </DetailSection>
         )}
 
         {changes.length > 0 && (
-          <section>
-            <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
-              Cambios ({changes.length})
-            </h3>
+          <DetailSection label="Cambios" count={changes.length}>
             <ul className="space-y-1">
               {changes.map((c) => (
                 <li key={c.id}>
@@ -647,14 +689,14 @@ function DayDetailModal({
                         : "#"
                     }
                     onClick={onClose}
-                    className="flex items-start gap-2 rounded px-2 py-2 text-sm transition-colors hover:bg-surface-el"
+                    className={cn(detailRow, "flex items-start gap-2")}
                   >
-                    <History className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-text-tertiary" />
-                    <span className="min-w-0 flex-1 text-text">
+                    <History className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
+                    <span className="min-w-0 flex-1 text-ink">
                       {c.description}
                     </span>
                     {c.projectName && (
-                      <span className="text-xs text-text-tertiary">
+                      <span className="text-xs text-ink-faint">
                         {c.projectName}
                       </span>
                     )}
@@ -662,7 +704,7 @@ function DayDetailModal({
                 </li>
               ))}
             </ul>
-          </section>
+          </DetailSection>
         )}
 
         {tasks.length === 0 &&
@@ -670,7 +712,7 @@ function DayDetailModal({
           notes.length === 0 &&
           changes.length === 0 &&
           meetings.length === 0 && (
-            <p className="py-6 text-center text-sm text-text-muted">
+            <p className="py-6 text-center text-sm text-ink-soft">
               Sin actividad este día.
             </p>
           )}

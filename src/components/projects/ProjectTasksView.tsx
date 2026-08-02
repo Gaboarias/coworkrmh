@@ -11,8 +11,9 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { SegmentedNav } from "@/components/ui/SegmentedNav";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
-import { cn } from "@/lib/utils/cn";
 import type { TaskStatus, TaskPriority } from "@/lib/types";
 
 interface Project {
@@ -102,14 +103,10 @@ export function ProjectTasksView({
   const boardTasks = tasks.filter(matchesSearch);
 
   const newButton = canEdit ? (
-    <button
-      type="button"
-      onClick={() => setShowCreateModal(true)}
-      className="inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover"
-    >
+    <Button onClick={() => setShowCreateModal(true)}>
       <Plus className="h-3 w-3" />
       Nueva tarea
-    </button>
+    </Button>
   ) : null;
 
   // Split nombre del proyecto en title + subtitle si tiene " — " o " - "
@@ -134,29 +131,16 @@ export function ProjectTasksView({
       <ProjectTabs projectId={project.id} />
 
       {/* Switch de vista Lista | Tablero */}
-      <div className="mb-4 flex items-center gap-2">
-        {(
-          [
-            ["lista", "Lista", List],
-            ["tablero", "Tablero", LayoutGrid],
-          ] as const
-        ).map(([k, label, Icon]) => (
-          <button
-            key={k}
-            type="button"
-            onClick={() => setView(k)}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-full px-3 py-2 text-[13px] font-medium transition-colors",
-              view === k
-                ? "bg-accent-soft text-ink"
-                : "text-ink-soft hover:bg-accent-soft hover:text-ink"
-            )}
-          >
-            <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
-            {label}
-          </button>
-        ))}
-      </div>
+      <SegmentedNav
+        label="Vista de tareas del proyecto"
+        className="mb-4"
+        active={view}
+        onSelect={(k) => setView(k as typeof view)}
+        items={[
+          { key: "lista", label: "Lista", icon: List },
+          { key: "tablero", label: "Tablero", icon: LayoutGrid },
+        ]}
+      />
 
       {/* Filtros */}
       <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -170,25 +154,19 @@ export function ProjectTasksView({
         />
         {view === "lista" && (
           <>
-            <div className="flex items-center gap-1">
-              {(
+            <SegmentedNav
+              tone="chip"
+              label="Filtrar tareas por estado"
+              className="gap-1"
+              active={statusFilter}
+              onSelect={(s) => setStatusFilter(s as StatusFilter)}
+              items={(
                 ["all", "todo", "in_progress", "review", "done"] as StatusFilter[]
-              ).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setStatusFilter(s)}
-                  className={cn(
-                    "rounded-md px-2.5 py-1 font-mono text-[12px] uppercase tracking-[0.14em] transition-colors duration-150",
-                    statusFilter === s
-                      ? "bg-ink text-bg"
-                      : "text-ink-soft hover:bg-accent-soft hover:text-ink"
-                  )}
-                >
-                  {s === "all" ? "todas" : s.replace("_", " ")}
-                </button>
-              ))}
-            </div>
+              ).map((s) => ({
+                key: s,
+                label: s === "all" ? "todas" : s.replace("_", " "),
+              }))}
+            />
             <span className="ml-auto font-mono text-[12px] uppercase tracking-[0.14em] text-ink-faint">
               {filtered.length} de {tasks.length}
             </span>

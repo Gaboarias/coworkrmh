@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { List, LayoutGrid } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
+import { SegmentedNav } from "@/components/ui/SegmentedNav";
 import {
   ProjectsExplorer,
   type ProjectSpecimen,
@@ -28,29 +28,16 @@ export function ProjectsView({
 
   return (
     <div>
-      <div className="mb-2 flex items-center gap-2">
-        {(
-          [
-            ["lista", "Lista", List],
-            ["tablero", "Tablero", LayoutGrid],
-          ] as const
-        ).map(([k, label, Icon]) => (
-          <button
-            key={k}
-            type="button"
-            onClick={() => setView(k)}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-full px-3 py-2 text-[13px] font-medium transition-colors",
-              view === k
-                ? "bg-accent-soft text-ink"
-                : "text-ink-soft hover:bg-accent-soft hover:text-ink"
-            )}
-          >
-            <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
-            {label}
-          </button>
-        ))}
-      </div>
+      <SegmentedNav
+        label="Vista de proyectos"
+        className="mb-2"
+        active={view}
+        onSelect={(k) => setView(k as typeof view)}
+        items={[
+          { key: "lista", label: "Lista", icon: List },
+          { key: "tablero", label: "Tablero", icon: LayoutGrid },
+        ]}
+      />
 
       {view === "lista" ? (
         <ProjectsExplorer specimens={specimens} buckets={buckets} />

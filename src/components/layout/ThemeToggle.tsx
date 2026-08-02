@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { IconButton } from "@/components/ui/IconButton";
 
 /**
  * Toggle light ↔ dark. Sin system option (decisión de Edition 04 —
@@ -19,27 +20,21 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button
-        type="button"
-        aria-label="Toggle theme"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-soft"
-      >
+      <IconButton label="Cambiar tema">
         <Sun className="h-4 w-4" />
-      </button>
+      </IconButton>
     );
   }
 
   const isDark = theme === "dark";
 
   return (
-    <button
-      type="button"
+    <IconButton
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label={isDark ? "Activar light theme" : "Activar dark theme"}
+      label={isDark ? "Activar light theme" : "Activar dark theme"}
       title={isDark ? "Light" : "Dark"}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-soft transition-colors hover:bg-accent-soft hover:text-ink"
     >
       {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-    </button>
+    </IconButton>
   );
 }

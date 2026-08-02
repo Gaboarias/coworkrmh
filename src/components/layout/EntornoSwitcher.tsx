@@ -104,7 +104,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
         <div>
           <label
             htmlFor="ws-new-name"
-            className="mb-2 block text-sm font-medium text-text-muted"
+            className="mb-2 block text-sm font-medium text-ink-soft"
           >
             Nombre
           </label>
@@ -117,7 +117,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
           />
         </div>
         <div>
-          <span className="mb-2 block text-sm font-medium text-text-muted">
+          <span className="mb-2 block text-sm font-medium text-ink-soft">
             Color
           </span>
           <SwatchPicker
@@ -207,11 +207,11 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 right-0 z-50 mt-1 origin-top animate-slide-up overflow-hidden rounded-lg border border-border bg-surface shadow-elev-3"
+          className="absolute left-0 right-0 z-50 mt-1 origin-top animate-slide-up overflow-hidden rounded-lg border border-rule bg-surface shadow-elev-3"
         >
           <ul ref={listRef} className="max-h-72 overflow-y-auto py-1">
             {data.workspaces.length === 0 && (
-              <li className="px-3 py-2 text-xs text-text-muted">
+              <li className="px-3 py-2 text-xs text-ink-soft">
                 No hay entornos todavía.
               </li>
             )}
@@ -223,7 +223,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
                     href={`/api/ws/switch?to=${w.id}&next=${next}`}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-surface-el",
-                      isActive ? "text-primary" : "text-text"
+                      isActive ? "text-primary" : "text-ink"
                     )}
                   >
                     <span
@@ -245,7 +245,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
               setOpen(false);
               setCreating(true);
             }}
-            className="flex w-full items-center gap-3 border-t border-border px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+            className="flex w-full items-center gap-3 border-t border-rule px-3 py-2 text-sm text-ink-soft transition-colors hover:bg-surface-el hover:text-ink"
           >
             <Plus className="h-4 w-4 flex-shrink-0" />
             Crear entorno
@@ -253,7 +253,7 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
           {data.isAdmin && (
             <a
               href="/admin"
-              className="flex items-center gap-3 border-t border-border px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface-el hover:text-text"
+              className="flex items-center gap-3 border-t border-rule px-3 py-2 text-sm text-ink-soft transition-colors hover:bg-surface-el hover:text-ink"
             >
               <Shield className="h-4 w-4 flex-shrink-0" />
               Administración

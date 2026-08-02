@@ -50,6 +50,9 @@ export function AvatarDropdown() {
 
   return (
     <div ref={ref} className="relative">
+      {/* conformidad-botones: el disparador es el avatar mismo, redondo y con
+          imagen de fondo. IconButton pinta fondo y color de texto en hover, que
+          acá quedarían tapados por la foto o asomando en las esquinas. */}
       <button
         ref={btnRef}
         type="button"
@@ -70,14 +73,14 @@ export function AvatarDropdown() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-1 w-56 animate-slide-up overflow-hidden rounded-lg border border-border bg-surface-el shadow-elev-3"
+          className="absolute right-0 top-full z-50 mt-1 w-56 animate-slide-up overflow-hidden rounded-lg border border-rule bg-surface-el shadow-elev-3"
         >
           {/* Header: identidad */}
-          <div className="border-b border-border px-3 py-3">
-            <p className="truncate text-sm font-medium text-text">
+          <div className="border-b border-rule px-3 py-3">
+            <p className="truncate text-sm font-medium text-ink">
               {profile?.name ?? "Usuario"}
             </p>
-            <p className="truncate text-xs text-text-tertiary">
+            <p className="truncate text-xs text-ink-faint">
               {profile?.email}
             </p>
           </div>
@@ -87,7 +90,7 @@ export function AvatarDropdown() {
             <Link
               href="/settings"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface hover:text-text"
+              className="flex items-center gap-3 px-3 py-2 text-sm text-ink-soft transition-colors hover:bg-surface hover:text-ink"
             >
               <Settings className="h-4 w-4 flex-shrink-0" />
               Configuración
@@ -95,7 +98,7 @@ export function AvatarDropdown() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface hover:text-danger"
+              className="flex w-full items-center gap-3 px-3 py-2 text-sm text-ink-soft transition-colors hover:bg-surface hover:text-urgent"
             >
               <LogOut className="h-4 w-4 flex-shrink-0" />
               Cerrar sesión

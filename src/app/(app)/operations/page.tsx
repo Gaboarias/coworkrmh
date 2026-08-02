@@ -12,6 +12,8 @@ import { listSales } from "@/lib/actions/erpSales";
 import { listExpenses } from "@/lib/actions/erpExpenses";
 import { listQuotes } from "@/lib/actions/erpQuotes";
 import { formatMoney } from "@/lib/utils/money";
+import { buttonVariants } from "@/components/ui/Button";
+import { StatStrip } from "@/components/ui/StatStrip";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 import { OperationsNav } from "@/components/operations/OperationsNav";
@@ -142,7 +144,7 @@ export default async function OperationsDashboard() {
           </div>
           <Link
             href="/operations/catalogo"
-            className="inline-flex flex-shrink-0 items-center gap-2 rounded-md bg-primary px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.16em] text-primary-foreground transition-colors hover:bg-primary-hover"
+            className={buttonVariants({ className: "flex-shrink-0" })}
           >
             Ir al catálogo →
           </Link>
@@ -152,23 +154,11 @@ export default async function OperationsDashboard() {
            mensual con tendencias y gráficos vive en /reports — fuente única. */
         <section>
           <HairlineRule label="Resumen del estudio" />
-          <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-            {kpis.map((k) => (
-              <div key={k.label} className="flex flex-col gap-2">
-                <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-ink-faint">
-                  {k.label}
-                </dt>
-                <dd className="text-[34px] font-bold tabular-nums leading-none tracking-[-0.035em] text-ink">
-                  {k.value}
-                </dd>
-                {k.sub && (
-                  <span className="text-[13px] italic text-ink-soft">
-                    {k.sub}
-                  </span>
-                )}
-              </div>
-            ))}
-          </dl>
+          <StatStrip
+            items={kpis}
+            label="Resumen del estudio"
+            className="mt-6 lg:grid-cols-6"
+          />
           <Link
             href="/reports"
             className="mt-6 inline-block font-mono text-[12px] uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-ink"

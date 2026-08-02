@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
+import { SegmentedNav } from "@/components/ui/SegmentedNav";
 import { updateProject } from "@/lib/actions/projects";
 import type { ProjectStatus } from "@/lib/types";
 import type { ProjectSpecimen, BucketTab } from "./ProjectsExplorer";
@@ -105,28 +106,15 @@ export function ProjectBoard({
   return (
     <div className="mt-2 space-y-6">
       {/* Toggle de agrupación */}
-      <div className="flex items-center gap-2">
-        {(
-          [
-            ["bucket", "Por categoría"],
-            ["status", "Por estado"],
-          ] as const
-        ).map(([k, label]) => (
-          <button
-            key={k}
-            type="button"
-            onClick={() => setGroupBy(k)}
-            className={cn(
-              "rounded-full px-3 py-2 text-[13px] font-medium transition-colors",
-              groupBy === k
-                ? "bg-accent-soft text-ink"
-                : "text-ink-soft hover:bg-accent-soft hover:text-ink"
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <SegmentedNav
+        label="Agrupar proyectos por"
+        active={groupBy}
+        onSelect={(k) => setGroupBy(k as typeof groupBy)}
+        items={[
+          { key: "bucket", label: "Por categoría" },
+          { key: "status", label: "Por estado" },
+        ]}
+      />
 
       <div className="flex gap-4 overflow-x-auto pb-4">
         {columns.map((col) => {

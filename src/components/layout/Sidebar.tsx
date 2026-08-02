@@ -21,6 +21,7 @@ import { useUser } from "@/lib/hooks/useUser";
 import { EntornoSwitcher, type WsData } from "@/components/layout/EntornoSwitcher";
 import { useSidebarState } from "./SidebarStateContext";
 import { hasFeature, type Feature, type Tier } from "@/lib/entitlements";
+import { IconButton } from "@/components/ui/IconButton";
 
 /**
  * Sidebar (Edition 04).
@@ -95,6 +96,20 @@ const sections: NavSection[] = [
     ],
   },
 ];
+
+/**
+ * Receta compartida por los items de navegación y por el enlace de
+ * configuración del pie: eran la misma cadena escrita dos veces, y ya habían
+ * divergido en el orden de clases del estado colapsado.
+ */
+const navItemClass = (collapsed: boolean, active: boolean) =>
+  cn(
+    "flex items-center rounded-md transition-colors duration-150 ease-out",
+    collapsed ? "h-8 w-8 justify-center mx-auto" : "gap-3 px-2 py-2",
+    active
+      ? "bg-accent-soft text-ink"
+      : "text-ink-soft hover:bg-accent-soft hover:text-ink"
+  );
 
 export function Sidebar({ wsData }: { wsData: WsData }) {
   const pathname = usePathname();
@@ -184,28 +199,29 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
           </div>
         )}
         {!collapsed && (
-          <button
-            type="button"
+          <IconButton
+            size="sm"
+            tone="faint"
             onClick={toggle}
-            aria-label="Colapsar sidebar"
+            label="Colapsar sidebar"
             title="Colapsar"
-            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
           >
             <PanelLeftClose className="h-3.5 w-3.5" />
-          </button>
+          </IconButton>
         )}
       </div>
 
       {collapsed && (
-        <button
-          type="button"
+        <IconButton
+          size="sm"
+          tone="faint"
           onClick={toggle}
-          aria-label="Expandir sidebar"
+          label="Expandir sidebar"
           title="Expandir"
-          className="mx-auto mt-2 flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-accent-soft hover:text-ink"
+          className="mx-auto mt-2"
         >
           <PanelLeftOpen className="h-3.5 w-3.5" />
-        </button>
+        </IconButton>
       )}
 
       {/* Entorno (collapsed lo oculta) */}
@@ -242,13 +258,8 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
                         }}
                         title={collapsed ? item.label : undefined}
                         className={cn(
-                          "group relative flex items-center rounded-md transition-colors duration-150 ease-out",
-                          collapsed
-                            ? "h-8 w-8 justify-center mx-auto"
-                            : "gap-3 px-2 py-2",
-                          active
-                            ? "bg-accent-soft text-ink"
-                            : "text-ink-soft hover:bg-accent-soft hover:text-ink",
+                          "group relative",
+                          navItemClass(collapsed, active),
                           isPlaceholder && "opacity-50 cursor-not-allowed"
                         )}
                       >
@@ -303,15 +314,7 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
         <Link
           href="/settings"
           title={collapsed ? "Configuración" : undefined}
-          className={cn(
-            "flex items-center rounded-md transition-colors duration-150 ease-out",
-            collapsed
-              ? "h-8 w-8 mx-auto justify-center"
-              : "gap-3 px-2 py-2",
-            isActive("/settings", true)
-              ? "bg-accent-soft text-ink"
-              : "text-ink-soft hover:bg-accent-soft hover:text-ink"
-          )}
+          className={navItemClass(collapsed, isActive("/settings", true))}
         >
           <Settings className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.75} />
           {!collapsed && (

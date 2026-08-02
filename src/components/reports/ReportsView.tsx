@@ -15,6 +15,7 @@ import {
 import type { WorkspaceReport } from "@/lib/actions/reports";
 import { formatMoney } from "@/lib/utils/money";
 import { HairlineRule } from "@/components/shared/HairlineRule";
+import { ENTORNO_SWATCHES } from "@/lib/constants/entornoColors";
 
 interface Props {
   report: WorkspaceReport;
@@ -34,16 +35,11 @@ const STATUS_COLORS: Record<string, string> = {
   done: "var(--done)",
 };
 
-// Paleta de proyectos cuando no tienen color asignado o queremos
-// distinguir series en pie charts.
-const PIE_COLORS = [
-  "#d63a1f",
-  "#1f7a4d",
-  "#e89a0d",
-  "#2e52d9",
-  "#7a3aa0",
-  "#3a8a8a",
-];
+// Paleta para distinguir series en los pie charts. Es la paleta canónica del
+// proyecto, no una lista propia: antes estaban los mismos seis valores escritos
+// a mano acá, que es exactamente la deriva que la constitución v1.0.1 prohíbe
+// ("una paleta de datos DEBE importarse de src/lib/constants/").
+const PIE_COLORS = ENTORNO_SWATCHES;
 
 /**
  * ReportsView (Edition 04).

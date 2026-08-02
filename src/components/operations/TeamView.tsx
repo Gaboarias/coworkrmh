@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
+import { IconButton } from "@/components/ui/IconButton";
+import { DensityToggle } from "./DensityToggle";
 import {
   createTeamMember,
   updateTeamMember,
@@ -154,7 +156,7 @@ export const TeamView = ({
       {canManage && (
         <Card>
           <CardContent>
-            <h3 className="mb-3 text-sm font-semibold text-text">
+            <h3 className="mb-3 text-sm font-semibold text-ink">
               Agregar miembro
             </h3>
             <form onSubmit={add} className="space-y-3">
@@ -171,11 +173,16 @@ export const TeamView = ({
         </Card>
       )}
 
+      {members.length > 0 && (
+        <div className="flex justify-end">
+          <DensityToggle />
+        </div>
+      )}
       <Card>
         {members.length === 0 ? (
-          <p className="p-5 text-sm text-text-muted">Sin miembros todavía.</p>
+          <p className="p-5 text-sm text-ink-soft">Sin miembros todavía.</p>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-rule">
             {members.map((m) =>
               editId === m.id ? (
                 <div key={m.id} className="space-y-3 bg-surface-el/40 p-4">
@@ -203,10 +210,10 @@ export const TeamView = ({
                   </div>
                 </div>
               ) : (
-                <div key={m.id} className="flex items-start gap-4 p-4 transition-colors hover:bg-surface-el">
+                <div key={m.id} className="flex items-start gap-4 px-4 py-[var(--erp-row-py)] transition-colors hover:bg-surface-el">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="truncate text-sm font-medium text-text">
+                      <p className="truncate text-sm font-medium text-ink">
                         {m.name}
                       </p>
                       <Badge
@@ -217,24 +224,23 @@ export const TeamView = ({
                         {m.status === "active" ? "Activo" : "Inactivo"}
                       </Badge>
                     </div>
-                    <p className="text-xs text-text-muted">
+                    <p className="text-xs text-ink-soft">
                       {m.role ?? "Sin rol"}
                     </p>
                     {m.responsibilities && (
-                      <p className="mt-1 text-sm text-text-muted">
+                      <p className="mt-1 text-sm text-ink-soft">
                         {m.responsibilities}
                       </p>
                     )}
                     {m.compensation && (
-                      <p className="mt-1 text-xs text-text-tertiary">
+                      <p className="mt-1 text-xs text-ink-faint">
                         Compensación: {m.compensation}
                       </p>
                     )}
                   </div>
                   {canManage && (
                     <>
-                      <button
-                        type="button"
+                      <IconButton
                         onClick={() => {
                           setEditId(m.id);
                           setEditDraft({
@@ -245,19 +251,20 @@ export const TeamView = ({
                             status: m.status,
                           });
                         }}
-                        aria-label={`Editar ${m.name}`}
-                        className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-text"
+                        label={`Editar ${m.name}`}
+                        size="lg"
+                        tone="faint"
                       >
                         <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
+                      </IconButton>
+                      <IconButton
+                        size="lg"
+                        tone="danger"
                         onClick={() => remove(m.id)}
-                        aria-label={`Eliminar ${m.name}`}
-                        className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
+                        label={`Eliminar ${m.name}`}
                       >
                         <Trash2 className="h-4 w-4" />
-                      </button>
+                      </IconButton>
                     </>
                   )}
                 </div>
@@ -269,7 +276,7 @@ export const TeamView = ({
 
       <Card>
         <CardContent>
-          <h3 className="mb-2 text-sm font-semibold text-text">
+          <h3 className="mb-2 text-sm font-semibold text-ink">
             Acuerdos clave del equipo
           </h3>
           <Textarea

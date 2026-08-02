@@ -14,6 +14,7 @@ import {
 } from "@/lib/actions/notifications";
 import { cn } from "@/lib/utils/cn";
 import { formatDateCR } from "@/lib/utils/datetime";
+import { IconButton } from "@/components/ui/IconButton";
 
 /**
  * Bell + drawer slide-in (Sunset Aurora · N4).
@@ -26,6 +27,15 @@ import { formatDateCR } from "@/lib/utils/datetime";
  */
 
 const POLL_INTERVAL_MS = 120_000;
+
+/**
+ * Acción secundaria del drawer ("Marcar todas", "Ver todas").
+ * Una se escribe como `<button>` y la otra como `<Link>`, así que comparten la
+ * receta de clases pero no el elemento — por eso una constante y no un
+ * componente que tendría que recibir un flag para decidir qué renderizar.
+ */
+const drawerAction =
+  "inline-flex items-center gap-1 text-xs text-ink-soft transition-colors hover:text-ink";
 
 function timeAgo(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
@@ -150,12 +160,13 @@ export function NotificationsBell() {
 
   return (
     <div ref={ref} className="relative">
-      <button
+      <IconButton
         ref={btnRef}
-        type="button"
-        aria-label={`Notificaciones${unread > 0 ? ` (${unread} sin leer)` : ""}`}
+        size="lg"
+        tone="faint"
+        label={`Notificaciones${unread > 0 ? ` (${unread} sin leer)` : ""}`}
         onClick={() => setOpen((o) => !o)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-lg text-text-tertiary transition-colors hover:bg-surface-el hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--coral)_35%,transparent)]"
+        className="relative"
       >
         <Bell className="h-4 w-4" />
         {unread > 0 && (
@@ -166,21 +177,21 @@ export function NotificationsBell() {
             {unread > 99 ? "99+" : unread}
           </span>
         )}
-      </button>
+      </IconButton>
 
       {open && (
         <div
           role="dialog"
           aria-label="Notificaciones"
-          className="absolute right-0 top-full z-50 mt-1 w-[380px] max-w-[calc(100vw-32px)] animate-slide-up overflow-hidden rounded-lg border border-border bg-surface-el shadow-elev-3"
+          className="absolute right-0 top-full z-50 mt-1 w-[380px] max-w-[calc(100vw-32px)] animate-slide-up overflow-hidden rounded-lg border border-rule bg-surface-el shadow-elev-3"
         >
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
-            <h3 className="text-sm font-semibold text-text">Notificaciones</h3>
+          <div className="flex items-center justify-between border-b border-rule px-4 py-3">
+            <h3 className="text-sm font-semibold text-ink">Notificaciones</h3>
             {unread > 0 && (
               <button
                 type="button"
                 onClick={handleMarkAll}
-                className="inline-flex items-center gap-1 text-xs text-text-muted transition-colors hover:text-text"
+                className={drawerAction}
               >
                 <CheckCheck className="h-3.5 w-3.5" />
                 Marcar todas
@@ -190,15 +201,15 @@ export function NotificationsBell() {
 
           <div className="max-h-[440px] overflow-y-auto">
             {loading ? (
-              <p className="px-4 py-8 text-center text-sm text-text-muted">
+              <p className="px-4 py-8 text-center text-sm text-ink-soft">
                 Cargando…
               </p>
             ) : items.length === 0 ? (
-              <p className="px-4 py-12 text-center text-sm text-text-muted">
+              <p className="px-4 py-12 text-center text-sm text-ink-soft">
                 Sin notificaciones todavía.
               </p>
             ) : (
-              <ul className="divide-y divide-border">
+              <ul className="divide-y divide-rule">
                 {items.map((item) => {
                   const isUnread = !item.readAt;
                   const inner = (
@@ -220,25 +231,25 @@ export function NotificationsBell() {
                           className={cn(
                             "text-sm leading-snug",
                             isUnread
-                              ? "font-medium text-text"
-                              : "text-text-muted"
+                              ? "font-medium text-ink"
+                              : "text-ink-soft"
                           )}
                         >
                           {item.payload.title}
                         </p>
                         {item.payload.body && (
-                          <p className="mt-1 truncate text-xs text-text-tertiary">
+                          <p className="mt-1 truncate text-xs text-ink-faint">
                             {item.payload.body}
                           </p>
                         )}
-                        <p className="mt-1 text-[13px] text-text-tertiary">
+                        <p className="mt-1 text-[13px] text-ink-faint">
                           {timeAgo(item.createdAt)}
                         </p>
                       </div>
                       {isUnread && (
                         <Check
                           aria-hidden
-                          className="h-4 w-4 flex-shrink-0 self-center text-text-tertiary opacity-0 transition-opacity group-hover:opacity-100"
+                          className="h-4 w-4 flex-shrink-0 self-center text-ink-faint opacity-0 transition-opacity group-hover:opacity-100"
                         />
                       )}
                     </div>
@@ -273,11 +284,11 @@ export function NotificationsBell() {
           </div>
 
           {/* Footer — link a la página completa */}
-          <div className="border-t border-border px-4 py-3">
+          <div className="border-t border-rule px-4 py-3">
             <Link
               href="/notifications"
               onClick={() => setOpen(false)}
-              className="inline-flex items-center gap-1 text-xs text-text-muted transition-colors hover:text-text"
+              className={drawerAction}
             >
               Ver todas
               <ArrowRight className="h-3 w-3" />

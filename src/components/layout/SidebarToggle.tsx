@@ -1,6 +1,7 @@
 "use client";
 
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { IconButton } from "@/components/ui/IconButton";
 import { useSidebarState } from "./SidebarStateContext";
 
 /**
@@ -17,23 +18,18 @@ export function SidebarToggle() {
 
   if (!hydrated) {
     return (
-      <button
-        type="button"
-        aria-label="Toggle sidebar"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-soft"
-      >
+      <IconButton label="Colapsar sidebar">
         <PanelLeftClose className="h-4 w-4" />
-      </button>
+      </IconButton>
     );
   }
 
   return (
-    <button
-      type="button"
+    <IconButton
       onClick={toggle}
-      aria-label={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
+      label={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
       title={collapsed ? "Expandir sidebar (⌘B)" : "Colapsar sidebar (⌘B)"}
-      className="group inline-flex items-center gap-2 rounded-md px-2 py-2 text-ink-soft transition-colors hover:bg-accent-soft hover:text-ink"
+      className="group w-auto gap-2 px-2"
     >
       {collapsed ? (
         <PanelLeftOpen className="h-4 w-4" strokeWidth={1.75} />
@@ -43,6 +39,6 @@ export function SidebarToggle() {
       <kbd className="hidden font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint group-hover:text-ink-soft sm:inline">
         ⌘B
       </kbd>
-    </button>
+    </IconButton>
   );
 }

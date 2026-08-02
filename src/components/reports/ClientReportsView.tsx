@@ -14,6 +14,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { IconButton, iconButtonVariants } from "@/components/ui/IconButton";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
 import {
@@ -267,7 +270,7 @@ export function ClientReportsView({
         {/* ── Left: Form ── */}
         {canManage && (
           <div>
-            <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
+            <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-soft">
               <FilePlus className="h-3.5 w-3.5" />
               Nuevo reporte
             </h2>
@@ -275,41 +278,41 @@ export function ClientReportsView({
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Title */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-text-muted">
-                  Título <span className="text-[oklch(0.62_0.2_25)]">*</span>
+                <label className="text-xs font-medium text-ink-soft">
+                  Título <span className="text-urgent">*</span>
                 </label>
                 <input
                   type="text"
                   value={form.title}
                   onChange={(e) => setField("title", e.target.value)}
                   placeholder="Ej. Reporte mensual mayo 2025"
-                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted/60 focus:border-[var(--project-color,var(--ink))] focus:outline-none"
+                  className="w-full rounded-lg border border-rule bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:border-[var(--project-color,var(--ink))] focus:outline-none"
                 />
               </div>
 
               {/* Date */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-text-muted">
+                <label className="text-xs font-medium text-ink-soft">
                   Fecha del reporte
                 </label>
                 <input
                   type="date"
                   value={form.reportDate}
                   onChange={(e) => setField("reportDate", e.target.value)}
-                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus:border-[var(--project-color,var(--ink))] focus:outline-none"
+                  className="w-full rounded-lg border border-rule bg-surface px-3 py-2 text-sm text-ink focus:border-[var(--project-color,var(--ink))] focus:outline-none"
                 />
               </div>
 
               {/* Client */}
               {linkedClients.length > 0 && (
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-text-muted">
+                  <label className="text-xs font-medium text-ink-soft">
                     Cliente asociado
                   </label>
                   <select
                     value={form.clientId}
                     onChange={(e) => setField("clientId", e.target.value)}
-                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus:border-[var(--project-color,var(--ink))] focus:outline-none"
+                    className="w-full rounded-lg border border-rule bg-surface px-3 py-2 text-sm text-ink focus:border-[var(--project-color,var(--ink))] focus:outline-none"
                   >
                     <option value="">Sin cliente específico</option>
                     {linkedClients.map((c) => (
@@ -323,7 +326,7 @@ export function ClientReportsView({
 
               {/* Description */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-text-muted">
+                <label className="text-xs font-medium text-ink-soft">
                   Descripción (opcional)
                 </label>
                 <textarea
@@ -331,24 +334,24 @@ export function ClientReportsView({
                   onChange={(e) => setField("description", e.target.value)}
                   rows={3}
                   placeholder="Breve descripción del contenido..."
-                  className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted/60 focus:border-[var(--project-color,var(--ink))] focus:outline-none"
+                  className="w-full resize-none rounded-lg border border-rule bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:border-[var(--project-color,var(--ink))] focus:outline-none"
                 />
               </div>
 
               {/* File */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-text-muted">
+                <label className="text-xs font-medium text-ink-soft">
                   Archivo (opcional · máx. 500 MB)
                 </label>
 
                 {pendingFile ? (
-                  <div className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-3">
-                    <FileText className="h-4 w-4 shrink-0 text-text-muted" />
+                  <div className="flex items-center gap-3 rounded-lg border border-rule bg-surface px-3 py-3">
+                    <FileText className="h-4 w-4 shrink-0 text-ink-soft" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-medium text-text">
+                      <p className="truncate text-xs font-medium text-ink">
                         {pendingFile.name}
                       </p>
-                      <p className="text-xs text-text-muted">
+                      <p className="text-xs text-ink-soft">
                         {formatBytes(pendingFile.size)}
                       </p>
                       {isUploading && (
@@ -364,7 +367,7 @@ export function ClientReportsView({
                       <button
                         type="button"
                         onClick={removeFile}
-                        className="shrink-0 text-text-muted transition-colors hover:text-text"
+                        className="shrink-0 text-ink-soft transition-colors hover:text-ink"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -374,7 +377,7 @@ export function ClientReportsView({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface px-3 py-4 text-xs text-text-muted transition-colors hover:border-[var(--project-color,var(--ink))] hover:text-text"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-rule bg-surface px-3 py-4 text-xs text-ink-soft transition-colors hover:border-[var(--project-color,var(--ink))] hover:text-ink"
                   >
                     <Upload className="h-4 w-4" />
                     Adjuntar archivo
@@ -389,10 +392,11 @@ export function ClientReportsView({
                 />
               </div>
 
-              <button
+              <Button
                 type="submit"
+                size="lg"
                 disabled={isPending || isUploading}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--project-color,var(--ink))] px-4 py-3 text-sm font-medium text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full bg-[var(--project-color,var(--ink))] text-white hover:opacity-90"
               >
                 {isPending || isUploading ? (
                   <>
@@ -402,14 +406,14 @@ export function ClientReportsView({
                 ) : (
                   "Crear reporte"
                 )}
-              </button>
+              </Button>
             </form>
           </div>
         )}
 
         {/* ── Right: Report list ── */}
         <div className={!canManage ? "lg:col-span-2" : ""}>
-          <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
+          <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-soft">
             <FileText className="h-3.5 w-3.5" />
             Reportes{" "}
             <span className="rounded-full bg-surface px-1.5 py-1 text-xs tabular-nums">
@@ -418,13 +422,13 @@ export function ClientReportsView({
           </h2>
 
           {reports.length === 0 ? (
-            <div className="rounded-xl border border-border bg-surface px-6 py-8 text-center">
-              <FileText className="mx-auto mb-3 h-8 w-8 text-text-muted/40" />
-              <p className="text-sm text-text-muted">
+            <div className="rounded-xl border border-rule bg-surface px-6 py-8 text-center">
+              <FileText className="mx-auto mb-3 h-8 w-8 text-ink-soft/40" />
+              <p className="text-sm text-ink-soft">
                 No hay reportes todavía.
               </p>
               {canManage && (
-                <p className="mt-1 text-xs text-text-muted/60">
+                <p className="mt-1 text-xs text-ink-soft/60">
                   Crea el primero con el formulario.
                 </p>
               )}
@@ -481,26 +485,26 @@ function ReportRow({
   }, []);
 
   return (
-    <li className="group rounded-xl border border-border bg-surface px-4 py-4 transition-colors hover:border-[var(--project-color,var(--ink))/40]">
+    <li className="group rounded-xl border border-rule bg-surface px-4 py-4 transition-colors hover:border-[var(--project-color,var(--ink))/40]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-medium text-text">
+            <span className="truncate text-sm font-medium text-ink">
               {r.title}
             </span>
             {r.isPublished ? (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[oklch(0.25_0.06_145)] px-2 py-1 text-[10px] font-medium text-[oklch(0.72_0.17_145)]">
+              <Badge variant="success" className="shrink-0">
                 <Globe className="h-2.5 w-2.5" />
                 Publicado
-              </span>
+              </Badge>
             ) : (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-surface px-2 py-1 text-[10px] font-medium text-text-muted ring-1 ring-border">
+              <Badge variant="outline" className="shrink-0">
                 Borrador
-              </span>
+              </Badge>
             )}
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-soft">
             {r.reportDate && <span>{formatDate(r.reportDate)}</span>}
             {clientName && (
               <span className="flex items-center gap-1">
@@ -521,7 +525,7 @@ function ReportRow({
               <p
                 ref={descRef}
                 className={cn(
-                  "mt-2 text-xs text-text-muted",
+                  "mt-2 text-xs text-ink-soft",
                   expanded ? "whitespace-pre-line" : "line-clamp-2"
                 )}
               >
@@ -548,7 +552,7 @@ function ReportRow({
               name={r.title}
               blobUrl={r.fileUrl}
               mimeType={r.mimeType}
-              className="rounded-lg p-2 text-text-muted transition-colors hover:bg-background hover:text-text"
+              className={iconButtonVariants()}
             />
           )}
           {r.fileUrl && (
@@ -556,7 +560,7 @@ function ReportRow({
               href={r.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg p-2 text-text-muted transition-colors hover:bg-background hover:text-text"
+              className={iconButtonVariants()}
               title="Descargar"
               aria-label="Descargar reporte"
             >
@@ -567,33 +571,32 @@ function ReportRow({
           {canManage && (
             <>
               {r.isPublished ? (
-                <button
+                <IconButton
                   onClick={() => onUnpublish(r.id)}
-                  className="rounded-lg p-2 text-text-muted transition-colors hover:bg-background hover:text-text"
                   title="Despublicar (ocultar del portal)"
-                  aria-label="Despublicar reporte"
+                  label="Despublicar reporte"
                 >
                   <Lock className="h-3.5 w-3.5" />
-                </button>
+                </IconButton>
               ) : (
-                <button
+                <IconButton
                   onClick={() => onPublish(r.id)}
-                  className="rounded-lg p-2 text-text-muted transition-colors hover:bg-background hover:text-[oklch(0.62_0.17_145)]"
+                  className="hover:bg-done-soft hover:text-done"
                   title="Publicar en portal del cliente"
-                  aria-label="Publicar reporte en el portal"
+                  label="Publicar reporte en el portal"
                 >
                   <Globe className="h-3.5 w-3.5" />
-                </button>
+                </IconButton>
               )}
 
-              <button
+              <IconButton
+                tone="danger"
                 onClick={() => onDelete(r.id)}
-                className="rounded-lg p-2 text-text-muted transition-colors hover:bg-background hover:text-[oklch(0.62_0.2_25)]"
                 title="Eliminar reporte"
-                aria-label="Eliminar reporte"
+                label="Eliminar reporte"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              </IconButton>
             </>
           )}
         </div>

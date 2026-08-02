@@ -18,6 +18,7 @@ import { Layers } from "lucide-react";
 import { formatMoney } from "@/lib/utils/money";
 import { getActiveWorkspace } from "@/lib/workspace";
 import { formatDateCR, isPastDateCR } from "@/lib/utils/datetime";
+import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
 
 /**
  * Dashboard (Edition 04).
@@ -287,7 +288,7 @@ export default async function DashboardPage() {
                       <span
                         className="h-2 w-2 flex-shrink-0 rounded-full"
                         style={{
-                          backgroundColor: project.color ?? "#161412",
+                          backgroundColor: project.color ?? DEFAULT_ENTORNO_COLOR,
                         }}
                       />
                       <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-ink">

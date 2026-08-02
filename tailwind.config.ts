@@ -23,19 +23,27 @@ const config: Config = {
         "accent-soft": "var(--accent-soft)",
         "project-color": "var(--project-color)",
         urgent: "var(--urgent)",
+        "on-solid": "var(--on-solid)",
+        "done-text": "var(--done-text)",
+        "warn-text": "var(--warn-text)",
+        "urgent-text": "var(--urgent-text)",
+        "info-text": "var(--info-text)",
+        info: "var(--info)",
+        "info-soft": "var(--info-soft)",
         "urgent-soft": "var(--urgent-soft)",
         done: "var(--done)",
         "done-soft": "var(--done-soft)",
         warn: "var(--warn)",
         "warn-soft": "var(--warn-soft)",
 
-        // Compat con código existente (Edition 03 y antes)
-        background: "var(--bg)",
-        foreground: "var(--ink)",
+        // Superficies. No son alias: no tienen equivalente Edition 04, son sus
+        // propios tokens con valor literal.
         surface: "var(--surface)",
+        "surface-2": "var(--surface-2)",
         "surface-el": "var(--surface-el)",
-        border: "var(--rule)",
-        "border-strong": "var(--rule-strong)",
+
+        // Capa semántica de componente. Nombra un ROL, no un color, así que
+        // convive con el vocabulario Edition 04 en vez de duplicarlo.
         primary: {
           DEFAULT: "var(--primary)",
           hover: "var(--primary-hover)",
@@ -46,15 +54,6 @@ const config: Config = {
           DEFAULT: "var(--secondary)",
           foreground: "var(--secondary-foreground)",
         },
-        text: {
-          DEFAULT: "var(--ink)",
-          muted: "var(--ink-soft)",
-          tertiary: "var(--ink-faint)",
-        },
-        success: "var(--done)",
-        warning: "var(--warn)",
-        danger: "var(--urgent)",
-        info: "var(--info)",
         sidebar: {
           DEFAULT: "var(--sidebar)",
           foreground: "var(--sidebar-foreground)",
@@ -62,23 +61,10 @@ const config: Config = {
           border: "var(--sidebar-border)",
           active: "var(--sidebar-active)",
         },
-        card: {
-          DEFAULT: "var(--surface)",
-          foreground: "var(--ink)",
-        },
-        popover: {
-          DEFAULT: "var(--surface-el)",
-          foreground: "var(--ink)",
-        },
         muted: {
           DEFAULT: "var(--surface-2)",
           foreground: "var(--ink-soft)",
         },
-        destructive: {
-          DEFAULT: "var(--urgent)",
-          foreground: "#ffffff",
-        },
-        input: "var(--rule)",
         ring: "var(--project-color)",
       },
       borderRadius: {

@@ -121,7 +121,7 @@ export function NotificationsPage({
             type="button"
             onClick={handleMarkAll}
             disabled={markingAll}
-            className="inline-flex items-center gap-2 text-sm text-text-muted transition-colors hover:text-text disabled:opacity-50"
+            className="inline-flex items-center gap-2 text-sm text-ink-soft transition-colors hover:text-ink disabled:opacity-50"
           >
             <CheckCheck className="h-4 w-4" />
             Marcar todas como leídas
@@ -131,7 +131,7 @@ export function NotificationsPage({
 
       {/* Lista agrupada */}
       {items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-text-tertiary">
+        <div className="flex flex-col items-center justify-center py-24 text-ink-faint">
           <Bell className="mb-4 h-10 w-10 opacity-30" />
           <p className="text-sm">Sin notificaciones todavía.</p>
         </div>
@@ -143,7 +143,7 @@ export function NotificationsPage({
                 label={groupName}
                 count={`${groups[groupName].length}`}
               />
-              <ul className="mt-3 divide-y divide-border rounded-xl border border-border bg-surface-el overflow-hidden">
+              <ul className="mt-3 divide-y divide-rule rounded-xl border border-rule bg-surface-el overflow-hidden">
                 {groups[groupName].map((item) => {
                   const isUnread = !item.readAt;
                   const inner = (
@@ -166,18 +166,18 @@ export function NotificationsPage({
                           className={cn(
                             "text-sm leading-snug",
                             isUnread
-                              ? "font-medium text-text"
-                              : "text-text-muted"
+                              ? "font-medium text-ink"
+                              : "text-ink-soft"
                           )}
                         >
                           {item.payload.title}
                         </p>
                         {item.payload.body && (
-                          <p className="mt-1 text-xs text-text-tertiary line-clamp-1">
+                          <p className="mt-1 text-xs text-ink-faint line-clamp-1">
                             {item.payload.body}
                           </p>
                         )}
-                        <p className="mt-1 text-[13px] text-text-tertiary">
+                        <p className="mt-1 text-[13px] text-ink-faint">
                           {timeAgo(item.createdAt)}
                         </p>
                       </div>

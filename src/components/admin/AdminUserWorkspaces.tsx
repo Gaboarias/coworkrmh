@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Layers, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Modal } from "@/components/ui/Modal";
 
 interface WorkspaceOption {
@@ -43,15 +44,13 @@ export function AdminUserWorkspaces({
 
   return (
     <>
-      <button
-        type="button"
+      <IconButton
         onClick={() => setOpen(true)}
         title="Gestionar entornos del usuario"
-        aria-label="Gestionar entornos"
-        className="rounded-md p-2 text-ink-soft transition-colors hover:bg-accent-soft hover:text-ink"
+        label="Gestionar entornos"
       >
         <Layers className="h-4 w-4" strokeWidth={1.75} />
-      </button>
+      </IconButton>
       {open && (
         <WorkspacesModal
           userId={userId}
@@ -161,7 +160,7 @@ function WorkspacesModal({
             >
               Seleccionar todos
             </button>
-            <span className="text-text-tertiary">·</span>
+            <span className="text-ink-faint">·</span>
             <button
               type="button"
               onClick={selectNone}
@@ -175,7 +174,7 @@ function WorkspacesModal({
           </div>
 
           {workspaces.length === 0 ? (
-            <p className="py-4 text-sm italic text-text-tertiary">
+            <p className="py-4 text-sm italic text-ink-faint">
               No hay entornos creados todavía. Creá uno desde la tab Entornos.
             </p>
           ) : (

@@ -7,6 +7,8 @@ import { Plus, Trash2, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { IconButton } from "@/components/ui/IconButton";
+import { StatStrip } from "@/components/ui/StatStrip";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { formatMoney } from "@/lib/utils/money";
 import { createSale, deleteSale, type SalesResult } from "@/lib/actions/erpSales";
@@ -76,7 +78,7 @@ export const SalesView = ({
       {canManage && (
       <Card>
         <CardContent>
-          <h3 className="mb-3 text-sm font-semibold text-text">
+          <h3 className="mb-3 text-sm font-semibold text-ink">
             Registrar venta
           </h3>
           <form onSubmit={add} className="grid gap-3 sm:grid-cols-2">
@@ -172,32 +174,19 @@ export const SalesView = ({
       </Card>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Card>
-          <CardContent>
-            <p className="text-xs text-text-muted">Ventas totales</p>
-            <p className="text-lg font-semibold text-text">
-              {formatMoney(data.totals.sales)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <p className="text-xs text-text-muted">Ganancia total</p>
-            <p className="text-lg font-semibold text-success">
-              {formatMoney(data.totals.profit)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <p className="text-xs text-text-muted">Registros</p>
-            <p className="text-lg font-semibold text-text">
-              {data.rows.length}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <StatStrip
+        size="md"
+        label="Totales de ventas"
+        items={[
+          { label: "Ventas totales", value: formatMoney(data.totals.sales) },
+          {
+            label: "Ganancia total",
+            value: formatMoney(data.totals.profit),
+            tone: "done",
+          },
+          { label: "Registros", value: data.rows.length },
+        ]}
+      />
 
       {data.rows.length > 0 && (
         <div className="mb-2 flex justify-end">
@@ -212,34 +201,34 @@ export const SalesView = ({
             description="Registrá la primera venta del entorno."
           />
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-rule">
             {data.rows.map((r) => (
               <div key={r.id} className="flex items-center gap-4 px-4 py-[var(--erp-row-py)] transition-colors hover:bg-surface-el">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-text">
+                  <p className="truncate text-sm font-medium text-ink">
                     {r.description}
                   </p>
-                  <p className="truncate text-xs text-text-muted">
+                  <p className="truncate text-xs text-ink-soft">
                     {formatDateCR(r.saleDate)} ·{" "}
                     {r.clientName ?? "—"} · {r.category ?? "Sin categoría"} · x
                     {r.qty}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-text">{formatMoney(r.total)}</p>
-                  <p className="text-xs text-success">
+                  <p className="text-sm text-ink">{formatMoney(r.total)}</p>
+                  <p className="text-xs text-done">
                     +{formatMoney(r.profit)}
                   </p>
                 </div>
                 {canManage && (
-                  <button
-                    type="button"
+                  <IconButton
+                    size="lg"
+                    tone="danger"
                     onClick={() => remove(r.id)}
-                    aria-label="Eliminar venta"
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
+                    label="Eliminar venta"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </IconButton>
                 )}
               </div>
             ))}
@@ -250,19 +239,19 @@ export const SalesView = ({
       {data.byCategory.length > 0 && (
         <Card>
           <CardContent>
-            <h3 className="mb-3 text-sm font-semibold text-text">
+            <h3 className="mb-3 text-sm font-semibold text-ink">
               Resumen por categoría
             </h3>
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-rule">
               {data.byCategory.map((c) => (
                 <div
                   key={c.category}
                   className="flex items-center justify-between py-2 text-sm"
                 >
-                  <span className="text-text">{c.category}</span>
-                  <span className="text-text-muted">
+                  <span className="text-ink">{c.category}</span>
+                  <span className="text-ink-soft">
                     {formatMoney(c.sales)} · ganancia{" "}
-                    <span className="text-success">
+                    <span className="text-done">
                       {formatMoney(c.profit)}
                     </span>
                   </span>
@@ -289,10 +278,10 @@ function FieldWithLabel({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-xs font-medium text-text-muted">
+      <label className="mb-2 block text-xs font-medium text-ink-soft">
         {label}
         {hint && (
-          <span className="ml-1 font-normal italic text-text-tertiary">
+          <span className="ml-1 font-normal italic text-ink-faint">
             — {hint}
           </span>
         )}

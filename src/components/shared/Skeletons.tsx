@@ -14,11 +14,11 @@ function HeaderBlock() {
 
 function Rows({ n = 6 }: { n?: number }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-surface">
+    <div className="overflow-hidden rounded-xl border border-rule bg-surface">
       {Array.from({ length: n }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-4 border-b border-border px-4 py-4 last:border-b-0"
+          className="flex items-center gap-4 border-b border-rule px-4 py-4 last:border-b-0"
         >
           <Skeleton className="h-5 w-20 rounded-full" />
           <Skeleton className="h-4 flex-1" />
@@ -36,7 +36,7 @@ function CardGrid({ n = 3 }: { n?: number }) {
       {Array.from({ length: n }).map((_, i) => (
         <div
           key={i}
-          className="space-y-4 rounded-xl border border-border bg-surface p-5 shadow-elev-2"
+          className="space-y-4 rounded-xl border border-rule bg-surface p-5 shadow-elev-2"
         >
           <Skeleton className="h-4 w-28" />
           <Skeleton className="h-8 w-20" />
@@ -79,7 +79,7 @@ export function CalendarSkeleton() {
   return (
     <div className="p-6 md:p-8">
       <HeaderBlock />
-      <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-border bg-border">
+      <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-rule bg-border">
         {Array.from({ length: 35 }).map((_, i) => (
           <div key={i} className="h-24 bg-surface p-2">
             <Skeleton className="h-4 w-6" />

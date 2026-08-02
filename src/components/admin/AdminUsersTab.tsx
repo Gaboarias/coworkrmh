@@ -117,7 +117,7 @@ export const AdminUsersTab = ({
     <div className="space-y-5">
       <Card>
         <CardContent>
-          <h3 className="mb-3 text-sm font-semibold text-text">
+          <h3 className="mb-3 text-sm font-semibold text-ink">
             Invitar usuario
           </h3>
           <form onSubmit={invite} className="grid gap-3 sm:grid-cols-2">
@@ -147,14 +147,14 @@ export const AdminUsersTab = ({
             </Button>
 
             <div className="sm:col-span-2 mt-2">
-              <p className="mb-2 text-xs font-medium text-text-muted">
+              <p className="mb-2 text-xs font-medium text-ink-soft">
                 Entornos donde el usuario va a poder trabajar
                 <span className="ml-1 font-mono text-[11px] tracking-[0.08em] text-ink-faint">
                   ({inviteWorkspaceIds.size} de {workspaces.length})
                 </span>
               </p>
               {workspaces.length === 0 ? (
-                <p className="text-xs italic text-text-tertiary">
+                <p className="text-xs italic text-ink-faint">
                   No hay entornos creados todavía.
                 </p>
               ) : (
@@ -189,7 +189,7 @@ export const AdminUsersTab = ({
       </Card>
 
       <Card>
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-rule">
           {users.map((u) => (
             <div key={u.id} className="flex items-center gap-3 p-4 transition-colors hover:bg-surface-el">
               <UserAvatar
@@ -198,10 +198,10 @@ export const AdminUsersTab = ({
                 size="sm"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-text">
+                <p className="truncate text-sm font-medium text-ink">
                   {u.name ?? "Sin nombre"}
                 </p>
-                <p className="truncate text-xs text-text-muted">{u.email}</p>
+                <p className="truncate text-xs text-ink-soft">{u.email}</p>
                 {u.workspaceCount === 0 && (
                   <span className="mt-1 inline-flex items-center gap-1 rounded-sm bg-urgent-soft px-1.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-urgent">
                     Sin entorno

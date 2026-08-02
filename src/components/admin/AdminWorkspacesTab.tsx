@@ -9,6 +9,15 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { SwatchPicker } from "@/components/ui/SwatchPicker";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { IconButton } from "@/components/ui/IconButton";
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeadCell,
+  TableCell,
+} from "@/components/ui/Table";
 import { cn } from "@/lib/utils/cn";
 import { readableFg } from "@/lib/utils/color";
 import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
@@ -271,7 +280,7 @@ export const AdminWorkspacesTab = ({
     <div className="space-y-5">
       <Card>
         <CardContent>
-          <h3 className="mb-3 text-sm font-semibold text-text">
+          <h3 className="mb-3 text-sm font-semibold text-ink">
             Nuevo entorno
           </h3>
           <form
@@ -279,7 +288,7 @@ export const AdminWorkspacesTab = ({
             className="flex flex-wrap items-end gap-3"
           >
             <div className="min-w-[200px] flex-1">
-              <label htmlFor="ws-create-name" className="mb-2 block text-xs font-medium text-text-muted">
+              <label htmlFor="ws-create-name" className="mb-2 block text-xs font-medium text-ink-soft">
                 Nombre
               </label>
               <Input
@@ -290,7 +299,7 @@ export const AdminWorkspacesTab = ({
               />
             </div>
             <div>
-              <span className="mb-2 block text-xs font-medium text-text-muted">
+              <span className="mb-2 block text-xs font-medium text-ink-soft">
                 Color
               </span>
               <div className="flex h-9 items-center">
@@ -310,9 +319,9 @@ export const AdminWorkspacesTab = ({
       </Card>
 
       <Card>
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-rule">
           {workspaces.length === 0 && (
-            <p className="p-5 text-sm text-text-muted">
+            <p className="p-5 text-sm text-ink-soft">
               Sin entornos. Creá el primero arriba.
             </p>
           )}
@@ -337,27 +346,27 @@ export const AdminWorkspacesTab = ({
                     <Layers className="h-4 w-4" />
                   </span>
                   <span className="flex-1">
-                    <span className="block text-sm font-medium text-text">
+                    <span className="block text-sm font-medium text-ink">
                       {w.name}
                     </span>
-                    <span className="block text-xs text-text-muted">
+                    <span className="block text-xs text-ink-soft">
                       {w.memberCount} miembro
                       {w.memberCount === 1 ? "" : "s"}
                     </span>
                   </span>
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 text-text-tertiary transition-transform",
+                      "h-4 w-4 text-ink-faint transition-transform",
                       isOpen && "rotate-180"
                     )}
                   />
                 </button>
 
                 {isOpen && (
-                  <div className="space-y-3 border-t border-border bg-surface-el/40 px-4 py-4">
-                    <div className="flex flex-wrap items-end gap-2 border-b border-border pb-3">
+                  <div className="space-y-3 border-t border-rule bg-surface-el/40 px-4 py-4">
+                    <div className="flex flex-wrap items-end gap-2 border-b border-rule pb-3">
                       <div className="min-w-[180px] flex-1">
-                        <label htmlFor={`ws-edit-name-${w.id}`} className="mb-2 block text-xs font-medium text-text-muted">
+                        <label htmlFor={`ws-edit-name-${w.id}`} className="mb-2 block text-xs font-medium text-ink-soft">
                           Nombre del entorno
                         </label>
                         <Input
@@ -367,7 +376,7 @@ export const AdminWorkspacesTab = ({
                         />
                       </div>
                       <div>
-                        <span className="mb-2 block text-xs font-medium text-text-muted">
+                        <span className="mb-2 block text-xs font-medium text-ink-soft">
                           Color
                         </span>
                         <SwatchPicker
@@ -387,13 +396,13 @@ export const AdminWorkspacesTab = ({
                     </div>
 
                     {matrix[w.id] && (
-                      <div className="space-y-3 border-b border-border pb-3">
+                      <div className="space-y-3 border-b border-rule pb-3">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h4 className="text-xs font-semibold text-text">
+                            <h4 className="text-xs font-semibold text-ink">
                               Permisos por rol
                             </h4>
-                            <p className="text-[13px] text-text-muted">
+                            <p className="text-[13px] text-ink-soft">
                               El propietario siempre tiene acceso total.
                             </p>
                           </div>
@@ -405,50 +414,49 @@ export const AdminWorkspacesTab = ({
                             Guardar permisos
                           </Button>
                         </div>
-                        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+                        <div>
                           {(() => {
                             const roleKeys = Object.keys(matrix[w.id]).filter(
                               (k) => k !== "owner"
                             );
                             return (
-                              <table className="w-full text-left text-sm">
-                                <thead>
-                                  <tr className="border-b border-border text-xs text-text-muted">
-                                    <th className="px-3 py-2 font-medium">
-                                      Capacidad
-                                    </th>
+                              <Table>
+                                <TableHead>
+                                  <TableRow head>
+                                    <TableHeadCell>Capacidad</TableHeadCell>
                                     {roleKeys.map((rk) => {
                                       const isBuiltin = BUILTIN_ROLE_KEYS.includes(
                                         rk as never
                                       );
                                       return (
-                                        <th
+                                        <TableHeadCell
                                           key={rk}
-                                          className="w-24 px-2 py-2 text-center font-medium"
+                                          align="center"
+                                          className="w-24"
                                         >
                                           <div className="flex items-center justify-center gap-1">
                                             <span className="truncate" title={rk}>
                                               {BUILTIN_ROLE_LABELS[rk] ?? rk}
                                             </span>
                                             {!isBuiltin && (
-                                              <button
-                                                type="button"
+                                              <IconButton
+                                                size="sm"
+                                                tone="danger"
                                                 onClick={() =>
                                                   handleDeleteCustomRole(w.id, rk)
                                                 }
-                                                aria-label={`Eliminar rol ${rk}`}
-                                                className="rounded p-1 text-text-tertiary transition-colors hover:bg-surface-el hover:text-danger"
+                                                label={`Eliminar rol ${rk}`}
                                               >
                                                 <Trash2 className="h-3 w-3" />
-                                              </button>
+                                              </IconButton>
                                             )}
                                           </div>
-                                        </th>
+                                        </TableHeadCell>
                                       );
                                     })}
-                                  </tr>
-                                </thead>
-                                <tbody>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
                                   {WS_PERMISSION_GROUPS.map((g) => (
                                     <GroupRows
                                       key={g.group}
@@ -461,14 +469,14 @@ export const AdminWorkspacesTab = ({
                                       }
                                     />
                                   ))}
-                                </tbody>
-                              </table>
+                                </TableBody>
+                              </Table>
                             );
                           })()}
                         </div>
                         <div className="flex flex-wrap items-end gap-2 pt-1">
                           <div className="min-w-[160px] flex-1">
-                            <label htmlFor={`ws-create-role-${w.id}`} className="mb-2 block text-xs font-medium text-text-muted">
+                            <label htmlFor={`ws-create-role-${w.id}`} className="mb-2 block text-xs font-medium text-ink-soft">
                               Crear rol custom
                             </label>
                             <Input
@@ -500,7 +508,7 @@ export const AdminWorkspacesTab = ({
 
                     <div className="flex flex-wrap items-end gap-2">
                       <div className="min-w-[180px] flex-1">
-                        <label htmlFor={`ws-add-user-${w.id}`} className="mb-2 block text-xs font-medium text-text-muted">
+                        <label htmlFor={`ws-add-user-${w.id}`} className="mb-2 block text-xs font-medium text-ink-soft">
                           Agregar usuario
                         </label>
                         <Select
@@ -536,11 +544,11 @@ export const AdminWorkspacesTab = ({
 
                     <div className="space-y-1">
                       {loadingMembers && !members[w.id] ? (
-                        <p className="px-1 py-2 text-sm text-text-muted">
+                        <p className="px-1 py-2 text-sm text-ink-soft">
                           Cargando…
                         </p>
                       ) : (members[w.id] ?? []).length === 0 ? (
-                        <p className="px-1 py-2 text-sm text-text-muted">
+                        <p className="px-1 py-2 text-sm text-ink-soft">
                           Sin miembros todavía.
                         </p>
                       ) : (
@@ -555,15 +563,15 @@ export const AdminWorkspacesTab = ({
                               size="sm"
                             />
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium text-text">
+                              <p className="truncate text-sm font-medium text-ink">
                                 {m.name ?? m.email}
                               </p>
-                              <p className="truncate text-xs text-text-muted">
+                              <p className="truncate text-xs text-ink-soft">
                                 {m.email}
                               </p>
                             </div>
                             {m.role === "owner" ? (
-                              <span className="rounded-md bg-surface-el px-2 py-1 text-xs font-medium text-text-muted">
+                              <span className="rounded-md bg-surface-el px-2 py-1 text-xs font-medium text-ink-soft">
                                 Propietario
                               </span>
                             ) : (
@@ -593,15 +601,15 @@ export const AdminWorkspacesTab = ({
                                 })()}
                               </Select>
                             )}
-                            <button
-                              type="button"
+                            <IconButton
+                              size="lg"
+                              tone="danger"
                               onClick={() => handleRemove(w.id, m.id)}
                               disabled={busy || m.role === "owner"}
-                              aria-label={`Quitar a ${m.name ?? m.email}`}
-                              className="flex h-9 w-9 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-el focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--primary)_35%,transparent)] hover:text-danger"
+                              label={`Quitar a ${m.name ?? m.email}`}
                             >
                               <Trash2 className="h-4 w-4" />
-                            </button>
+                            </IconButton>
                           </div>
                         ))
                       )}
@@ -635,19 +643,19 @@ const GroupRows = ({
   );
   return (
     <>
-      <tr className="bg-surface-el/60">
-        <td
+      <TableRow className="border-0 bg-surface-el/60">
+        <TableCell
           colSpan={roleKeys.length + 1}
-          className="px-3 py-2 text-[13px] font-semibold uppercase tracking-wide text-text-muted"
+          className="text-[13px] font-semibold uppercase tracking-wide text-ink-soft"
         >
           {group}
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
       {keys.map((k) => (
-        <tr key={k.key} className="border-b border-border last:border-0">
-          <td className="px-3 py-2 text-text">{k.label}</td>
+        <TableRow key={k.key}>
+          <TableCell>{k.label}</TableCell>
           {roleKeys.map((rk) => (
-            <td key={rk} className="px-2 py-2 text-center">
+            <TableCell key={rk} align="center">
               <input
                 type="checkbox"
                 aria-label={`${k.label} — ${BUILTIN_ROLE_LABELS[rk] ?? rk}`}
@@ -655,9 +663,9 @@ const GroupRows = ({
                 onChange={() => onToggle(rk, k.key)}
                 className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
               />
-            </td>
+            </TableCell>
           ))}
-        </tr>
+        </TableRow>
       ))}
     </>
   );
