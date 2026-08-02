@@ -7,7 +7,8 @@ import { CalendarView } from "@/components/calendar/CalendarView";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Layers } from "lucide-react";
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspace, getVisibilityContext } from "@/lib/workspace";
+import { visibleProjectsWhere } from "@/lib/projects/visibility";
 import { getAssigneesForTasks } from "@/lib/actions/tasks";
 import { getUserMeetings } from "@/lib/calendar/meetings";
 
@@ -29,6 +30,8 @@ export default async function CalendarPage() {
     );
   }
 
+  const vis = await getVisibilityContext(session.user.id, ws.id);
+
   const taskRows = await db
     .select({
       id: tasks.id,
@@ -43,7 +46,17 @@ export default async function CalendarPage() {
     })
     .from(tasks)
     .innerJoin(projects, eq(tasks.projectId, projects.id))
-    .where(and(isNotNull(tasks.dueDate), eq(projects.workspaceId, ws.id)))
+    // El filtro va también acá y no sólo en la lista de proyectos de abajo:
+    // esta query trae TODAS las tareas del entorno con el nombre del proyecto
+    // pegado. Sin esto, el proyecto restringido no aparece como barra pero sus
+    // tareas sí, con su nombre.
+    .where(
+      and(
+        isNotNull(tasks.dueDate),
+        eq(projects.workspaceId, ws.id),
+        visibleProjectsWhere(vis)
+      )
+    )
     .orderBy(asc(tasks.dueDate));
 
   // Asignados (ids) por tarea — para el filtro "mis tareas" multi-asignado.
@@ -76,7 +89,8 @@ export default async function CalendarPage() {
       and(
         eq(projects.workspaceId, ws.id),
         isNotNull(projects.startDate),
-        isNotNull(projects.endDate)
+        isNotNull(projects.endDate),
+        visibleProjectsWhere(vis)
       )
     );
 
@@ -99,7 +113,10 @@ export default async function CalendarPage() {
     })
     .from(notes)
     .innerJoin(projects, eq(notes.projectId, projects.id))
-    .where(eq(projects.workspaceId, ws.id))
+    // Los TÍTULOS de las notas, con el nombre del proyecto al lado. Este where
+    // se me había pasado — lo encontró el test que mira cada consulta por
+    // separado, no el que miraba si el archivo mencionaba el filtro.
+    .where(and(eq(projects.workspaceId, ws.id), visibleProjectsWhere(vis)))
     .orderBy(asc(notes.createdAt));
 
   const notesData = noteRows.map((n) => ({
@@ -122,7 +139,11 @@ export default async function CalendarPage() {
     .from(changelog)
     .innerJoin(projects, eq(changelog.projectId, projects.id))
     .where(
-      and(isNotNull(changelog.projectId), eq(projects.workspaceId, ws.id))
+      and(
+        isNotNull(changelog.projectId),
+        eq(projects.workspaceId, ws.id),
+        visibleProjectsWhere(vis)
+      )
     )
     .orderBy(asc(changelog.createdAt));
 

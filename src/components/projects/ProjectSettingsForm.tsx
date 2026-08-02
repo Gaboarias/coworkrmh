@@ -37,6 +37,7 @@ interface ProjectSettingsFormProps {
     status: ProjectStatus;
     startDate: string | null;
     endDate: string | null;
+    visibility: "workspace" | "members";
   };
   members: Profile[];
   allUsers: Profile[];
@@ -63,6 +64,11 @@ export function ProjectSettingsForm({
   });
   const [saving, setSaving] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  // Fuera del form principal: cambiar quién ve el proyecto se guarda solo, sin
+  // "Guardar cambios". Es un interruptor de acceso — dejarlo pendiente en un
+  // formulario a medio llenar sería no saber en qué estado quedó.
+  const [visibility, setVisibility] = useState(project.visibility);
+  const [savingVisibility, setSavingVisibility] = useState(false);
   const [addingUser, setAddingUser] = useState("");
   const [bucketList, setBucketList] = useState(buckets);
   const [showNewBucket, setShowNewBucket] = useState(false);
@@ -108,6 +114,29 @@ export function ProjectSettingsForm({
       toast.error((err as Error).message);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleVisibility(next: "workspace" | "members") {
+    if (next === visibility) return;
+    const prev = visibility;
+    setVisibility(next); // optimista: el radio tiene que responder al toque
+    setSavingVisibility(true);
+    try {
+      await updateProject(project.id, { visibility: next });
+      toast.success(
+        next === "members"
+          ? "Ahora sólo lo ve el equipo del proyecto"
+          : "Ahora lo ve todo el entorno"
+      );
+      // refresh y no sólo estado local: cambiar esto reordena la lista de
+      // proyectos y el dashboard de todos los demás.
+      router.refresh();
+    } catch (err) {
+      setVisibility(prev);
+      toast.error((err as Error).message);
+    } finally {
+      setSavingVisibility(false);
     }
   }
 
@@ -342,9 +371,13 @@ export function ProjectSettingsForm({
 
       <Card>
         <CardContent className="p-5">
-          <h3 className="mb-4 text-sm font-semibold text-ink">
+          <h3 className="mb-1 text-sm font-semibold text-ink">
             Miembros del proyecto
           </h3>
+          <p className="mb-4 text-xs leading-relaxed text-ink-soft">
+            Quien esté acá recibe las notificaciones del proyecto. Además, si
+            abajo lo restringís, sólo esta gente lo ve.
+          </p>
 
           <div className="mb-4 flex gap-2">
             <Select
@@ -399,6 +432,85 @@ export function ProjectSettingsForm({
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardContent className="p-5">
+          <h3 className="mb-1 text-sm font-semibold text-ink">
+            Quién ve este proyecto
+          </h3>
+          <p className="mb-4 text-xs leading-relaxed text-ink-soft">
+            Cambia si el proyecto aparece en la lista, el dashboard, el
+            calendario y la búsqueda de quienes no trabajan en él.
+          </p>
+
+          <div className="space-y-2">
+            <VisibilityOption
+              value="workspace"
+              current={visibility}
+              onChange={handleVisibility}
+              busy={savingVisibility}
+              title="Todo el entorno"
+              detail="Cualquiera del entorno lo ve. Es como funcionó siempre."
+            />
+            <VisibilityOption
+              value="members"
+              current={visibility}
+              onChange={handleVisibility}
+              busy={savingVisibility}
+              title="Sólo el equipo del proyecto"
+              // Decirlo con todas las letras: quien administra proyectos lo
+              // sigue viendo. Si no, el día que se va el último miembro el
+              // proyecto queda sin nadie que pueda entrar. Una etiqueta de
+              // "privado" que no es privada es peor que no tener la función.
+              detail="Los miembros de arriba, más quienes administran proyectos en el entorno. No es un proyecto secreto: es sacarlo de la vista de quien no trabaja en él."
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
+  );
+}
+
+function VisibilityOption({
+  value,
+  current,
+  onChange,
+  busy,
+  title,
+  detail,
+}: {
+  value: "workspace" | "members";
+  current: string;
+  onChange: (v: "workspace" | "members") => void;
+  busy: boolean;
+  title: string;
+  detail: string;
+}) {
+  const active = current === value;
+  return (
+    <label
+      className={cn(
+        "flex cursor-pointer gap-3 rounded-md border p-3 transition-colors",
+        active
+          ? "border-accent bg-accent-soft"
+          : "border-rule hover:bg-surface-el",
+        busy && "pointer-events-none opacity-60"
+      )}
+    >
+      <input
+        type="radio"
+        name="project-visibility"
+        className="mt-1"
+        checked={active}
+        disabled={busy}
+        onChange={() => onChange(value)}
+      />
+      <span className="min-w-0">
+        <span className="block text-sm font-medium text-ink">{title}</span>
+        <span className="mt-0.5 block text-xs leading-relaxed text-ink-soft">
+          {detail}
+        </span>
+      </span>
+    </label>
   );
 }

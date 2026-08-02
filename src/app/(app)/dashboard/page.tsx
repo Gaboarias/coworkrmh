@@ -16,7 +16,8 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import Link from "next/link";
 import { Layers } from "lucide-react";
 import { formatMoney } from "@/lib/utils/money";
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspace, getVisibilityContext } from "@/lib/workspace";
+import { visibleProjectsWhere } from "@/lib/projects/visibility";
 import { formatDateCR, isPastDateCR } from "@/lib/utils/datetime";
 import { DEFAULT_ENTORNO_COLOR } from "@/lib/constants/entornoColors";
 
@@ -60,6 +61,11 @@ export default async function DashboardPage() {
     );
   }
 
+  // Las tareas propias no se filtran por visibilidad: estar asignado a una
+  // tarea te hace miembro del proyecto (lo inserta tasks.ts), así que si la
+  // tarea es tuya el proyecto ya es visible para vos.
+  const vis = await getVisibilityContext(userId, ws.id);
+
   // Los tres queries son independientes entre sí — corren en paralelo.
   const [myTaskRows, recentProjectRows, upcomingPaymentRows] = await Promise.all([
     db
@@ -81,7 +87,11 @@ export default async function DashboardPage() {
         and(
           eq(taskAssignees.userId, userId),
           ne(tasks.status, "done"),
-          eq(projects.workspaceId, ws.id)
+          eq(projects.workspaceId, ws.id),
+          // Redundante en teoría —estar asignado te inserta en project_members,
+          // así que el proyecto ya sería visible— pero esa garantía es
+          // indirecta y depende de un insert en otro archivo. Acá cuesta nada.
+          visibleProjectsWhere(vis)
         )
       )
       .orderBy(asc(tasks.dueDate))
@@ -91,7 +101,13 @@ export default async function DashboardPage() {
       .select({ project: projects, bucket: buckets })
       .from(projects)
       .leftJoin(buckets, eq(projects.bucketId, buckets.id))
-      .where(and(eq(projects.workspaceId, ws.id), ne(projects.status, "archived")))
+      .where(
+        and(
+          eq(projects.workspaceId, ws.id),
+          ne(projects.status, "archived"),
+          visibleProjectsWhere(vis)
+        )
+      )
       .orderBy(desc(projects.createdAt))
       .limit(6),
 

@@ -28,6 +28,18 @@ export const workspaceTierEnum = pgEnum("workspace_tier", ["basic", "premium"]);
 // soportar roles custom definidos por entorno en workspaces.role_permissions.
 // Built-in: owner / admin / member. Owner = bypass total, no se almacena en
 // la matriz. La migración guarded convierte el column type y dropea el enum.
+// Quién ve un proyecto dentro del entorno.
+//   workspace — cualquiera del entorno. Es el default y el comportamiento que
+//     tuvo la app siempre: los proyectos existentes no cambian al desplegar.
+//   members   — sólo el equipo del proyecto (project_members), más quienes
+//     tienen `projects.manage` en el entorno.
+// La segunda mitad de "members" es deliberada: dejar afuera a quien administra
+// proyectos haría que un proyecto quede sin dueño el día que su último miembro
+// se va del estudio, sin nadie que pueda volver a entrar.
+export const projectVisibilityEnum = pgEnum("project_visibility", [
+  "workspace",
+  "members",
+]);
 export const taskStatusEnum = pgEnum("task_status", ["todo", "in_progress", "review", "done"]);
 export const taskPriorityEnum = pgEnum("task_priority", ["low", "medium", "high", "urgent"]);
 // Status del proyecto (estado del trabajo, distinto de la categoría/bucket).
@@ -281,6 +293,10 @@ export const projects = pgTable("projects", {
   name: text("name").notNull(),
   description: text("description"),
   status: projectStatusEnum("status").default("active").notNull(),
+  // Default "workspace" = lo de siempre. Restringir es una decisión explícita
+  // por proyecto, no algo que le pase a los 40 proyectos existentes en un
+  // deploy.
+  visibility: projectVisibilityEnum("visibility").default("workspace").notNull(),
   color: text("color"),
   startDate: date("start_date"),
   endDate: date("end_date"),

@@ -7,7 +7,8 @@ import { buttonVariants } from "@/components/ui/Button";
 import Link from "next/link";
 import { Plus, FolderKanban, Layers } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspace, getVisibilityContext } from "@/lib/workspace";
+import { visibleProjectsWhere } from "@/lib/projects/visibility";
 import { ProjectsView } from "@/components/projects/ProjectsView";
 import type { ProjectStatus } from "@/lib/types";
 
@@ -49,12 +50,20 @@ export default async function ProjectsPage() {
     .from(buckets)
     .orderBy(asc(buckets.position));
 
+  // Los proyectos restringidos se filtran acá y no en el cliente: si viajan al
+  // navegador para esconderlos con CSS, están igual en el HTML.
+  const vis = await getVisibilityContext(session!.user.id, ws.id);
+
   const projectRows = await db
     .select({ project: projects, bucket: buckets })
     .from(projects)
     .leftJoin(buckets, eq(projects.bucketId, buckets.id))
     .where(
-      and(eq(projects.workspaceId, ws.id), ne(projects.status, "archived"))
+      and(
+        eq(projects.workspaceId, ws.id),
+        ne(projects.status, "archived"),
+        visibleProjectsWhere(vis)
+      )
     )
     .orderBy(desc(projects.createdAt));
 

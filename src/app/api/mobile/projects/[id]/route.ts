@@ -3,6 +3,10 @@ import { db } from "@/lib/db";
 import { projects, tasks, workspaceMembers } from "@/lib/db/schema";
 import { eq, and, inArray, asc } from "drizzle-orm";
 import { verifyBearerToken } from "@/lib/auth-bearer";
+import {
+  visibleProjectsWhere,
+  bearerVisibilityContext,
+} from "@/lib/projects/visibility";
 import { todayYmdCR } from "@/lib/utils/datetime";
 
 export const runtime = "nodejs";
@@ -38,7 +42,11 @@ export async function GET(
     .where(
       and(
         eq(projects.id, params.id),
-        inArray(projects.workspaceId, wsIds)
+        inArray(projects.workspaceId, wsIds),
+        // Sin esto, la lista escondía el proyecto restringido pero pedirlo por
+        // id lo devolvía igual — con sus tareas. Filtrar sólo la lista es
+        // esconder el ícono y dejar la puerta abierta.
+        visibleProjectsWhere(bearerVisibilityContext(user.sub))
       )
     )
     .limit(1);

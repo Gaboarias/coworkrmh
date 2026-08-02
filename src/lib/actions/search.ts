@@ -3,7 +3,8 @@
 import { db } from "@/lib/db";
 import { tasks, projects, erpQuotes } from "@/lib/db/schema";
 import { eq, and, or, ilike, sql, desc } from "drizzle-orm";
-import { getActiveWorkspace } from "@/lib/workspace";
+import { getActiveWorkspace, getVisibilityContext } from "@/lib/workspace";
+import { visibleProjectsWhere } from "@/lib/projects/visibility";
 import { requireUser } from "./guards";
 
 /**
@@ -38,13 +39,19 @@ export async function searchWorkspace(query: string): Promise<SearchHit[]> {
   // `requireUser` es el piso; `getActiveWorkspace` acota al entorno al que esa
   // sesión tiene acceso. Sin el segundo, un `workspaceId` cualquiera en la
   // query devolvería datos de otro negocio: esto es un endpoint HTTP.
-  await requireUser();
+  const user = await requireUser();
 
   const q = query.trim();
   if (q.length < MIN_QUERY) return [];
 
   const ws = await getActiveWorkspace();
   if (!ws) return [];
+
+  // ⌘K es la vía más fácil de filtrar un proyecto restringido sin querer: la
+  // pantalla de proyectos no lo lista, pero buscarlo por nombre lo devolvía
+  // igual — y las TAREAS de ese proyecto traían su nombre pegado.
+  const vis = await getVisibilityContext(user.id, ws.id);
+  const visible = visibleProjectsWhere(vis);
 
   // `%` y `_` son comodines de LIKE. Sin escaparlos, buscar "50%" recorre la
   // tabla entera y devuelve todo, que se lee como si el filtro no funcionara.
@@ -54,7 +61,13 @@ export async function searchWorkspace(query: string): Promise<SearchHit[]> {
     db
       .select({ id: projects.id, name: projects.name, status: projects.status })
       .from(projects)
-      .where(and(eq(projects.workspaceId, ws.id), ilike(projects.name, pattern)))
+      .where(
+        and(
+          eq(projects.workspaceId, ws.id),
+          ilike(projects.name, pattern),
+          visible
+        )
+      )
       .orderBy(desc(projects.updatedAt))
       .limit(PER_KIND),
 
@@ -71,7 +84,8 @@ export async function searchWorkspace(query: string): Promise<SearchHit[]> {
         and(
           eq(projects.workspaceId, ws.id),
           ilike(tasks.title, pattern),
-          sql`${tasks.status} != 'done'`
+          sql`${tasks.status} != 'done'`,
+          visible
         )
       )
       .orderBy(desc(tasks.updatedAt))

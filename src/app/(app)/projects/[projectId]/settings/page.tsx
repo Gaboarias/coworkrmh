@@ -96,6 +96,7 @@ export default async function ProjectSettingsPage({ params }: PageProps) {
             status: project.status as ProjectStatus,
             startDate: project.startDate ?? null,
             endDate: project.endDate ?? null,
+            visibility: project.visibility,
           }}
           members={members}
           allUsers={allUsers}

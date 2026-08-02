@@ -24,8 +24,7 @@ import {
   workspaces,
   users,
 } from "@/lib/db/schema";
-import { requireProjectAccess } from "./guards";
-import { getWorkspacePermissions } from "@/lib/workspace";
+import { requireProjectManage } from "@/lib/workspace";
 import { newToken, hashToken } from "@/lib/utils/token";
 import { getAppUrl } from "@/lib/email";
 
@@ -60,21 +59,10 @@ export interface SharedProject {
   counts: { total: number; done: number };
 }
 
-/**
- * Gestionar links exige `projects.manage` en el entorno DEL PROYECTO.
- *
- * Se resuelve contra ese entorno y no contra el activo: el proyecto se puede
- * abrir por deep-link desde otro entorno, y mirar el permiso equivocado dejaría
- * pasar a alguien que es admin en su entorno pero no en éste.
- */
-async function requireShareManage(projectId: string) {
-  const { userId, workspaceId } = await requireProjectAccess(projectId);
-  const { permissions } = await getWorkspacePermissions(workspaceId);
-  if (!permissions.has("projects.manage")) {
-    throw new Error("No tenés permiso para compartir este proyecto");
-  }
-  return { userId, workspaceId };
-}
+// Gestionar links exige `projects.manage` en el entorno DEL PROYECTO, que es
+// lo que resuelve `requireProjectManage`. Contra el entorno ACTIVO no serviría:
+// el projectId lo elige quien llama, así que dejaría pasar a alguien que
+// administra proyectos en el suyo pero no en éste.
 
 // ─── Gestión (con sesión) ─────────────────────────────────────────────────────
 
@@ -83,7 +71,7 @@ export async function createProjectShare(
   projectId: string,
   opts: { label?: string | null; expiresInDays?: number | null } = {}
 ): Promise<{ id: string; url: string }> {
-  const { userId } = await requireShareManage(projectId);
+  const { userId } = await requireProjectManage(projectId);
 
   const raw = newToken();
   const days =
@@ -109,7 +97,7 @@ export async function createProjectShare(
 export async function listProjectShares(
   projectId: string
 ): Promise<ProjectShareRow[]> {
-  await requireShareManage(projectId);
+  await requireProjectManage(projectId);
   const rows = await db
     .select({
       id: projectShares.id,
@@ -150,7 +138,7 @@ export async function revokeProjectShare(shareId: string): Promise<void> {
     .limit(1);
   if (!row) throw new Error("Link no encontrado");
 
-  await requireShareManage(row.projectId);
+  await requireProjectManage(row.projectId);
 
   await db
     .update(projectShares)

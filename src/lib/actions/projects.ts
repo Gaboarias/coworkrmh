@@ -10,6 +10,7 @@ import {
   getActiveWorkspace,
   getWorkspacePermissions,
   requireProjectAccess,
+  requireProjectManage,
 } from "@/lib/workspace";
 import { createNotification } from "@/lib/actions/notifications";
 import { createProjectSchema } from "@/lib/validation/actions";
@@ -83,9 +84,14 @@ export async function updateProject(
     endDate?: string | null;
     dueDate?: string | null;
     status?: ProjectStatus;
+    /** "workspace" = todo el entorno · "members" = sólo el equipo del proyecto */
+    visibility?: "workspace" | "members";
   }
 ) {
-  await requireProjectsManage();
+  // requireProjectManage y no requireProjectsManage: el segundo mira el
+  // entorno ACTIVO y después deja escribir cualquier projectId, así que con
+  // permisos en un entorno se podía editar un proyecto de otro pasando su id.
+  await requireProjectManage(projectId);
   await db.update(projects).set({ ...updates, updatedAt: new Date() }).where(eq(projects.id, projectId));
   revalidatePath("/projects");
   revalidatePath(`/projects/${projectId}`);

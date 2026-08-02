@@ -81,10 +81,9 @@ describe("la vista compartida no filtra", () => {
 
 describe("gestión de links", () => {
   it("crear, listar y revocar exigen projects.manage", () => {
-    // requireShareManage resuelve el entorno DEL proyecto y pide la
+    // requireProjectManage resuelve el entorno DEL proyecto y pide la
     // capacidad ahí. El guard genérico requireProjectAccess sólo verifica
     // pertenencia al entorno — alcanzaría para leer, no para compartir afuera.
-    expect(ACTIONS).toContain('permissions.has("projects.manage")');
     for (const fn of [
       "createProjectShare",
       "listProjectShares",
@@ -92,8 +91,8 @@ describe("gestión de links", () => {
     ]) {
       const cuerpo = ACTIONS.slice(ACTIONS.indexOf(`export async function ${fn}`));
       expect(
-        /requireShareManage\s*\(/.test(cuerpo.slice(0, 900)),
-        `${fn} tiene que pasar por requireShareManage`
+        /requireProjectManage\s*\(/.test(cuerpo.slice(0, 900)),
+        `${fn} tiene que pasar por requireProjectManage`
       ).toBe(true);
     }
   });
@@ -106,7 +105,7 @@ describe("gestión de links", () => {
     // proyecto "activo" y recién después buscar la fila sería un IDOR: se
     // podría revocar el link de un proyecto ajeno.
     const posSelect = cuerpo.indexOf(".from(projectShares)");
-    const posGuard = cuerpo.indexOf("requireShareManage(");
+    const posGuard = cuerpo.indexOf("requireProjectManage(");
     expect(posSelect).toBeGreaterThan(-1);
     expect(posGuard).toBeGreaterThan(posSelect);
   });

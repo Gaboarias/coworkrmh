@@ -11,6 +11,10 @@ import {
   BUILTIN_ROLE_KEYS,
 } from "@/lib/constants/workspacePermissions";
 import { hasFeature, type Feature } from "@/lib/entitlements";
+import {
+  canSeeProject,
+  type VisibilityContext,
+} from "@/lib/projects/visibility";
 
 export const WS_COOKIE = "ws";
 
@@ -286,7 +290,10 @@ export const requireProjectAccess = async (
   const session = await auth();
   if (!session?.user) throw new Error("No autenticado");
   const [p] = await db
-    .select({ workspaceId: projects.workspaceId })
+    .select({
+      workspaceId: projects.workspaceId,
+      visibility: projects.visibility,
+    })
     .from(projects)
     .where(eq(projects.id, projectId))
     .limit(1);
@@ -294,7 +301,52 @@ export const requireProjectAccess = async (
   if (!(await canAccessWorkspace(p.workspaceId))) {
     throw new Error("No tenés acceso al entorno de este proyecto");
   }
+  // Un proyecto restringido no lo abre cualquiera del entorno. Va acá y no
+  // sólo en las páginas porque este guard es el que usan los actions de
+  // tareas, notas y documentos — pasar por la página no es la única puerta.
+  const ctx = await getVisibilityContext(session.user.id, p.workspaceId);
+  if (!(await canSeeProject({ id: projectId, visibility: p.visibility }, ctx))) {
+    throw new Error("No tenés acceso a este proyecto");
+  }
   return { userId: session.user.id, workspaceId: p.workspaceId };
+};
+
+/**
+ * requireProjectAccess + exige `projects.manage` en el entorno DEL proyecto.
+ *
+ * La distinción importa: `requireProjectsManage` (local en actions/projects.ts)
+ * mira el entorno ACTIVO y después deja actualizar cualquier projectId. O sea
+ * que alguien con projects.manage en su entorno podía editar —y archivar— un
+ * proyecto de otro entorno pasando su id, porque un server action es un
+ * endpoint HTTP y el id lo elige quien llama.
+ *
+ * Acá el permiso se pide donde vive el recurso, que es la única forma que no
+ * se rompe con un id ajeno.
+ */
+export const requireProjectManage = async (
+  projectId: string
+): Promise<{ userId: string; workspaceId: string }> => {
+  const { userId, workspaceId } = await requireProjectAccess(projectId);
+  const { permissions } = await getWorkspacePermissions(workspaceId);
+  if (!permissions.has("projects.manage")) {
+    throw new Error("No tenés permiso para gestionar este proyecto");
+  }
+  return { userId, workspaceId };
+};
+
+/**
+ * Contexto de visibilidad de proyectos para el usuario actual en un entorno.
+ *
+ * Vive acá y no en lib/projects/visibility porque necesita los permisos del
+ * entorno, que son de este módulo. Al revés habría ciclo: requireProjectAccess
+ * usa canSeeProject.
+ */
+export const getVisibilityContext = async (
+  userId: string,
+  workspaceId: string
+): Promise<VisibilityContext> => {
+  const { permissions } = await getWorkspacePermissions(workspaceId);
+  return { userId, seesEverything: permissions.has("projects.manage") };
 };
 
 /**

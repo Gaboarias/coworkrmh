@@ -32,8 +32,10 @@ const GUARDS = [
   "requireWsCan",
   "requireProjectAccess",
   "requireProjectsManage", // envuelve requireWsCan("projects.manage")
-  // envuelve requireProjectAccess + projects.manage en el entorno DEL proyecto
-  "requireShareManage",
+  // requireProjectAccess + projects.manage en el entorno DEL proyecto (no el
+  // activo): es el que hay que usar cuando el projectId lo elige quien llama
+  "requireProjectManage",
+  "requireShareManage", // envuelve requireProjectManage
   "requireWorkspaceManage",
   "requireWorkspaceOwner",
 ];

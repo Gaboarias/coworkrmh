@@ -3,6 +3,10 @@ import { db } from "@/lib/db";
 import { projects, workspaceMembers, tasks } from "@/lib/db/schema";
 import { eq, and, ne, inArray, count, sql } from "drizzle-orm";
 import { verifyBearerToken } from "@/lib/auth-bearer";
+import {
+  visibleProjectsWhere,
+  bearerVisibilityContext,
+} from "@/lib/projects/visibility";
 
 export const runtime = "nodejs";
 
@@ -33,7 +37,8 @@ export async function GET(request: Request) {
     .where(
       and(
         inArray(projects.workspaceId, wsIds),
-        ne(projects.status, "archived")
+        ne(projects.status, "archived"),
+        visibleProjectsWhere(bearerVisibilityContext(user.sub))
       )
     )
     .orderBy(projects.createdAt)
