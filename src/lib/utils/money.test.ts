@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { clampRate, clampNonNegative, fromRate, fromMoney, toMoney } from "./money";
+import {
+  clampRate,
+  clampNonNegative,
+  fromRate,
+  fromMoney,
+  toMoney,
+  formatMoney,
+} from "./money";
 
 describe("clampRate — tasa de IVA", () => {
   /**
@@ -62,6 +69,30 @@ describe("conversiones de dinero", () => {
     expect(toMoney(undefined)).toBe(0);
     expect(toMoney("no-es-numero")).toBe(0);
     expect(toMoney("1234.56")).toBe(1234.56);
+  });
+
+  it("formatMoney agrupa con punto, como se escribe en Costa Rica", () => {
+    // `toLocaleString("es-CR")` agrupa con espacio duro (U+00A0) y daba
+    // "₡2 400 000,00". Es lo que dice CLDR y no es como se escribe la plata acá
+    // — y sale impreso en las cotizaciones que ve el cliente.
+    expect(formatMoney(2_400_000)).toBe("₡2.400.000,00");
+    expect(formatMoney(1_625_500)).toBe("₡1.625.500,00");
+    expect(formatMoney(1234.5)).toBe("₡1.234,50");
+
+    // Guard contra el bug que motivó el cambio: ni un espacio de ningún tipo.
+    expect(formatMoney(1_000_000)).not.toMatch(/\s/);
+  });
+
+  it("formatMoney no toca el separador decimal", () => {
+    // La coma decimal es correcta en es-CR y tiene que sobrevivir a la
+    // normalización de los miles.
+    expect(formatMoney(0.5)).toBe("₡0,50");
+    expect(formatMoney(999)).toBe("₡999,00");
+  });
+
+  it("formatMoney respeta el símbolo de la moneda", () => {
+    expect(formatMoney(1_500, "USD")).toBe("$1.500,00");
+    expect(formatMoney(1_500, "CRC")).toBe("₡1.500,00");
   });
 
   it("fromMoney fija 2 decimales", () => {

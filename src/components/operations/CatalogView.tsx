@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { IconButton } from "@/components/ui/IconButton";
+import { Field } from "@/components/ui/Field";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Package } from "lucide-react";
 import { formatMoney } from "@/lib/utils/money";
@@ -42,46 +43,52 @@ const Fields = ({
   d: Draft;
   set: (p: Partial<Draft>) => void;
 }) => (
-  <div className="grid gap-2 sm:grid-cols-[1.4fr_1fr_repeat(3,0.9fr)]">
-    <Input
-      value={d.name}
-      onChange={(e) => set({ name: e.target.value })}
-      placeholder="Producto"
-      aria-label="Producto"
-    />
-    <Input
-      value={d.category}
-      onChange={(e) => set({ category: e.target.value })}
-      placeholder="Categoría"
-      aria-label="Categoría"
-    />
-    <Input
-      type="number"
-      step="0.01"
-      min="0"
-      value={d.materialsCost}
-      onChange={(e) => set({ materialsCost: Number(e.target.value) || 0 })}
-      placeholder="Materiales"
-      aria-label="Costo materiales"
-    />
-    <Input
-      type="number"
-      step="0.01"
-      min="0"
-      value={d.laborCost}
-      onChange={(e) => set({ laborCost: Number(e.target.value) || 0 })}
-      placeholder="Mano obra"
-      aria-label="Costo mano de obra"
-    />
-    <Input
-      type="number"
-      step="0.01"
-      min="0"
-      value={d.price}
-      onChange={(e) => set({ price: Number(e.target.value) || 0 })}
-      placeholder="Precio"
-      aria-label="Precio venta"
-    />
+  /* Los tres campos numéricos tenían `placeholder` y ningún rótulo visible.
+     Un placeholder sólo se ve con el campo vacío, y estos arrancan en 0: en la
+     pantalla eran tres cajas idénticas con un cero adentro. El `aria-label`
+     alcanzaba para un lector de pantalla y no para quien mira. */
+  <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr_repeat(3,0.9fr)]">
+    <Field label="Producto">
+      <Input
+        value={d.name}
+        onChange={(e) => set({ name: e.target.value })}
+        placeholder="Ej. Reel para Instagram"
+      />
+    </Field>
+    <Field label="Categoría">
+      <Input
+        value={d.category}
+        onChange={(e) => set({ category: e.target.value })}
+        placeholder="Opcional"
+      />
+    </Field>
+    <Field label="Materiales" hint="₡">
+      <Input
+        type="number"
+        step="0.01"
+        min="0"
+        value={d.materialsCost}
+        onChange={(e) => set({ materialsCost: Number(e.target.value) || 0 })}
+      />
+    </Field>
+    <Field label="Mano de obra" hint="₡">
+      <Input
+        type="number"
+        step="0.01"
+        min="0"
+        value={d.laborCost}
+        onChange={(e) => set({ laborCost: Number(e.target.value) || 0 })}
+      />
+    </Field>
+    <Field label="Precio" hint="₡">
+      <Input
+        type="number"
+        step="0.01"
+        min="0"
+        value={d.price}
+        onChange={(e) => set({ price: Number(e.target.value) || 0 })}
+      />
+    </Field>
   </div>
 );
 

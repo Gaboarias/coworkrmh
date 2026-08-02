@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { IconButton } from "@/components/ui/IconButton";
 import { StatStrip } from "@/components/ui/StatStrip";
+import { Field } from "@/components/ui/Field";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { formatMoney } from "@/lib/utils/money";
 import { createSale, deleteSale, type SalesResult } from "@/lib/actions/erpSales";
@@ -85,39 +86,39 @@ export const SalesView = ({
             Registrar venta
           </h3>
           <form onSubmit={add} className="grid gap-3 sm:grid-cols-2">
-            <FieldWithLabel label="Fecha">
+            <Field label="Fecha">
               <Input
                 type="date"
                 value={f.saleDate}
                 onChange={(e) => set({ saleDate: e.target.value })}
                 aria-label="Fecha"
               />
-            </FieldWithLabel>
-            <FieldWithLabel label="Descripción">
+            </Field>
+            <Field label="Descripción">
               <Input
                 value={f.description}
                 onChange={(e) => set({ description: e.target.value })}
                 placeholder="Ej. Reel para Instagram"
                 aria-label="Descripción"
               />
-            </FieldWithLabel>
-            <FieldWithLabel label="Cliente">
+            </Field>
+            <Field label="Cliente">
               <Input
                 value={f.clientName}
                 onChange={(e) => set({ clientName: e.target.value })}
                 placeholder="Nombre del cliente"
                 aria-label="Cliente"
               />
-            </FieldWithLabel>
-            <FieldWithLabel label="Categoría">
+            </Field>
+            <Field label="Categoría">
               <Input
                 value={f.category}
                 onChange={(e) => set({ category: e.target.value })}
                 placeholder="Ej. Producción, Edición"
                 aria-label="Categoría"
               />
-            </FieldWithLabel>
-            <FieldWithLabel label="Cantidad" hint="unidades vendidas">
+            </Field>
+            <Field label="Cantidad" hint="unidades vendidas">
               <Input
                 type="number"
                 step="0.01"
@@ -126,8 +127,8 @@ export const SalesView = ({
                 onChange={(e) => set({ qty: Number(e.target.value) || 0 })}
                 aria-label="Cantidad"
               />
-            </FieldWithLabel>
-            <FieldWithLabel label="Costo unitario" hint="tu costo por unidad">
+            </Field>
+            <Field label="Costo unitario" hint="tu costo por unidad">
               <Input
                 type="number"
                 step="0.01"
@@ -136,8 +137,8 @@ export const SalesView = ({
                 onChange={(e) => set({ unitCost: Number(e.target.value) || 0 })}
                 aria-label="Costo unitario"
               />
-            </FieldWithLabel>
-            <FieldWithLabel label="Precio unitario" hint="lo que le cobrás al cliente">
+            </Field>
+            <Field label="Precio unitario" hint="lo que le cobrás al cliente">
               <Input
                 type="number"
                 step="0.01"
@@ -146,7 +147,7 @@ export const SalesView = ({
                 onChange={(e) => set({ unitPrice: Number(e.target.value) || 0 })}
                 aria-label="Precio unitario"
               />
-            </FieldWithLabel>
+            </Field>
             <div className="flex items-end">
               <Button type="submit" loading={saving} className="w-full">
                 <Plus className="h-4 w-4" />
@@ -275,31 +276,11 @@ export const SalesView = ({
   );
 };
 
-// ── Helpers ──────────────────────────────────────────────────────
-
-function FieldWithLabel({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label className="mb-2 block text-xs font-medium text-ink-soft">
-        {label}
-        {hint && (
- <span className="ml-1 font-normal text-ink-faint">
-            — {hint}
-          </span>
-        )}
-      </label>
-      {children}
-    </div>
-  );
-}
+// `FieldWithLabel` vivía acá y subió a `@/components/ui/Field` cuando el
+// formulario de Catálogo necesitó lo mismo. De paso se arregló: el `<label>`
+// estaba al lado del control y sin `htmlFor`, así que se veía como etiqueta
+// pero no lo era — no enfocaba el campo al hacer clic ni lo nombraba para un
+// lector de pantalla. Ahora el control va adentro del `<label>`.
 
 function CalcStat({
   label,

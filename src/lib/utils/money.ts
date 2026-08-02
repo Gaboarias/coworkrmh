@@ -30,14 +30,35 @@ export const clampNonNegative = (n: number): number => {
   return Math.max(n, 0);
 };
 
+/**
+ * Separador de miles.
+ *
+ * `toLocaleString("es-CR")` agrupa con un ESPACIO DURO (U+00A0): devuelve
+ * `2 400 000,00`. Es lo que dice CLDR, pero no es como se escribe la plata en
+ * Costa Rica, donde va punto: `2.400.000,00`. La diferencia sale impresa en las
+ * cotizaciones que ve el cliente.
+ *
+ * Se normaliza en vez de pedir otro locale (`es-ES`, `de-DE` dan el formato
+ * correcto de casualidad): usar el locale de otro país para acertarle al de
+ * este es un acierto frágil, que se rompe el día que alguien toque el decimal.
+ *
+ * Cubre el espacio duro y el fino (U+202F), porque ICU ha usado los dos según
+ * la versión. Si algún día CLDR cambia es-CR al punto, esto queda sin efecto en
+ * vez de romperse.
+ */
+const GROUP_SEPARATORS = /[   ]/g;
+
 // Formato de dinero unificado para todo el módulo Operaciones.
 export function formatMoney(
   n: number,
   currency: "CRC" | "USD" | string = "CRC"
 ): string {
   const symbol = currency === "USD" ? "$" : "₡";
-  return `${symbol}${n.toLocaleString("es-CR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  const body = n
+    .toLocaleString("es-CR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+    .replace(GROUP_SEPARATORS, ".");
+  return `${symbol}${body}`;
 }
