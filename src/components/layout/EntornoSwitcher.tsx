@@ -2,7 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Check, ChevronsUpDown, Shield, Layers, Plus } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  Shield,
+  Layers,
+  Plus,
+  UserPlus,
+} from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { readableFg } from "@/lib/utils/color";
 import { Modal } from "@/components/ui/Modal";
@@ -239,6 +246,19 @@ export const EntornoSwitcher = ({ initialData }: { initialData: WsData }) => {
               );
             })}
           </ul>
+          {/* Segundo camino a /entorno además del ítem de sidebar. Acá es
+              donde uno mira cuando está pensando en entornos — y "invitar a
+              alguien a este entorno" es lo que se busca justo después de
+              cambiar de entorno o de crear uno. */}
+          {active && (
+            <a
+              href="/entorno"
+              className="flex items-center gap-3 border-t border-rule px-3 py-2 text-sm text-ink-soft transition-colors hover:bg-surface-el hover:text-ink"
+            >
+              <UserPlus className="h-4 w-4 flex-shrink-0" />
+              Equipo e invitaciones
+            </a>
+          )}
           <button
             type="button"
             onClick={() => {

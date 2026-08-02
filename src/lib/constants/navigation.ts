@@ -8,6 +8,7 @@ import {
   Building2,
   Mail,
   Settings,
+  Users,
   Bell,
   type LucideIcon,
 } from "lucide-react";
@@ -100,10 +101,16 @@ export const TERRITORIES: Territory[] = [
     label: "Sistema",
     tagline: "quién puede hacer qué",
     items: [
+      // Sin adminOnly: la pantalla se gatea con `members.manage` sobre el
+      // entorno activo, no con el rol admin global. Es el punto entero de las
+      // invitaciones — el dueño de un entorno no debería tener que pedirle a
+      // nadie para sumar gente a su propio equipo. La página redirige si no
+      // tenés el permiso.
+      { href: "/entorno", label: "Equipo", icon: Users },
       { href: "/admin", label: "Admin", icon: Shield, adminOnly: true },
     ],
     // Configuración vive en el pie del sidebar por costumbre, pero pertenece
-    // acá: es administración de la cuenta y del entorno.
+    // acá: es administración de la cuenta.
     alsoOwns: ["/settings"],
   },
 ];
