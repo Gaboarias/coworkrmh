@@ -26,10 +26,7 @@ Plantillas revisadas:
   ✅ .specify/templates/spec-template.md — sin secciones dependientes de principios.
   ✅ .specify/templates/tasks-template.md — sin categorías dependientes de principios.
 
-Seguimiento pendiente:
-  ⚠ README.md §Despliegue afirma "se trabaja siempre en la rama preview", pero los
-    commits recientes van directo a main. Contradicción sin resolver: a propósito
-    NO se codificó política de ramas acá hasta saber cuál es la práctica real.
+Sin seguimiento pendiente.
 
 ---
 1.0.0 → 1.0.1 (PATCH — aclaración, sin cambio de intención)
@@ -49,6 +46,24 @@ La regla ahora nombra esas dos excepciones y aclara que una paleta de datos no e
 excepción: se importa de src/lib/constants/, no se reescribe.
 
 Sin impacto en plantillas.
+
+---
+1.0.1 → 1.1.0 (MINOR — expande materialmente una guía existente)
+Fecha: 2026-08-01
+
+Cambio: §Flujo de trabajo y gates de calidad gana una subsección "Ramas".
+
+El README declaraba desde siempre que se trabaja en `preview` y se mergea a
+`main` tras validar. La práctica había derivado: `preview` llevaba dos meses sin
+tocarse y 60 commits de atraso, incluidos los de seguridad y todo el rediseño de
+hoy, que fueron directo a producción.
+
+/speckit-analyze lo marcó como inconsistencia (I7) y v1.0.0 dejó la política sin
+codificar a propósito, hasta saber cuál era la práctica real. El equipo confirmó
+que la regla del README es la correcta y que fue el uso el que derivó.
+
+Se puso `preview` al día con `main` por fast-forward (4d439a9 → ff48941, cero
+commits en riesgo) y a partir de acá el trabajo va ahí.
 -->
 
 # Constitución de Pistachio
@@ -170,6 +185,25 @@ cuesta un día y el ánimo del equipo.
   sí misma. Que una función sea inalcanzable desde la UI no la protege — es un
   endpoint HTTP.
 
+### Ramas
+
+El trabajo **DEBE** ir a `preview`. Vercel la auto-despliega a su propia URL, y
+esa URL es donde se valida.
+
+- El merge a `main` **DEBE** hacerse sólo después de validar en preview, porque
+  `main` es producción: lo que entra ahí lo usa el equipo ese mismo día.
+- Nadie commitea a `main` directo. La excepción es un hotfix de producción, que
+  **DEBE** volver a `preview` inmediatamente para que las dos ramas no se
+  separen.
+- Si `preview` queda atrás de `main`, se pone al día antes de empezar. Estar 60
+  commits atrás es lo que hizo que la regla dejara de cumplirse sin que nadie lo
+  decidiera.
+
+**Razón**: el principio IV pide que cada paso quede desplegable y verificable.
+Sin un escalón entre el editor y producción, ese principio se apoya sólo en que
+el gate local esté verde — que es una red más fina que un deploy real mirado por
+una persona.
+
 ## Governance
 
 Esta constitución **prevalece** sobre cualquier otra práctica del repositorio.
@@ -192,4 +226,4 @@ citar la versión vigente de esta constitución y evaluarse contra sus principio
 Toda violación aceptada **DEBE** quedar registrada en `## Complexity Tracking`
 con el motivo y la alternativa más simple que se descartó.
 
-**Version**: 1.0.1 | **Ratified**: 2026-08-01 | **Last Amended**: 2026-08-01
+**Version**: 1.1.0 | **Ratified**: 2026-08-01 | **Last Amended**: 2026-08-01

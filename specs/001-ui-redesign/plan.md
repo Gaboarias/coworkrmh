@@ -1,6 +1,6 @@
 # Implementation Plan: Rediseño UI Web — "Operacional con calidez"
 
-**Branch**: `main` (migración incremental; sin branch dedicado por hook) | **Date**: 2026-06-29 | **Spec**: [spec.md](./spec.md)
+**Branch**: `preview` (constitución v1.1.0 §Ramas; el merge a `main` va tras validar en el deploy de preview) | **Date**: 2026-06-29 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `specs/001-ui-redesign/spec.md`
 
@@ -16,7 +16,7 @@ Rediseñar la capa visual de la web app (no la lógica) hacia "Operacional con c
 
 **Storage**: Preferencias de UI (tema, densidad) → cookie + `localStorage` (sin tocar DB). Datos de negocio → Neon/Drizzle (fuera de alcance)
 
-**Testing**: `npm run verify` (`tsc --noEmit` + `next lint` + `vitest run`) como gate por fase — es el gate que fija la constitución v1.0.1 §Flujo de trabajo. Al 2026-08-01 el repo tiene 10 archivos de test y 114 tests, incluidos dos de conformidad (`action-guards`, `button-conformance`). Verificación visual/manual por pantalla según `quickstart.md`. Sin suite e2e.
+**Testing**: `npm run verify` (`tsc --noEmit` + `next lint` + `vitest run`) como gate por fase — es el gate que fija la constitución v1.1.0 §Flujo de trabajo. Al 2026-08-01 el repo tiene 10 archivos de test y 114 tests, incluidos dos de conformidad (`action-guards`, `button-conformance`). Verificación visual/manual por pantalla según `quickstart.md`. Sin suite e2e.
 
 **Target Platform**: Navegador desktop primero (la app es desktop-first; responsive ya existente se preserva)
 
@@ -32,7 +32,7 @@ Rediseñar la capa visual de la web app (no la lógica) hacia "Operacional con c
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Evaluado contra `.specify/memory/constitution.md` **v1.0.1**.
+Evaluado contra `.specify/memory/constitution.md` **v1.1.0**.
 Los cuatro principios que esta sección aplicaba como "de-facto" son ahora vinculantes.
 
 > **Alcance de este gate**: evalúa el **plan**, no el estado del código. La feature

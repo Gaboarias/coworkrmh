@@ -119,9 +119,13 @@ Para cambios de esquema cuando **no** se puede `vercel env pull` (la
 
 - Se trabaja **siempre en la rama `preview`**; Vercel auto-despliega a la URL de
   preview. El merge a `main` (producción) se hace solo tras validar.
+  Codificado en `.specify/memory/constitution.md` §Flujo de trabajo → Ramas.
+- Nadie commitea a `main` directo. La excepción es un hotfix de producción, que
+  vuelve a `preview` enseguida para que las ramas no se separen.
 - El build local en Windows puede crashear por OOM (entorno, no código):
   **la fuente de verdad es el deploy de Vercel** (estado `READY`).
-- Verificación por cambio: `npm run type-check` (0 errores) + deploy `READY`.
+- Verificación por cambio: `npm run verify` (type-check + lint + tests, todo en
+  verde) + deploy `READY`.
 
 ## Sistema de diseño
 

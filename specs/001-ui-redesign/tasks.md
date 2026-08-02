@@ -2,7 +2,7 @@
 
 **Feature**: `001-ui-redesign` | **Branch**: `main` | **Plan**: [plan.md](./plan.md) | **Spec**: [spec.md](./spec.md)
 
-**Constitución**: `.specify/memory/constitution.md` **v1.0.1** (ratificada 2026-08-01)
+**Constitución**: `.specify/memory/constitution.md` **v1.1.0** (ratificada 2026-08-01)
 
 ---
 
@@ -45,7 +45,7 @@ Proyecto único Next.js App Router. Código en `src/`, tests en `src/**/*.test.t
 
 ## Phase 2: Foundational (bloquea todas las user stories)
 
-**Por qué es bloqueante**: la constitución v1.0.1, principio III, exige que las
+**Por qué es bloqueante**: la constitución v1.1.0, principio III, exige que las
 animaciones respeten `prefers-reduced-motion`. Hoy la app lo incumple para 50 de
 sus 51 animaciones. Agregar más UI encima de un incumplimiento conocido lo
 agranda, así que esto va antes que el resto aunque su user story sea P3.
@@ -124,14 +124,14 @@ colores viejos que ese ajuste no alcanzaría.
 
 Alcance auditado el 2026-08-01: **14 violaciones reales**, no las 73 que reporta
 un grep ingenuo. Las otras 59 son correctas por diseño y están exceptuadas en la
-constitución v1.0.1 §Restricciones técnicas — no tocarlas.
+constitución v1.1.0 §Restricciones técnicas — no tocarlas.
 
 - [x] T023 Reemplazar `PIE_COLORS` en `src/components/reports/ReportsView.tsx:39-46` por un import de `ENTORNO_SWATCHES` de `src/lib/constants/entornoColors.ts` — los 6 valores son idénticos verbatim
 - [x] T024 [P] Reemplazar los 4 `oklch(...)` de `src/components/clients/ClientsView.tsx` (líneas ~179, ~314, ~316, ~329) por los tokens `urgent`, `done` y `warn`
 - [x] T025 [P] Reemplazar los 2 `oklch(...)` de `src/components/reports/ClientReportsView.tsx` (líneas ~281, ~495) por los tokens `urgent` y `done`
 - [x] T026 [P] Resolver `DEFAULT_COLOR = "#ff6b6b"` en `src/components/calendar/CalendarView.tsx:102` — el valor **no coincide** con `--coral` (#c96b35), así que es un token huérfano: decidir si debe ser `var(--coral)` o `DEFAULT_ENTORNO_COLOR` y documentarlo
 - [x] T027 [P] Reemplazar el fallback `"#161412"` de `src/app/(app)/dashboard/page.tsx:290` por `var(--ink)`, que es exactamente ese valor en tema claro y además se adapta al oscuro
-- [x] T028 Crear `src/tests/color-tokens.test.ts` que falle si aparece un literal de color en `src/components/**` o `src/app/(app)/**`, descontando comentarios, con las excepciones de la constitución v1.0.1 declaradas vía marcador `color-literal-ok:` y razón escrita. (Archivo propio en vez de extender `button-conformance`: cada test de conformidad cubre una regla.)
+- [x] T028 Crear `src/tests/color-tokens.test.ts` que falle si aparece un literal de color en `src/components/**` o `src/app/(app)/**`, descontando comentarios, con las excepciones de la constitución v1.1.0 declaradas vía marcador `color-literal-ok:` y razón escrita. (Archivo propio en vez de extender `button-conformance`: cada test de conformidad cubre una regla.)
 
 **Checkpoint**: cero literales de color fuera de las excepciones, sostenido por un test.
 
