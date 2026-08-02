@@ -1,21 +1,28 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { formatDateCR, todayYmdCR } from "@/lib/utils/datetime";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import type { ProjectStatus } from "@/lib/types";
 
 /**
- * /projects — Explorer con tabs por CATEGORÍA (bucket) + specimens grandes.
+ * /projects — cartera agrupada por categoría (bucket).
  *
- * Tabs derivados de los buckets reales de la DB. Click en un tab filtra los
- * specimens a los proyectos de esa categoría. Tab "Todos" muestra todo.
- * Tab "Sin categoría" agrupa proyectos sin bucket asignado (si hay).
+ * Antes era un "specimen" por proyecto: un bloque a ancho completo con el
+ * título en 52px, la descripción y una grilla de tres cifras grandes. Bonito de
+ * a uno, pero un equipo con doce proyectos tenía que scrollear doce pantallas
+ * para ver su cartera — y los buckets eran tabs, así que ver dos negocios a la
+ * vez era imposible.
  *
- * Specimens: 1 bloque por proyecto a ancho completo, mega-tipo Satoshi,
- * stats grandes (tareas activas, % completo, días restantes).
+ * Ahora el bucket es un ENCABEZADO DE SECCIÓN y cada proyecto una fila. Todo a
+ * la vista, cero clics para comparar. Es el mismo gesto que ya usa el ERP y el
+ * que la dirección pide: densidad con jerarquía, no una pantalla por dato.
+ *
+ * Cada fila responde lo que se necesita sin abrir el proyecto: en qué estado
+ * está, cuánto lleva, quién lo trabaja y cuándo vence. La descripción NO entra:
+ * es lo que más ancho come y lo que menos se usa para decidir dónde entrar.
  */
 
 export interface ProjectSpecimen {
@@ -34,6 +41,7 @@ export interface ProjectSpecimen {
   totalTasks: number;
   doneTasks: number;
   activeTasks: number;
+  members: { id: string; name: string | null; avatarUrl: string | null }[];
 }
 
 export interface BucketTab {
@@ -43,9 +51,26 @@ export interface BucketTab {
 }
 
 const UNCATEGORIZED_ID = "__uncategorized__";
-const ALL_ID = "__all__";
 
-const DEFAULT_PROJECT_COLOR = "var(--ink)";
+/** Estado + color. El color acompaña, nunca informa solo. */
+const STATUS: Record<ProjectStatus, { label: string; tone: string }> = {
+  active: { label: "En curso", tone: "text-done" },
+  paused: { label: "En pausa", tone: "text-ink-faint" },
+  in_review: { label: "Revisión", tone: "text-info" },
+  stopped: { label: "Detenido", tone: "text-urgent" },
+  completed: { label: "Completado", tone: "text-ink-soft" },
+  archived: { label: "Archivado", tone: "text-ink-faint" },
+};
+
+/** Cuántos avatares antes de resumir en "+N". */
+const AVATARS_SHOWN = 3;
+
+interface Section {
+  id: string;
+  name: string;
+  color: string | null;
+  projects: ProjectSpecimen[];
+}
 
 export function ProjectsExplorer({
   specimens,
@@ -54,313 +79,161 @@ export function ProjectsExplorer({
   specimens: ProjectSpecimen[];
   buckets: BucketTab[];
 }) {
-  const [filter, setFilter] = useState<string>(ALL_ID);
-
-  // Detectar si hay proyectos sin bucket → agregar tab "Sin categoría".
-  const hasUncategorized = specimens.some((s) => !s.bucketId);
-
-  const tabs: Array<BucketTab & { count: number }> = useMemo(() => {
-    const counts = new Map<string, number>();
+  const sections: Section[] = useMemo(() => {
+    const byBucket = new Map<string, ProjectSpecimen[]>();
     for (const s of specimens) {
       const key = s.bucketId ?? UNCATEGORIZED_ID;
-      counts.set(key, (counts.get(key) ?? 0) + 1);
+      const list = byBucket.get(key) ?? [];
+      list.push(s);
+      byBucket.set(key, list);
     }
-    // Solo categorías con al menos un proyecto — las que están en 0 no se
-    // muestran (evita una fila de filtros saturada de estados vacíos).
-    const bucketTabs = buckets
+
+    // Se respeta el orden de `buckets` (viene ordenado por posición desde la
+    // DB) y se omiten los vacíos: una sección con cero proyectos es ruido.
+    const out: Section[] = buckets
+      .filter((b) => byBucket.has(b.id))
       .map((b) => ({
-        ...b,
-        count: counts.get(b.id) ?? 0,
-      }))
-      .filter((b) => b.count > 0);
-    const all = [
-      { id: ALL_ID, name: "Todos", color: null, count: specimens.length },
-      ...bucketTabs,
-    ];
-    if (hasUncategorized) {
-      all.push({
+        id: b.id,
+        name: b.name,
+        color: b.color,
+        projects: byBucket.get(b.id)!,
+      }));
+
+    // "Sin categoría" va último: es una bandeja de entrada, no un negocio.
+    const orphans = byBucket.get(UNCATEGORIZED_ID);
+    if (orphans?.length) {
+      out.push({
         id: UNCATEGORIZED_ID,
         name: "Sin categoría",
         color: null,
-        count: counts.get(UNCATEGORIZED_ID) ?? 0,
+        projects: orphans,
       });
     }
-    return all;
-  }, [specimens, buckets, hasUncategorized]);
-
-  const visible = useMemo(() => {
-    if (filter === ALL_ID) return specimens;
-    if (filter === UNCATEGORIZED_ID) {
-      return specimens.filter((s) => !s.bucketId);
-    }
-    return specimens.filter((s) => s.bucketId === filter);
-  }, [specimens, filter]);
+    return out;
+  }, [specimens, buckets]);
 
   return (
-    <div className="mt-2 space-y-12">
-      {/* ── Bucket tabs ───────────────────────────────────────── */}
-      <nav
-        aria-label="Filtrar por categoría"
-        className="-mx-1 flex flex-wrap items-end gap-x-1 gap-y-2"
-      >
-        {tabs.map((t) => {
-          const isActive = filter === t.id;
-          const accent = t.color ?? "var(--ink)";
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setFilter(t.id)}
-              aria-pressed={isActive}
-              className={cn(
-                "group/tab relative flex items-baseline gap-2 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors",
-                isActive ? "text-ink" : "text-ink-faint hover:text-ink-soft"
-              )}
-            >
-              {t.color && (
+    <div className="mt-4 space-y-10">
+      {sections.map((section) => (
+        <section key={section.id} aria-label={section.name}>
+          <div className="flex items-baseline justify-between gap-4 border-b border-rule-strong pb-2">
+            <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.18em] text-ink">
+              {section.color && (
                 <span
                   aria-hidden
-                  className="inline-block h-2 w-2 self-center rounded-full"
-                  style={{ backgroundColor: t.color }}
+                  className="inline-block h-2 w-2 flex-shrink-0 rounded-full"
+                  style={{ backgroundColor: section.color }}
                 />
               )}
-              <span className="font-bold">{t.name}</span>
-              <span
-                className={cn(
-                  "tabular-nums",
-                  isActive ? "text-ink-soft" : "text-ink-faint"
-                )}
-              >
-                {t.count}
-              </span>
-              {/* Hairline gruesa abajo del activo */}
-              <span
-                aria-hidden
-                className={cn(
-                  "absolute inset-x-2 -bottom-px h-[3px] origin-left transition-transform duration-300 ease-out",
-                  isActive ? "scale-x-100" : "scale-x-0"
-                )}
-                style={{ backgroundColor: accent }}
-              />
-            </button>
-          );
-        })}
-      </nav>
+              {section.name}
+            </h2>
+            <span className="flex-shrink-0 text-[11px] tabular-nums text-ink-faint">
+              {section.projects.length}{" "}
+              {section.projects.length === 1 ? "proyecto" : "proyectos"}
+            </span>
+          </div>
 
-      {/* ── Specimens ────────────────────────────────────────── */}
-      {visible.length === 0 ? (
- <p className="py-12 text-center text-sm text-ink-faint">
-          No hay proyectos en esta categoría.
-        </p>
-      ) : (
-        <div className="divide-y divide-rule">
-          {visible.map((s, i) => (
-            <ProjectSpecimenBlock key={s.id} s={s} order={i} />
-          ))}
-        </div>
-      )}
+          <ul className="divide-y divide-rule">
+            {section.projects.map((p) => (
+              <ProjectRow key={p.id} p={p} />
+            ))}
+          </ul>
+        </section>
+      ))}
     </div>
   );
 }
 
-// ── Specimen ──────────────────────────────────────────────────────
-
-function ProjectSpecimenBlock({
-  s,
-  order,
-}: {
-  s: ProjectSpecimen;
-  order: number;
-}) {
-  const accent = s.color ?? DEFAULT_PROJECT_COLOR;
-  const percentComplete =
-    s.totalTasks > 0 ? Math.round((s.doneTasks / s.totalTasks) * 100) : null;
-
-  // Días restantes — calculado en CR.
-  let daysRemaining: number | null = null;
-  let isOverdue = false;
-  const endRef = s.endDate ?? s.dueDate;
-  if (endRef) {
-    const today = todayYmdCR();
-    const endMs = new Date(endRef + "T12:00:00Z").getTime();
-    const todayMs = new Date(today + "T12:00:00Z").getTime();
-    const diff = Math.round((endMs - todayMs) / 86_400_000);
-    daysRemaining = diff;
-    isOverdue = diff < 0 && s.status !== "completed" && s.status !== "archived";
-  }
+function ProjectRow({ p }: { p: ProjectSpecimen }) {
+  const status = STATUS[p.status] ?? STATUS.active;
+  const overdue =
+    !!p.dueDate && p.dueDate < todayYmdCR() && p.status !== "completed";
+  const extra = p.members.length - AVATARS_SHOWN;
 
   return (
-    <article
-      style={{
-        animationDelay: `${Math.min(order, 8) * 60}ms`,
-      }}
-      className="group/specimen relative animate-fade-in py-14 first:pt-6 last:pb-6 md:py-20"
-    >
-      {/* Color band — left edge accent del color del proyecto */}
-      <span
-        aria-hidden
-        className="absolute left-0 top-1/2 hidden h-[60%] w-[3px] -translate-y-1/2 md:block"
-        style={{ backgroundColor: accent }}
-      />
+    <li>
+      <Link
+        href={`/projects/${p.id}`}
+        className="flex items-center gap-4 py-[var(--erp-row-py)] pr-2 transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        {/* Color del proyecto: la única pista cromática de identidad en la
+            fila. 2px, no una barra — es una marca, no un adorno. */}
+        <span
+          aria-hidden
+          className="h-8 w-[2px] flex-shrink-0"
+          style={{ backgroundColor: p.color ?? "var(--rule-strong)" }}
+        />
 
-      <div className="md:pl-8">
-        {/* Eyebrow row: hanging number + bucket */}
-        <div className="mb-6 flex flex-wrap items-baseline gap-x-6 gap-y-2">
-          <span className="font-mono text-[14px] font-bold tabular-nums text-ink-faint">
-            {String(s.index).padStart(2, "0")}
+        <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">
+          {p.name}
+        </span>
+
+        {/* Estado: color + etiqueta, nunca color solo. */}
+        <span
+          className={cn(
+            "hidden w-[84px] flex-shrink-0 text-[11px] uppercase tracking-[0.1em] sm:block",
+            status.tone
+          )}
+        >
+          {status.label}
+        </span>
+
+        {/* Avance. La barra es redundante con la cifra a propósito: se lee de
+            un vistazo al escanear la columna, sin leer cada número. */}
+        <span className="hidden w-[92px] flex-shrink-0 items-center gap-2 md:flex">
+          <span
+            aria-hidden
+            className="h-[3px] flex-1 bg-rule"
+          >
+            <span
+              className="block h-full bg-accent"
+              style={{
+                width: p.totalTasks
+                  ? `${Math.round((p.doneTasks / p.totalTasks) * 100)}%`
+                  : "0%",
+              }}
+            />
           </span>
-          {s.bucketName && (
-            <span className="inline-flex items-baseline gap-2">
-              <span
-                aria-hidden
-                className="inline-block h-1.5 w-1.5 self-center rounded-full"
-                style={{
-                  backgroundColor: s.bucketColor ?? "var(--ink-faint)",
-                }}
-              />
-              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
-                {s.bucketName}
-              </span>
+          <span className="text-[11px] tabular-nums text-ink-faint">
+            {p.doneTasks}/{p.totalTasks}
+          </span>
+        </span>
+
+        {/* Equipo. `-space-x-1` los solapa para que tres personas ocupen menos
+            que tres avatares sueltos. */}
+        <span className="hidden w-[76px] flex-shrink-0 items-center lg:flex">
+          {p.members.length === 0 ? (
+            <span className="text-[11px] text-ink-faint">—</span>
+          ) : (
+            <span className="flex -space-x-1">
+              {p.members.slice(0, AVATARS_SHOWN).map((m) => (
+                <UserAvatar
+                  key={m.id}
+                  name={m.name}
+                  avatarUrl={m.avatarUrl}
+                  size="xs"
+                />
+              ))}
+              {extra > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-2 text-[9px] tabular-nums text-ink-soft ring-1 ring-bg">
+                  +{extra}
+                </span>
+              )}
             </span>
           )}
-        </div>
+        </span>
 
-        {/* Mega title — link al proyecto */}
-        <Link
-          href={`/projects/${s.id}`}
-          className="group/title block"
-          aria-label={`Abrir proyecto ${s.name}`}
+        {/* Entrega. Vencida en urgente — el color acompaña a la fecha, que ya
+            dice por sí sola qué pasó. */}
+        <span
+          className={cn(
+            "w-[64px] flex-shrink-0 text-right text-[11px] tabular-nums",
+            overdue ? "text-urgent" : "text-ink-faint"
+          )}
         >
-          <h2 className="flex items-start gap-4 text-[28px] font-bold leading-[0.95] tracking-[-0.04em] text-ink sm:text-[36px] md:text-[46px] lg:text-[52px]">
-            <span className="min-w-0 flex-1">
-              {s.name}
-              <span
-                aria-hidden
-                className="text-[28px] sm:text-[36px] md:text-[46px] lg:text-[52px]"
-                style={{ color: accent }}
-              >
-                .
-              </span>
-            </span>
-            <ArrowUpRight
-              aria-hidden
-              className="mt-3 h-7 w-7 flex-shrink-0 text-ink-faint transition-all duration-300 ease-out group-hover/title:-translate-y-1 group-hover/title:translate-x-1 group-hover/title:text-ink sm:mt-4 sm:h-9 sm:w-9 md:mt-5 md:h-12 md:w-12"
-            />
-          </h2>
-        </Link>
-
-        {/* Description */}
-        {s.description && (
- <p className="mt-6 max-w-[60ch] text-[15px] leading-[1.5] text-ink-soft sm:text-[17px]">
-            {s.description}
-          </p>
-        )}
-
-        {/* Stats strip — 3 numerales grandes */}
-        <dl className="mt-10 grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-3">
-          <Stat
-            label="Tareas activas"
-            value={String(s.activeTasks)}
-            sub={
-              s.totalTasks > 0
-                ? `de ${s.totalTasks} totales`
-                : "ninguna creada"
-            }
-            accent={s.activeTasks > 0 ? "ink" : "faint"}
-          />
-          <Stat
-            label="Progreso"
-            value={percentComplete !== null ? `${percentComplete}%` : "—"}
-            sub={
-              percentComplete !== null
-                ? `${s.doneTasks} terminadas`
-                : "sin tareas"
-            }
-            accent={
-              percentComplete === null
-                ? "faint"
-                : percentComplete >= 80
-                  ? "done"
-                  : "ink"
-            }
-            progress={percentComplete}
-          />
-          <Stat
-            label={
-              isOverdue
-                ? "Atrasado"
-                : daysRemaining !== null && daysRemaining >= 0
-                  ? "Días restantes"
-                  : endRef
-                    ? "Fecha final"
-                    : "Sin fecha"
-            }
-            value={
-              daysRemaining === null
-                ? "—"
-                : isOverdue
-                  ? `${Math.abs(daysRemaining)}`
-                  : `${daysRemaining}`
-            }
-            sub={endRef ? formatDateCR(endRef) : "sin fecha definida"}
-            accent={isOverdue ? "urgent" : "ink"}
-          />
-        </dl>
-      </div>
-    </article>
-  );
-}
-
-// ── Stat ───────────────────────────────────────────────────────────
-
-function Stat({
-  label,
-  value,
-  sub,
-  accent = "ink",
-  progress,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  accent?: "ink" | "done" | "urgent" | "faint";
-  progress?: number | null;
-}) {
-  const numColor =
-    accent === "done"
-      ? "text-done"
-      : accent === "urgent"
-        ? "text-urgent"
-        : accent === "faint"
-          ? "text-ink-faint"
-          : "text-ink";
-  return (
-    <div className="flex flex-col gap-2">
-      <dt className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
-        {label}
-      </dt>
-      <dd
-        className={cn(
-          "text-[28px] font-bold leading-none tracking-[-0.04em] tabular-nums sm:text-[32px]",
-          numColor
-        )}
-      >
-        {value}
-      </dd>
-      {progress !== undefined && progress !== null && (
-        <div className="mt-1 h-[2px] w-full bg-rule" aria-hidden>
-          <div
-            className={cn(
-              "h-full transition-all duration-700 ease-out",
-              accent === "done" ? "bg-done" : "bg-ink"
-            )}
-            style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
-          />
-        </div>
-      )}
-      {sub && (
- <span className="text-[14px] text-ink-soft">{sub}</span>
-      )}
-    </div>
+          {p.dueDate ? formatDateCR(p.dueDate, { month: "short" }) : "—"}
+        </span>
+      </Link>
+    </li>
   );
 }
