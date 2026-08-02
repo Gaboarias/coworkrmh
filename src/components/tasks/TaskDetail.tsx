@@ -312,6 +312,8 @@ export function TaskDetail({
                 }}
                 maxLength={500}
                 aria-label="Editar título de la tarea"
+                // foco-ok: el campo sólo existe mientras se edita el título y se
+                // monta enfocado; el borde inferior en project-color marca el modo.
                 className="mt-4 w-full border-b-2 bg-transparent text-[32px] font-bold leading-[1.05] tracking-[-0.03em] text-ink outline-none sm:text-[44px] md:text-[52px]"
                 style={{ borderColor: "var(--project-color)" }}
               />

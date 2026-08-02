@@ -1,0 +1,147 @@
+import { describe, it, expect } from "vitest";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
+
+/**
+ * Foco visible, coherencia de tema y aislamiento del portal.
+ *
+ * Cubre la parte automatizable de tres criterios que hasta ahora sólo se podían
+ * comprobar a ojo, pantalla por pantalla (SC-003, SC-005 foco, SC-007). No
+ * reemplaza mirar la app: reemplaza tener que volver a mirarla cada vez que
+ * alguien toca un archivo.
+ */
+
+const ROOTS = ["src/components", "src/app"];
+const PORTAL = "src/app/(portal)";
+
+function tsxFiles(dir: string): string[] {
+  const out: string[] = [];
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return out;
+  }
+  for (const entry of entries) {
+    const p = join(dir, entry);
+    if (statSync(p).isDirectory()) out.push(...tsxFiles(p));
+    else if (p.endsWith(".tsx")) out.push(p);
+  }
+  return out;
+}
+
+const rel = (f: string) => relative(".", f).replace(/\\/g, "/");
+
+/** Razón inline para saltarse la regla de foco. */
+const FOCUS_OK = /foco-ok:\s*(.+)/;
+const LOOKBACK = 6;
+
+function reasonAbove(lines: string[], line: number): string | null {
+  const stop = Math.max(0, line - 1 - LOOKBACK);
+  for (let i = line - 2; i >= stop; i--) {
+    const m = FOCUS_OK.exec(lines[i]);
+    if (m) return m[1].trim();
+    if (lines[i].trim() === "") return null;
+  }
+  return null;
+}
+
+describe("foco visible", () => {
+  /**
+   * `globals.css` define un `:focus-visible` global, pero las utilidades de
+   * Tailwind se emiten después, así que un `focus:outline-none` lo pisa. Quitar
+   * el outline sin poner otra cosa deja el control sin ningún indicador — y no
+   * rompe nada, así que nadie se entera.
+   */
+  it("nadie quita el outline sin poner un anillo en su lugar", () => {
+    const offenders: string[] = [];
+    const escapes: { at: string; reason: string }[] = [];
+
+    for (const root of ROOTS) {
+      for (const file of tsxFiles(root)) {
+        const src = readFileSync(file, "utf8");
+        const lines = src.split(/\r?\n/);
+        lines.forEach((text, i) => {
+          if (!/\boutline-none\b/.test(text)) return;
+          const line = i + 1;
+          // El reemplazo puede venir en la misma línea o en las dos siguientes,
+          // cuando la cadena de clases está partida por cn().
+          const window = lines.slice(i, i + 3).join(" ");
+          if (/focus-visible:ring|focus:ring|focus-visible:outline-/.test(window)) return;
+
+          const reason = reasonAbove(lines, line);
+          if (reason) escapes.push({ at: `${rel(file)}:${line}`, reason });
+          else offenders.push(`  ${rel(file)}:${line}`);
+        });
+      }
+    }
+
+    expect(
+      offenders.join("\n"),
+      `Controles sin indicador de foco:\n${offenders.join("\n")}`
+    ).toBe("");
+    // Guard: si el escáner dejara de encontrar los casos exentos, este test se
+    // volvería vacío sin que nadie lo note.
+    expect(escapes.length, "no se encontró ninguna excepción declarada").toBeGreaterThan(0);
+    for (const e of escapes) {
+      expect(e.reason.length, `${e.at}: razón demasiado corta`).toBeGreaterThan(25);
+    }
+  });
+});
+
+describe("coherencia de tema (SC-003)", () => {
+  /**
+   * El sistema es token-first: los dos temas salen de las CSS vars, no de
+   * variantes `dark:` en el markup. Una sola `dark:` significa que esa pantalla
+   * decide su tema aparte del resto, que es justo lo que SC-003 prohíbe.
+   */
+  it("ningún componente usa variantes dark: de Tailwind", () => {
+    const found: string[] = [];
+    for (const root of ROOTS) {
+      for (const file of tsxFiles(root)) {
+        const src = readFileSync(file, "utf8");
+        src.split(/\r?\n/).forEach((text, i) => {
+          const m = /\bdark:[a-z-]+/.exec(text);
+          if (m) found.push(`  ${rel(file)}:${i + 1}  ${m[0]}`);
+        });
+      }
+    }
+    expect(
+      found.join("\n"),
+      `El tema debe salir de los tokens, no de \`dark:\`:\n${found.join("\n")}`
+    ).toBe("");
+  });
+});
+
+describe("aislamiento del portal (SC-007)", () => {
+  const layout = readFileSync(`${PORTAL}/layout.tsx`, "utf8");
+
+  it("el layout fuerza esquema claro", () => {
+    expect(layout).toMatch(/colorScheme:\s*"light"/);
+  });
+
+  /**
+   * El portal es una superficie pública que no debe heredar el tema del usuario
+   * interno (FR-010). Consumir un token que cambia con `.dark` —`bg-bg`,
+   * `text-ink`, `border-rule`— lo haría exactamente al revés: el cliente
+   * externo vería la marca en oscuro porque alguien del estudio prefiere oscuro.
+   */
+  it("ninguna pantalla del portal consume tokens que cambian con el tema", () => {
+    const THEMED = /\b(?:bg|text|border|divide|ring)-(?:bg|bg-2|ink|ink-soft|ink-faint|rule|rule-strong|surface|surface-2|surface-el|accent|accent-soft)\b/g;
+    const found: string[] = [];
+    for (const file of tsxFiles(PORTAL)) {
+      const src = readFileSync(file, "utf8");
+      src.split(/\r?\n/).forEach((text, i) => {
+        THEMED.lastIndex = 0;
+        let m: RegExpExecArray | null;
+        while ((m = THEMED.exec(text))) {
+          found.push(`  ${rel(file)}:${i + 1}  ${m[0]}`);
+        }
+      });
+    }
+    expect(
+      found.join("\n"),
+      `El portal heredaría el tema interno:\n${found.join("\n")}`
+    ).toBe("");
+  });
+});

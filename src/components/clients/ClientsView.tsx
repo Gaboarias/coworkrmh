@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Input } from "@/components/ui/Input";
 import { DensityToggle } from "@/components/operations/DensityToggle";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
@@ -180,42 +181,38 @@ export function ClientsView({ clients: initialClients, isAdmin }: ClientsViewPro
               <label className="text-xs font-medium text-ink-soft">
                 Empresa <span className="text-urgent">*</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={form.companyName}
                 onChange={(e) => setField("companyName", e.target.value)}
                 placeholder="Nombre de la empresa"
-                className="w-full rounded-lg border border-rule bg-bg px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:border-ink focus:outline-none"
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-ink-soft">Contacto</label>
-              <input
+              <Input
                 type="text"
                 value={form.contactName}
                 onChange={(e) => setField("contactName", e.target.value)}
                 placeholder="Nombre del contacto"
-                className="w-full rounded-lg border border-rule bg-bg px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:border-ink focus:outline-none"
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-ink-soft">Email</label>
-              <input
+              <Input
                 type="email"
                 value={form.email}
                 onChange={(e) => setField("email", e.target.value)}
                 placeholder="contacto@empresa.com"
-                className="w-full rounded-lg border border-rule bg-bg px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:border-ink focus:outline-none"
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-ink-soft">Teléfono</label>
-              <input
+              <Input
                 type="tel"
                 value={form.phone}
                 onChange={(e) => setField("phone", e.target.value)}
                 placeholder="+506 8888-8888"
-                className="w-full rounded-lg border border-rule bg-bg px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:border-ink focus:outline-none"
               />
             </div>
             <div className="flex justify-end gap-2 sm:col-span-2">

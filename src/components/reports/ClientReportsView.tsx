@@ -16,6 +16,8 @@ import {
 import { ProjectTabs } from "@/components/projects/ProjectTabs";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Input, Textarea } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { IconButton, iconButtonVariants } from "@/components/ui/IconButton";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
@@ -281,12 +283,11 @@ export function ClientReportsView({
                 <label className="text-xs font-medium text-ink-soft">
                   Título <span className="text-urgent">*</span>
                 </label>
-                <input
+                <Input
                   type="text"
                   value={form.title}
                   onChange={(e) => setField("title", e.target.value)}
                   placeholder="Ej. Reporte mensual mayo 2025"
-                  className="w-full rounded-lg border border-rule bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:border-[var(--project-color,var(--ink))] focus:outline-none"
                 />
               </div>
 
@@ -295,11 +296,10 @@ export function ClientReportsView({
                 <label className="text-xs font-medium text-ink-soft">
                   Fecha del reporte
                 </label>
-                <input
+                <Input
                   type="date"
                   value={form.reportDate}
                   onChange={(e) => setField("reportDate", e.target.value)}
-                  className="w-full rounded-lg border border-rule bg-surface px-3 py-2 text-sm text-ink focus:border-[var(--project-color,var(--ink))] focus:outline-none"
                 />
               </div>
 
@@ -309,10 +309,9 @@ export function ClientReportsView({
                   <label className="text-xs font-medium text-ink-soft">
                     Cliente asociado
                   </label>
-                  <select
+                  <Select
                     value={form.clientId}
                     onChange={(e) => setField("clientId", e.target.value)}
-                    className="w-full rounded-lg border border-rule bg-surface px-3 py-2 text-sm text-ink focus:border-[var(--project-color,var(--ink))] focus:outline-none"
                   >
                     <option value="">Sin cliente específico</option>
                     {linkedClients.map((c) => (
@@ -320,7 +319,7 @@ export function ClientReportsView({
                         {c.companyName}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               )}
 
@@ -329,12 +328,11 @@ export function ClientReportsView({
                 <label className="text-xs font-medium text-ink-soft">
                   Descripción (opcional)
                 </label>
-                <textarea
+                <Textarea
                   value={form.description}
                   onChange={(e) => setField("description", e.target.value)}
                   rows={3}
                   placeholder="Breve descripción del contenido..."
-                  className="w-full resize-none rounded-lg border border-rule bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:border-[var(--project-color,var(--ink))] focus:outline-none"
                 />
               </div>
 

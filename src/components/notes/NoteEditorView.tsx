@@ -52,6 +52,8 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
     content: (note.content as object) ?? undefined,
     editorProps: {
       attributes: {
+            // foco-ok: en un contenteditable el cursor es el indicador de foco;
+            // un anillo alrededor del área de escritura entera estorba.
         class: "tiptap-editor focus:outline-none min-h-[400px] prose prose-stone max-w-none",
       },
     },
@@ -187,7 +189,7 @@ export function NoteEditorView({ note, project, userId, userName }: NoteEditorVi
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onBlur={handleTitleBlur}
-        className="mb-4 w-full border-none bg-transparent text-3xl font-bold text-ink placeholder-text-tertiary outline-none"
+        className="mb-4 w-full rounded-md border-none bg-transparent px-1 text-3xl font-bold text-ink outline-none placeholder:text-ink-faint focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--project-color)_35%,transparent)]"
         placeholder="Título de la nota"
       />
 

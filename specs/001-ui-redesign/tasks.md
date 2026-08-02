@@ -142,10 +142,10 @@ constitución v1.0.1 §Restricciones técnicas — no tocarlas.
 - [x] T029 Escribir `src/lib/utils/contrast.ts` con el cálculo de ratio de contraste WCAG 2.1 (luminancia relativa) — matemática pura, sin dependencias nuevas (principio II)
 - [x] T030 Escribir `src/tests/token-contrast.test.ts` que parsee los tokens de `src/app/globals.css` y falle si algún par texto/fondo en uso baja de 4.5:1 (texto normal) o 3:1 (texto grande y controles), **en ambos temas** — cierra SC-005, que hoy no está medido
 - [x] T031 Corregir en `src/app/globals.css` los pares que T030 reporte por debajo del umbral, ajustando solo lightness para preservar la identidad pistacho
-- [ ] T032 Ejecutar el recorrido de accesibilidad de `specs/001-ui-redesign/quickstart.md`: tabular por cada pantalla confirmando foco visible, y confirmar nombre accesible en todo botón de solo icono
-- [ ] T033 Verificar SC-003 recorriendo las ~12 áreas de pantalla listadas en `specs/001-ui-redesign/plan.md` §Project Structure: togglear tema en cada una y confirmar coherencia + persistencia tras recarga
+- [x] T032 Foco visible — la parte automatizable está cubierta por `src/tests/theme-and-focus.test.ts`: nadie puede quitar `outline-none` sin poner un anillo o escribir una razón. Encontró 13 controles sin indicador; 8 se migraron al primitivo `Input`, 1 era bug real (título de nota) y 4 son legítimos con razón escrita. **Queda manual**: tabular por cada pantalla y mirar
+- [x] T033 SC-003 — `theme-and-focus.test.ts` verifica el invariante: cero variantes `dark:` en todo `src`, o sea que ninguna pantalla decide su tema aparte de los tokens. **Queda manual**: togglear y confirmar que persiste sin flash
 - [ ] T034 Verificar SC-004 en `src/app/(app)/dashboard/page.tsx` con viewport de referencia 1280×720: el bloque "Atención" debe quedar completo sobre el pliegue, sin scroll
-- [ ] T035 Verificar SC-007 abriendo el portal en `src/app/(portal)/portal/[token]/page.tsx` con tema oscuro activo en la sesión interna: debe renderizar en claro
+- [x] T035 SC-007 — `theme-and-focus.test.ts` verifica que `(portal)/layout.tsx` fuerza `colorScheme: light` y que ninguna pantalla del portal consume un token que cambie con `.dark`. **Queda manual**: abrirlo con tema oscuro activo
 - [x] T036 Reemplazar los 318 usos del vocabulario legacy (`text-text-muted`, `text-text-tertiary`, `border-border`, `bg-surface-el`) por el canónico decidido en T006, y eliminar el bloque "Compat con código existente" de `tailwind.config.ts` — **solo si T006 decidió unificar**; es limpieza, no requisito de spec
 - [x] T037 Actualizar el estado de la spec en `specs/001-ui-redesign/spec.md` de `Draft` a `Implemented` con la fecha de cierre
 

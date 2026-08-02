@@ -229,6 +229,8 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             onValueChange={setQuery}
             autoFocus
             placeholder="Buscar acciones, páginas, proyectos..."
+            // foco-ok: la paleta se abre con el input ya enfocado y es el único
+            // control; el diálogo entero hace de indicador de foco.
             className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
           />
           <kbd className="hidden rounded border border-rule bg-surface px-1.5 py-1 text-[12px] font-medium text-ink-faint sm:inline-block">

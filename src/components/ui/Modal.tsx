@@ -104,6 +104,9 @@ export function Modal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
+          // foco-ok: el contenedor del diálogo no es un control. Recibe foco
+          // programático para atrapar el tab, y un anillo alrededor del modal
+          // entero no comunica nada.
           "w-full overflow-hidden rounded-md border border-rule-strong bg-surface-el shadow-elev-3 outline-none",
           sizes[size],
           className
