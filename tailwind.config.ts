@@ -7,6 +7,9 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    // `readableTextOn()` devuelve nombres de clase. Sin este glob Tailwind no
+    // los ve en ningún JSX y los purga: la clase existe, el color no.
+    "./src/lib/**/*.{js,ts}",
   ],
   theme: {
     extend: {
@@ -35,6 +38,16 @@ const config: Config = {
         "done-soft": "var(--done-soft)",
         warn: "var(--warn)",
         "warn-soft": "var(--warn-soft)",
+
+        // Tinta sobre color elegido por el usuario. La decide `readableTextOn()`
+        // midiendo el fondo, no el tema.
+        "ink-on-light": "var(--ink-on-light)",
+        "ink-on-dark": "var(--ink-on-dark)",
+
+        // Velos sobre contenido arbitrario.
+        scrim: "var(--scrim)",
+        "scrim-soft": "var(--scrim-soft)",
+        "scrim-strong": "var(--scrim-strong)",
 
         // Superficies. No son alias: no tienen equivalente Edition 04, son sus
         // propios tokens con valor literal.
@@ -67,10 +80,13 @@ const config: Config = {
         },
         ring: "var(--project-color)",
       },
+      // Consola es casi recta. Se mantienen los tres escalones para no tener
+      // que reescribir cada `rounded-md` del repo, pero el rango se comprime:
+      // la diferencia entre sm y lg ahora es de un píxel y medio.
       borderRadius: {
-        lg: "0.625rem",
-        md: "0.5rem",
-        sm: "0.375rem",
+        lg: "0.25rem",
+        md: "0.125rem",
+        sm: "0.0625rem",
       },
       boxShadow: {
         "elev-1": "var(--elev-1)",

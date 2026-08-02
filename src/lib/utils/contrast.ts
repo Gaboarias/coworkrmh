@@ -101,3 +101,44 @@ export function contrastRatio(fg: Rgb, bg: Rgb, surface: Rgb): number {
 
 /** Redondeo a un decimal, que es como se reportan los ratios. */
 export const round1 = (n: number): number => Math.round(n * 10) / 10;
+
+/**
+ * Clase de texto legible sobre un color que **elige el usuario**.
+ *
+ * Los colores de proyecto y de etiqueta salen de un swatch: el sistema no sabe
+ * de antemano si van a ser un vino oscuro o un amarillo pálido. Fijar
+ * `text-white` funciona para la mitad de la paleta y borra la etiqueta en la
+ * otra mitad — y como el usuario eligió ese color a propósito, nadie lo reporta
+ * como bug: se asume que "quedó feo".
+ *
+ * Los dos tokens de destino NO cambian con el tema, porque describen el fondo
+ * sobre el que se posan, no el tema de la app.
+ *
+ * Devuelve una clase de Tailwind en vez de un hex para que el color siga
+ * saliendo de los tokens y no haya literales sueltos en los componentes.
+ */
+export function readableTextOn(background: string | Rgb): string {
+  const bg =
+    typeof background === "string" ? parseColor(background) : background;
+
+  // Un color que no se puede leer no se puede medir. La tinta oscura es la
+  // apuesta segura: el swatch por defecto y los grises claros son mayoría.
+  if (!bg) return "text-ink-on-light";
+
+  const opaque = composite(bg, { r: 255, g: 255, b: 255, a: 1 });
+  const onLight = contrastRatio(INK_ON_LIGHT, opaque, opaque);
+  const onDark = contrastRatio(INK_ON_DARK, opaque, opaque);
+
+  return onDark > onLight ? "text-ink-on-dark" : "text-ink-on-light";
+}
+
+/**
+ * Espejo de `--ink-on-light` / `--ink-on-dark` en `globals.css`.
+ *
+ * Extremos puros a propósito: parte de la paleta de swatches cae en el valle de
+ * luminancia media, donde una tinta teñida no llega a AA por ninguno de los dos
+ * lados. `token-contrast.test.ts` mide la paleta entera y falla si dejan de
+ * alcanzar, así que los dos archivos no pueden separarse en silencio.
+ */
+const INK_ON_LIGHT: Rgb = { r: 0, g: 0, b: 0, a: 1 };
+const INK_ON_DARK: Rgb = { r: 255, g: 255, b: 255, a: 1 };

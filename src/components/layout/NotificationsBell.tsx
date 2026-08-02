@@ -172,7 +172,7 @@ export function NotificationsBell() {
         {unread > 0 && (
           <span
             aria-hidden
-            className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--coral)] px-1 text-[11px] font-bold text-white"
+            className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-urgent px-1 text-[11px] font-bold text-on-solid"
           >
             {unread > 99 ? "99+" : unread}
           </span>
@@ -216,13 +216,13 @@ export function NotificationsBell() {
                     <div
                       className={cn(
                         "flex gap-3 px-4 py-3 transition-colors hover:bg-surface cursor-pointer",
-                        isUnread && "bg-[color-mix(in_oklab,var(--coral)_5%,transparent)]"
+                        isUnread && "bg-accent-soft"
                       )}
                     >
                       <div
                         className={cn(
                           "mt-1 h-2 w-2 flex-shrink-0 rounded-full",
-                          isUnread ? "bg-[var(--coral)]" : "bg-transparent"
+                          isUnread ? "bg-accent" : "bg-transparent"
                         )}
                         aria-hidden
                       />

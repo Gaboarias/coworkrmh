@@ -3,11 +3,13 @@ import { readFileSync } from "node:fs";
 import {
   parseColor,
   contrastRatio,
+  readableTextOn,
   round1,
   AA_NORMAL,
   AA_LARGE,
   type Rgb,
 } from "@/lib/utils/contrast";
+import { ENTORNO_SWATCHES } from "@/lib/constants/entornoColors";
 
 /**
  * Contraste de los tokens — SC-005.
@@ -124,7 +126,7 @@ const PAIRS: Pair[] = [
   { where: ".pill-urgent", fg: "on-solid", bg: "urgent" },
   { where: ".pill-done", fg: "on-solid", bg: "done" },
   { where: ".pill-info", fg: "on-solid", bg: "info" },
-  { where: ".pill-warn", fg: { r: 22, g: 20, b: 18, a: 1 }, bg: "warn" },
+  { where: ".pill-warn", fg: "on-solid", bg: "warn" },
 
   // El anillo de foco tiene que distinguirse del fondo: es un componente de
   // interfaz, no texto, así que el umbral es 3:1 (WCAG 1.4.11).
@@ -187,5 +189,57 @@ describe("contraste de tokens (SC-005)", () => {
 
   it("mide una cantidad de pares que vale la pena", () => {
     expect(PAIRS.length).toBeGreaterThan(15);
+  });
+});
+
+/**
+ * Tinta sobre un color que elige el usuario.
+ *
+ * Estos pares no salen de un token: salen de un swatch. `readableTextOn()` mide
+ * el fondo y devuelve una de dos tintas, así que lo que hay que comprobar no es
+ * un valor sino que la ELECCIÓN sea correcta para toda la paleta ofrecida —
+ * incluido el caso patológico de un color muy claro, donde la respuesta obvia
+ * (blanco) es la equivocada.
+ */
+describe("tinta sobre color elegido por el usuario", () => {
+  const INKS: Record<string, Rgb> = {
+    "text-ink-on-light": color(LIGHT, "ink-on-light"),
+    "text-ink-on-dark": color(LIGHT, "ink-on-dark"),
+  };
+
+  const CANDIDATES: string[] = [
+    // `#e89a0d` (saffron) es el caso patológico dentro de la propia paleta
+    // ofrecida: un dorado brillante donde el blanco da 2.3:1.
+    ...ENTORNO_SWATCHES,
+    // Fuera de la paleta ofrecida: las etiquetas de tarea aceptan cualquier
+    // color, y los claros son justo donde `text-white` fallaba en silencio.
+    "#ffe066", "#f8f9fa", "#a7f3d0", "#fcd5ce",
+  ];
+
+  it("la tinta elegida llega a AA sobre cada color de la paleta", () => {
+    const failures: string[] = [];
+    for (const swatch of CANDIDATES) {
+      const cls = readableTextOn(swatch);
+      const bg = parseColor(swatch)!;
+      const ratio = round1(contrastRatio(INKS[cls], bg, bg));
+      if (ratio < AA_NORMAL) {
+        failures.push(`  ${swatch}  →  ${cls}  ${ratio}:1`);
+      }
+    }
+    expect(
+      failures.join("\n"),
+      `Colores donde la tinta calculada no llega a AA:\n${failures.join("\n")}`
+    ).toBe("");
+  });
+
+  it("elige distinta tinta según el fondo", () => {
+    // Guard: una función que devolviera siempre lo mismo pasaría el test de
+    // arriba para la paleta actual —toda oscura— sin decidir nada.
+    expect(readableTextOn("#0e1728")).toBe("text-ink-on-dark");
+    expect(readableTextOn("#ffe066")).toBe("text-ink-on-light");
+  });
+
+  it("un color ilegible cae en la tinta oscura y no revienta", () => {
+    expect(readableTextOn("no-es-un-color")).toBe("text-ink-on-light");
   });
 });

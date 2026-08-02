@@ -78,6 +78,9 @@ export default async function CampaignDetailPage({
 
       <section className="mt-14">
         <HairlineRule label="Vista previa del correo" />
+        {/* color-literal-ok: vista previa de un correo. El cliente de correo del
+            destinatario lo va a pintar sobre blanco, así que teñirlo con el tema
+            del estudio mostraría algo distinto de lo que se va a enviar. */}
         <div className="mt-5 overflow-hidden rounded-lg border border-rule bg-white">
           <iframe
             title="Vista previa"

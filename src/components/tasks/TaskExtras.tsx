@@ -6,6 +6,7 @@ import { Plus, Tag as TagIcon } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils/cn";
+import { readableTextOn } from "@/lib/utils/contrast";
 import {
   listSubtasks,
   createTask,
@@ -127,7 +128,7 @@ export function TaskExtras({
                 className={cn(
                   "rounded-full border px-2 py-1 text-xs transition",
                   on
-                    ? "border-transparent text-white"
+                    ? cn("border-transparent", readableTextOn(t.color))
                     : "border-rule text-ink-soft hover:text-ink"
                 )}
                 style={on ? { backgroundColor: t.color } : undefined}

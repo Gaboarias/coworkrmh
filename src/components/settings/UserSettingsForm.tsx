@@ -118,7 +118,7 @@ export function UserSettingsForm({ profile }: { profile: Profile }) {
                   avatarUrl={avatarUrl ?? undefined}
                   size="lg"
                 />
-                <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="absolute inset-0 flex items-center justify-center rounded-full bg-scrim-soft text-ink-on-dark opacity-0 transition-opacity group-hover:opacity-100">
                   {uploading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (

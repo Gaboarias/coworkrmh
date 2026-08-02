@@ -390,11 +390,16 @@ export function ClientReportsView({
                 />
               </div>
 
+              {/* Pintaba `bg-[var(--project-color)] text-white` a mano: blanco
+                  sobre un color que elige el usuario en un swatch. Con un
+                  proyecto en amarillo o verde claro la etiqueta desaparecía, y
+                  como el color lo había elegido esa persona, nadie lo reportaba
+                  como bug. La variante `primary` está medida en los dos temas. */}
               <Button
                 type="submit"
                 size="lg"
                 disabled={isPending || isUploading}
-                className="w-full bg-[var(--project-color,var(--ink))] text-white hover:opacity-90"
+                className="w-full"
               >
                 {isPending || isUploading ? (
                   <>

@@ -150,14 +150,13 @@ export function NotificationsPage({
                     <div
                       className={cn(
                         "flex gap-3 px-4 py-4 transition-colors hover:bg-surface",
-                        isUnread &&
-                          "bg-[color-mix(in_oklab,var(--coral)_5%,transparent)]"
+                        isUnread && "bg-accent-soft"
                       )}
                     >
                       <div
                         className={cn(
                           "mt-2 h-2 w-2 flex-shrink-0 rounded-full",
-                          isUnread ? "bg-[var(--coral)]" : "bg-transparent"
+                          isUnread ? "bg-accent" : "bg-transparent"
                         )}
                         aria-hidden
                       />

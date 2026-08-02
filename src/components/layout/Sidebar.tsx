@@ -160,7 +160,7 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
     <>
       {isMobile && (
         <div
-          className="fixed inset-0 z-40 bg-black/40"
+          className="fixed inset-0 z-40 bg-scrim-soft"
           onClick={() => setMobileOpen(false)}
           aria-hidden
         />

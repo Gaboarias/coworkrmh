@@ -206,13 +206,13 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center bg-black/60 p-4 pt-[18vh] backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-start justify-center bg-scrim p-4 pt-[18vh] animate-fade-in"
       onClick={onClose}
     >
       <Command
         label="Command Menu"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl overflow-hidden rounded-xl border border-rule bg-surface-el shadow-elev-3 backdrop-blur-2xl backdrop-saturate-150 animate-slide-up"
+        className="w-full max-w-2xl overflow-hidden rounded-md border border-rule-strong bg-surface-el shadow-elev-3 animate-slide-up"
         // El filter built-in de cmdk usa Sift4 fuzzy match.
         filter={(value, search, keywords) => {
           const haystack = `${value} ${keywords?.join(" ") ?? ""}`.toLowerCase();
@@ -258,9 +258,11 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                     value={item.label}
                     keywords={item.keywords?.split(" ") ?? []}
                     onSelect={item.action}
-                    className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm text-ink-soft aria-selected:bg-[color-mix(in_oklab,var(--coral)_18%,transparent)] aria-selected:text-ink"
+                    className="group flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm text-ink-soft aria-selected:bg-accent-soft aria-selected:text-ink"
                   >
-                    <Icon className="h-4 w-4 flex-shrink-0 text-ink-faint aria-selected:text-coral" />
+                    {/* El estado vive en el <Command.Item> padre: `aria-selected`
+                        sobre el icono nunca existe. Se lee desde el grupo. */}
+                    <Icon className="h-4 w-4 flex-shrink-0 text-ink-faint group-aria-selected:text-accent" />
                     <span className="flex-1 truncate">{item.label}</span>
                   </Command.Item>
                 );

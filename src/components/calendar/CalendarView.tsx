@@ -104,9 +104,10 @@ const priorityDot: Record<TaskPriority, string> = {
  * Color de un proyecto que no tiene uno asignado.
  *
  * Era `#ff6b6b`, comentado como "coral (Sunset Aurora primary)" — de una edición
- * anterior del sistema, y ni siquiera coincide con el `--coral` de Edition 04
- * (#c96b35). El dashboard resolvía lo mismo con otro valor distinto (`#161412`),
- * así que el mismo proyecto sin color se veía de dos colores según la pantalla.
+ * anterior del sistema, y ni siquiera coincidía con el `--coral` que esa edición
+ * dejó vivo (token ya retirado). El dashboard resolvía lo mismo con otro valor
+ * distinto (`#161412`), así que el mismo proyecto sin color se veía de dos
+ * colores según la pantalla.
  *
  * Ahora los dos usan la constante canónica.
  */

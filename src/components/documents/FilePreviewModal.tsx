@@ -75,7 +75,7 @@ export function FilePreviewModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-scrim-strong p-4"
       onClick={onClose}
     >
       <div
@@ -119,6 +119,9 @@ export function FilePreviewModal({
             </div>
           )}
 
+          {/* color-literal-ok: caja de un video. El negro no es tema de la app,
+              es el letterbox estándar de reproducción: cualquier otro fondo le
+              cambia el color percibido a la imagen. */}
           {kind === "video" && (
             <div className="flex h-full items-center justify-center bg-black p-2">
               <video
@@ -144,6 +147,9 @@ export function FilePreviewModal({
           )}
 
           {kind === "text" && (
+            /* color-literal-ok: el iframe muestra un documento ajeno (PDF, doc).
+               La hoja del documento es blanca en el mundo real y el tema de la
+               app no la alcanza; teñirla sería falsear lo que se está viendo. */
             <iframe
               src={doc.blobUrl}
               title={doc.name}

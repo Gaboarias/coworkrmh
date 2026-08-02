@@ -32,6 +32,37 @@ const MIN_REASON = 20;
 const LITERAL = /oklch\([^)]*\)|#[0-9a-fA-F]{3,8}\b/g;
 
 /**
+ * Paleta de fábrica de Tailwind (`text-white`, `bg-slate-800`, …).
+ *
+ * No son `#hex`, así que el escáner de literales no las veía; tampoco son
+ * tokens, así que `token-contrast.test.ts` —que mide pares de tokens— tampoco.
+ * Vivían en el punto ciego entre los dos tests.
+ *
+ * No es hipotético: el contador de notificaciones pintaba `text-white` sobre un
+ * fondo que salía de una var, y daba 3,7:1 en claro y 3,0:1 en oscuro. Falló AA
+ * en los dos temas durante meses con los dos escáneres en verde.
+ *
+ * `transparent`, `current` e `inherit` quedan fuera a propósito: no son colores,
+ * no pueden fallar contraste.
+ */
+const TW_HUES = [
+  "slate", "gray", "zinc", "neutral", "stone",
+  "red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal",
+  "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose",
+].join("|");
+
+const TW_UTILITIES = [
+  "text", "bg", "border", "divide", "ring", "ring-offset", "fill", "stroke",
+  "from", "via", "to", "placeholder", "caret", "accent", "decoration", "outline",
+  "shadow",
+].join("|");
+
+const BUILTIN_PALETTE = new RegExp(
+  `\\b(?:${TW_UTILITIES})-(?:white|black|(?:${TW_HUES})-(?:50|\\d00|950))(?:\\/\\d{1,3})?\\b`,
+  "g"
+);
+
+/**
  * Vocabulario de token retirado (T006 / T036).
  *
  * Eran alias puros de un token Edition 04 — dos nombres para el mismo color. Se
@@ -121,15 +152,17 @@ function scan() {
       const rawLines = raw.split(/\r?\n/);
       const code = stripComments(raw);
 
-      LITERAL.lastIndex = 0;
-      let m: RegExpExecArray | null;
-      while ((m = LITERAL.exec(code))) {
-        const line = code.slice(0, m.index).split("\n").length;
+      for (const pattern of [LITERAL, BUILTIN_PALETTE]) {
+        pattern.lastIndex = 0;
+        let m: RegExpExecArray | null;
+        while ((m = pattern.exec(code))) {
+          const line = code.slice(0, m.index).split("\n").length;
 
-        const reason = escapeReasonAbove(rawLines, line);
+          const reason = escapeReasonAbove(rawLines, line);
 
-        if (reason) escapes.push({ file: rel, line, reason });
-        else hits.push({ file: rel, line, literal: m[0] });
+          if (reason) escapes.push({ file: rel, line, reason });
+          else hits.push({ file: rel, line, literal: m[0] });
+        }
       }
     }
   }
@@ -142,6 +175,18 @@ describe("tokens de color", () => {
   it("ningún componente interno cablea un color literal", () => {
     const report = hits.map((h) => `  ${h.file}:${h.line}  ${h.literal}`).join("\n");
     expect(report, `Colores literales fuera de los tokens:\n${report}`).toBe("");
+  });
+
+  it("el escáner reconoce la paleta de fábrica de Tailwind", () => {
+    // Guard: si `BUILTIN_PALETTE` dejara de matchear, la regla se volvería
+    // decorativa y el punto ciego que la motivó volvería sin avisar.
+    const hit = (s: string) => (s.match(BUILTIN_PALETTE) ?? []).length;
+    expect(hit('className="text-white"')).toBe(1);
+    expect(hit('className="bg-black/60"')).toBe(1);
+    expect(hit('className="border-slate-800 text-red-500"')).toBe(2);
+    // Lo que NO debe matchear: tokens propios y palabras clave sin color.
+    expect(hit('className="text-ink bg-surface-el border-rule"')).toBe(0);
+    expect(hit('className="bg-transparent text-current ring-inherit"')).toBe(0);
   });
 
   it("cada excepción explica por qué", () => {

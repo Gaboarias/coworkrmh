@@ -3,51 +3,57 @@
 @tailwind utilities;
 
 /* ============================================================
-   Edition 04 — design tokens
+   Consola — design tokens
    ────────────────────────────────────────────────────────────
-   Dual theme: light (default) + dark (.dark class on html).
-   Cero glass, cero aurora, cero gradient. Surfaces sólidas con
-   tinte warm hacia "paper/ink", tipografía Satoshi Variable.
-   El color sale de los proyectos (var(--project-color) opcional),
-   no de accent globales.
+   Vocabulario de terminal: azul marino, monoespaciada, filetes de
+   un píxel, radio casi nulo. El acento ámbar es complementario del
+   fondo, así que separa con poca saturación y puede repetirse sin
+   gritar.
+
+   Dos temas. El oscuro es el que define la dirección; el claro es
+   la misma gramática invertida sobre papel frío — no un "modo
+   secundario" ni una inversión automática.
+
+   Cada valor está medido contra su PEOR superficie, no contra el
+   fondo de página: `ink-faint` sobre `surface-el` es el caso que
+   siempre se escapa, porque es el más claro de los oscuros.
    ============================================================ */
 
 @layer base {
   /* === LIGHT (default) === */
   :root {
-    --bg: #f5f2eb;
-    --bg-2: #ebe7dc;
-    --surface: #ffffff;
-    --surface-2: #f1ede3;
+    --bg: #eef1f6;
+    --bg-2: #e3e8f0;
+    --surface: #f9fafc;
+    --surface-2: #eef1f6;
     --surface-el: #ffffff;
 
-    --ink: #161412;
-    --ink-soft: #524d44;
-    --ink-faint: #6d675f;  /* 4.5:1 sobre la superficie más oscura (bg-2) — SC-005 */
+    --ink: #0e1728;        /* el marino del tema oscuro, ahora como tinta */
+    --ink-soft: #38445c;
+    --ink-faint: #57647c;  /* 4.9:1 sobre bg-2, la superficie más oscura */
 
-    --rule: rgba(22, 20, 18, 0.09);
-    --rule-strong: rgba(22, 20, 18, 0.22);
+    --rule: rgba(14, 23, 40, 0.10);
+    --rule-strong: rgba(14, 23, 40, 0.24);
 
-    /* Default accent — usado en aggregations (dashboard/reports).
-       Cuando entrás a un proyecto, --project-color lo override. */
-    --accent: #3f7a34; /* pistacho — accent de acción/identidad (operacional con calidez) */
-    --accent-soft: rgba(63, 122, 52, 0.10);
+    /* Ámbar profundo: el ámbar brillante del tema oscuro sobre papel da
+       1.7:1 y no llegaría ni al umbral de 3:1 que pide un anillo de foco. */
+    --accent: #9a6410;
+    --accent-soft: rgba(154, 100, 16, 0.10);
     --project-color: var(--accent);
 
-    /* Estados — committed pero refinados */
-    --urgent: #d22419;    /* 4.4:1 → 5.0:1 con texto blanco (SC-005) */
-    --urgent-soft: rgba(210, 36, 25, 0.1);
-    --done: #1f7a4d;
-    --done-soft: rgba(31, 122, 77, 0.1);
-    --info: #2e52d9;
-    --info-soft: rgba(46, 82, 217, 0.1);
-    --warn: #e89a0d;
-    --warn-soft: rgba(232, 154, 13, 0.1);
+    --urgent: #c62a1f;
+    --urgent-soft: rgba(198, 42, 31, 0.1);
+    --done: #146c46;
+    --done-soft: rgba(20, 108, 70, 0.1);
+    --info: #17529f;
+    --info-soft: rgba(23, 82, 159, 0.1);
+    --warn: #8a5a08;
+    --warn-soft: rgba(138, 90, 8, 0.1);
 
-    /* Tinta sobre superficies sólidas semánticas (urgent/done/info).
-       En claro el blanco contrasta; en oscuro los semánticos son más brillantes
-       y el blanco baja de 4.5:1, así que se invierte. Mismo patrón que
-       --primary-foreground, que ya lo hacía. */
+    /* Tinta sobre superficies sólidas (accent/urgent/done/info).
+       En claro los sólidos son oscuros y llevan blanco; en oscuro son
+       brillantes y llevan marino. Un solo token porque el criterio es el
+       mismo en las dos direcciones: lo contrario del sólido. */
     --on-solid: #ffffff;
 
     /* Color del TEXTO semántico sobre su propio tinte (Badge).
@@ -55,16 +61,34 @@
        donde el brillo es correcto; como texto sobre un tinte del mismo tono no
        llega a AA. Donde el acento ya alcanza, el token lo referencia. */
     --done-text: var(--done);
-    --warn-text: #9a6609;  /* el ámbar como texto da 2.1:1 */
+    --warn-text: var(--warn);
     --urgent-text: var(--urgent);
     --info-text: var(--info);
 
-    /* Notificaciones — warm terracotta (dot + badge) */
-    --coral: #c96b35;
+    /* Tinta sobre un color que ELIGE EL USUARIO (proyecto, etiqueta).
+       No cambian con el tema: describen el fondo sobre el que se posan,
+       no el tema de la app. Los elige `readableTextOn()` midiendo.
+
+       Negro y blanco puros, y no las tintas marinas del sistema: tres colores
+       de ENTORNO_SWATCHES (`#d63a1f`, `#3a8a8a`, `#b94a8a`) caen en el valle de
+       luminancia media, donde con tintas teñidas NINGUNA de las dos llega a
+       4.5:1 — la función elegiría bien entre dos opciones malas. Sobre un fondo
+       que el sistema no controla, cualquier tinte gasta contraste que hace
+       falta. No confundir con `text-white`: acá el extremo es el resultado de
+       medir, no el default de no haber medido. */
+    --ink-on-light: #000000;
+    --ink-on-dark: #ffffff;
+
+    /* Velos sobre contenido arbitrario (modal, drawer, visor de archivos).
+       Marino y no negro: sobre una app azul un velo negro se ve sucio.
+       Iguales en los dos temas — tapan contenido, no siguen al tema. */
+    --scrim-soft: rgba(6, 12, 22, 0.45);
+    --scrim: rgba(6, 12, 22, 0.62);
+    --scrim-strong: rgba(6, 12, 22, 0.78);
 
     /* Colores semánticos legacy (shadcn/ui compat) */
-    --primary: #3f7a34;
-    --primary-hover: #34611f;
+    --primary: #9a6410;
+    --primary-hover: #7d5008;
     --primary-foreground: #ffffff;
     --primary-muted: var(--accent-soft);
     --secondary: var(--ink-soft);
@@ -97,63 +121,73 @@
     --sidebar-border: var(--rule);
     --sidebar-active: var(--ink);
 
-    --radius: 0.5rem;
-    --erp-row-py: 0.75rem; /* 12px — densidad ERP comfortable (base-4); compact abajo */
+    --radius: 0.125rem; /* 2px — Consola es casi recta */
+    --erp-row-py: 0.75rem; /* 12px — el cómodo NO se aprieta: es el default */
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --elev-1: 0 1px 2px rgba(22, 20, 18, 0.06);
-    --elev-2: 0 1px 2px rgba(22, 20, 18, 0.06), 0 4px 12px -4px rgba(22, 20, 18, 0.1);
-    --elev-3: 0 1px 2px rgba(22, 20, 18, 0.08), 0 12px 28px -12px rgba(22, 20, 18, 0.18);
+    --elev-1: 0 1px 2px rgba(6, 12, 22, 0.07);
+    --elev-2: 0 1px 2px rgba(6, 12, 22, 0.07), 0 4px 12px -4px rgba(6, 12, 22, 0.12);
+    --elev-3: 0 1px 2px rgba(6, 12, 22, 0.09), 0 12px 28px -12px rgba(6, 12, 22, 0.2);
   }
 
-  /* === DARK === */
+  /* === DARK — la dirección tal como se eligió === */
   .dark {
-    --bg: #0a0a09;
-    --bg-2: #131311;
-    --surface: #141412;
-    --surface-2: #1a1a18;
-    --surface-el: #1f1f1c;
+    /* La rampa de superficies es deliberadamente corta: en Consola la
+       elevación la marca el filete, no un salto de relleno. */
+    --bg: #0e1728;
+    --bg-2: #0b1220;
+    --surface: #101b2f;
+    --surface-2: #142236;
+    --surface-el: #15243c;
 
-    --ink: #f0ede5;
-    --ink-soft: #a39d92;
-    --ink-faint: #8c8579;  /* 4.5:1 sobre la superficie más clara (surface-el) — SC-005 */
+    --ink: #dde3ec;
+    --ink-soft: #9aa8bf;
+    --ink-faint: #7f8da3;  /* 4.6:1 sobre surface-el, que es el peor caso */
 
-    --rule: rgba(240, 237, 229, 0.08);
-    --rule-strong: rgba(240, 237, 229, 0.2);
+    --rule: rgba(221, 227, 236, 0.11);
+    --rule-strong: rgba(221, 227, 236, 0.26);
 
-    --accent: #8fce6e; /* pistacho brillante para dark */
-    --accent-soft: rgba(143, 206, 110, 0.13);
+    --accent: #eda63f;
+    --accent-soft: rgba(237, 166, 63, 0.14);
     --project-color: var(--accent);
 
-    --urgent: #ff4a3a;
-    --urgent-soft: rgba(255, 74, 58, 0.14);
-    --done: #2e9e63;
-    --done-soft: rgba(46, 158, 99, 0.14);
-    --info: #5577ee;
-    --info-soft: rgba(85, 119, 238, 0.14);
-    --warn: #f5af2e;
-    --warn-soft: rgba(245, 175, 46, 0.14);
+    --urgent: #ff6257;
+    --urgent-soft: rgba(255, 98, 87, 0.14);
+    --done: #4ecb8a;
+    --done-soft: rgba(78, 203, 138, 0.14);
+    /* `info` era azul, y sobre fondo azul dejaba de separarse: mismo tono,
+       distinta luz. El cian separa por saturación, no por claridad. */
+    --info: #45c9d6;
+    --info-soft: rgba(69, 201, 214, 0.14);
+    /* Amarillo y no ámbar: el ámbar es el acento, y que el acento y una
+       advertencia compartan color hace ambiguo el único color que la
+       dirección se permite repetir. */
+    --warn: #e5c15c;
+    --warn-soft: rgba(229, 193, 92, 0.14);
 
-    --on-solid: #161412;
+    --on-solid: #0e1728;
     --done-text: var(--done);
     --warn-text: var(--warn);
     --urgent-text: var(--urgent);
-    --info-text: #5c81ff;  /* 4.0:1 → 4.6:1 sobre --info-soft */
+    --info-text: var(--info);
 
-    --coral: #e07a4a;
-
-    --primary: #8fce6e;
-    --primary-hover: #a4dd86;
-    --primary-foreground: #10231a;
+    --primary: #eda63f;
+    --primary-hover: #f7b95c;
+    --primary-foreground: #0e1728;
     --primary-muted: var(--accent-soft);
-    --ring: #8fce6e;
+    --ring: #eda63f;
 
-    --elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --elev-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px -4px rgba(0, 0, 0, 0.5);
-    --elev-3: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 28px -12px rgba(0, 0, 0, 0.6);
+    --elev-1: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --elev-2: 0 1px 2px rgba(0, 0, 0, 0.45), 0 4px 12px -4px rgba(0, 0, 0, 0.55);
+    --elev-3: 0 1px 2px rgba(0, 0, 0, 0.55), 0 12px 28px -12px rgba(0, 0, 0, 0.65);
   }
 
-  /* Densidad ERP — compact reduce el padding vertical de fila (~40% menos). */
-  html[data-density="compact"] { --erp-row-py: 0.25rem; } /* 4px */
+  /* Densidad ERP.
+     Consola es una dirección densa, pero imponer su fila de 26px como default
+     castiga a quien entra una vez por semana. Así que la densidad no se impone:
+     se elige. El cómodo queda igual que antes y el compacto baja al valor de la
+     maqueta, con lo cual el toggle pasa a cubrir todo el rango en vez de mover
+     la fila unos píxeles. */
+  html[data-density="compact"] { --erp-row-py: 0.1875rem; } /* 3px → ~27px */
 }
 
 @layer base {
@@ -322,7 +356,10 @@
 .pill-urgent { background: var(--urgent); color: var(--on-solid); }
 .pill-done { background: var(--done); color: var(--on-solid); }
 .pill-info { background: var(--info); color: var(--on-solid); }
-.pill-warn { background: var(--warn); color: #161412; }
+/* Antes cableaba la tinta oscura, porque el ámbar del tema claro era brillante.
+   En Consola el ámbar claro es profundo y lleva blanco como el resto: la
+   excepción dejó de existir. */
+.pill-warn { background: var(--warn); color: var(--on-solid); }
 .pill-outline {
   background: transparent;
   border: 1px solid var(--rule-strong);
