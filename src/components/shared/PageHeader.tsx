@@ -63,13 +63,13 @@ export function PageHeader({
           <span>, así que ninguna pantalla tenía h1 y varias no tenían ningún
           heading — sin punto de referencia para lectores de pantalla
           (WCAG 1.3.1 / 2.4.6). El CSS de .title-drop h1 lo deja idéntico. */}
-      <div className="title-drop text-[36px] sm:text-[48px] md:text-[60px] lg:text-[72px] xl:text-[84px]">
+      <div className="title-drop text-[28px] sm:text-[30px] md:text-[36px] lg:text-[44px] xl:text-[50px]">
         <h1>{title}</h1>
         {subtitle && <span className="l2">{subtitle}</span>}
       </div>
 
       {description && (
-        <p className="mt-5 max-w-[640px] text-[17px] leading-[1.6] text-ink-soft">
+        <p className="mt-5 max-w-[640px] text-[15px] leading-[1.6] text-ink-soft">
           {description}
         </p>
       )}

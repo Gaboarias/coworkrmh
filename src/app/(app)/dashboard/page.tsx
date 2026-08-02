@@ -148,7 +148,7 @@ export default async function DashboardPage() {
       <section className="mb-10">
         <HairlineRule label="Atención" count={`${attentionCount}`} />
         {attentionCount === 0 ? (
-          <p className="mt-3 text-[15px] italic text-ink-soft">
+ <p className="mt-3 text-[13px] text-ink-soft">
             Todo al día — nada urgente ni vencido.
           </p>
         ) : (
@@ -165,7 +165,7 @@ export default async function DashboardPage() {
                       className="h-2 w-2 flex-shrink-0 self-center rounded-full bg-urgent"
                       aria-hidden
                     />
-                    <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-ink">
+                    <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">
                       {t.title}
                     </span>
                     <span className="flex-shrink-0 font-mono text-[12px] uppercase tracking-[0.1em] text-ink-faint">
@@ -185,7 +185,7 @@ export default async function DashboardPage() {
                   className="h-2 w-2 flex-shrink-0 self-center rounded-full bg-urgent"
                   aria-hidden
                 />
-                <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-ink">
+                <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">
                   {payment.description}
                 </span>
                 <span className="flex-shrink-0 font-mono text-[12px] uppercase tracking-[0.08em] text-ink-faint">
@@ -209,7 +209,7 @@ export default async function DashboardPage() {
             count={`${myTaskRows.length}`}
           />
           {myTaskRows.length === 0 ? (
-            <p className="mt-4 text-sm italic text-ink-faint">
+ <p className="mt-4 text-sm text-ink-faint">
               No tenés tareas pendientes esta semana.
             </p>
           ) : (
@@ -229,7 +229,7 @@ export default async function DashboardPage() {
                     >
                       <span
                         className={
-                          "min-w-0 flex-1 truncate text-[16px] leading-snug " +
+                          "min-w-0 flex-1 truncate text-[14px] leading-snug " +
                           (isUrgent || isHigh
                             ? "font-bold text-ink"
                             : "font-medium text-ink")
@@ -274,7 +274,7 @@ export default async function DashboardPage() {
               count={`${recentProjectRows.length}`}
             />
             {recentProjectRows.length === 0 ? (
-              <p className="mt-4 text-sm italic text-ink-faint">
+ <p className="mt-4 text-sm text-ink-faint">
                 Sin proyectos activos en este entorno.
               </p>
             ) : (
@@ -291,7 +291,7 @@ export default async function DashboardPage() {
                           backgroundColor: project.color ?? DEFAULT_ENTORNO_COLOR,
                         }}
                       />
-                      <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-ink">
+                      <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">
                         {project.name}
                       </span>
                     </Link>
@@ -326,7 +326,7 @@ export default async function DashboardPage() {
                       className="flex items-baseline justify-between gap-3 py-1"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[15px] font-medium text-ink">
+                        <p className="truncate text-[13px] font-medium text-ink">
                           {payment.description}
                         </p>
                         <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-ink-faint">
@@ -336,7 +336,7 @@ export default async function DashboardPage() {
                       <div className="flex flex-col items-end gap-1 text-right">
                         <span
                           className={
-                            "text-[15px] font-bold tabular-nums " +
+                            "text-[13px] font-bold tabular-nums " +
                             (isOverdue ? "text-urgent" : "text-ink")
                           }
                         >
@@ -368,7 +368,7 @@ export default async function DashboardPage() {
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
               Hoy
             </p>
-            <p className="mt-2 text-[15px] italic leading-relaxed text-ink-soft">
+ <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
               {todayLong}.
             </p>
           </div>

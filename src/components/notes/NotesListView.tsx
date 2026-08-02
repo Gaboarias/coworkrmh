@@ -109,7 +109,7 @@ export function NotesListView({
                   href={`/projects/${project.id}/notes/${note.id}`}
                   className="flex min-w-0 flex-1 flex-col gap-1"
                 >
-                  <span className="truncate text-[16px] font-bold text-ink">
+                  <span className="truncate text-[14px] font-bold text-ink">
                     {note.title}
                   </span>
                   {note.contentText && (

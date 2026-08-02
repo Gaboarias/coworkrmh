@@ -133,10 +133,10 @@ export default async function OperationsDashboard() {
               strokeWidth={1.75}
             />
             <div>
-              <p className="text-[16px] font-bold text-ink">
+              <p className="text-[14px] font-bold text-ink">
                 Este entorno está vacío
               </p>
-              <p className="mt-1 max-w-[60ch] text-[15px] text-ink-soft">
+              <p className="mt-1 max-w-[60ch] text-[13px] text-ink-soft">
                 Empezá cargando productos en el catálogo para ver costos,
                 márgenes, ventas y el resto.
               </p>
@@ -183,7 +183,7 @@ export default async function OperationsDashboard() {
                   strokeWidth={1.75}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[16px] font-bold text-ink">
+                  <p className="truncate text-[14px] font-bold text-ink">
                     {m.label}
                   </p>
                   <p className="truncate text-[14px] text-ink-soft">

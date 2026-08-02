@@ -162,7 +162,7 @@ export function ProjectBoard({
               </div>
               <div className="flex min-h-[60px] flex-col gap-2 p-2">
                 {colProjects.length === 0 && (
-                  <p className="px-2 py-6 text-center text-[12px] italic text-ink-faint">
+ <p className="px-2 py-6 text-center text-[12px] text-ink-faint">
                     —
                   </p>
                 )}

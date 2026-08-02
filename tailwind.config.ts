@@ -80,10 +80,38 @@ const config: Config = {
         },
         ring: "var(--project-color)",
       },
-      // Consola es casi recta. Se mantienen los tres escalones para no tener
-      // que reescribir cada `rounded-md` del repo, pero el rango se comprime:
-      // la diferencia entre sm y lg ahora es de un píxel y medio.
+      /**
+       * Escala tipográfica de Consola.
+       *
+       * La mono avanza ~20% más ancha que Satoshi, así que al mismo cuerpo
+       * entra menos texto sin que se lea mejor. Cada escalón baja uno o dos
+       * píxeles.
+       *
+       * Se recalibra ACÁ y no en los 209 sitios que usan `text-sm`/`text-xs`:
+       * un solo lugar, determinista y reversible. Tocar doscientos archivos
+       * para el mismo efecto sería trabajo y riesgo sin nada a cambio.
+       *
+       * En px y no en rem a propósito: `html` está en 17px, así que `0.875rem`
+       * hoy da 14.9px y no 14. Los tamaños de texto se eligen a ojo en píxeles;
+       * dejarlos atados al tamaño de raíz los movía sin que nadie lo pidiera.
+       */
+      fontSize: {
+        xs: ["11px", "16px"],
+        sm: ["13px", "18px"],
+        base: ["14px", "20px"],
+        lg: ["16px", "24px"],
+        xl: ["19px", "26px"],
+        "2xl": ["23px", "30px"],
+        "3xl": ["28px", "34px"],
+      },
+      // Consola es casi recta. Se mantienen los escalones para no reescribir
+      // cada `rounded-md` del repo, pero el rango se comprime a un par de
+      // píxeles. `full` NO se toca: un avatar y un punto de estado son
+      // círculos, y un círculo no es una esquina redondeada.
       borderRadius: {
+        "3xl": "0.375rem",
+        "2xl": "0.3125rem",
+        xl: "0.25rem",
         lg: "0.25rem",
         md: "0.125rem",
         sm: "0.0625rem",

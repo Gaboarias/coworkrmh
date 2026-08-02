@@ -192,7 +192,7 @@ export function CampaignBuilder({ bucketId }: { bucketId: string }) {
 
           {preview && (
             <div className="rounded-lg border border-rule bg-bg-2 p-4">
-              <p className="flex items-center gap-2 text-[15px] font-bold text-ink">
+              <p className="flex items-center gap-2 text-[13px] font-bold text-ink">
                 <Users className="h-4 w-4 text-ink-faint" strokeWidth={1.75} />
                 {preview.total} destinatario{preview.total === 1 ? "" : "s"}
               </p>

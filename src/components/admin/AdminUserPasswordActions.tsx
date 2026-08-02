@@ -293,7 +293,7 @@ function ResetLinkModal({
               {result.emailSent ? "Email enviado ✓" : "Email no enviado"}
             </p>
           </div>
-          <p className="text-xs italic text-ink-soft">
+ <p className="text-xs text-ink-soft">
             Expira en 1 hora. Si el user no lo usa a tiempo, generá uno nuevo.
           </p>
         </div>

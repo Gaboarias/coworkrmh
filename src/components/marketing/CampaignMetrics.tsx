@@ -77,7 +77,7 @@ export function CampaignMetrics({ campaignId }: { campaignId: string }) {
           </dt>
           <dd
             className={
-              "text-[30px] font-bold tabular-nums leading-none tracking-[-0.035em] " +
+              "text-[24px] font-bold tabular-nums leading-none tracking-[-0.035em] " +
               (s.accent ? "text-accent" : "text-ink")
             }
           >

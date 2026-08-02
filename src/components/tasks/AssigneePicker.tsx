@@ -37,7 +37,7 @@ export function AssigneePicker({
 
   if (members.length === 0) {
     return (
-      <p className="text-[13px] italic text-ink-faint">
+ <p className="text-[13px] text-ink-faint">
         No hay miembros para asignar.
       </p>
     );

@@ -174,7 +174,7 @@ function WorkspacesModal({
           </div>
 
           {workspaces.length === 0 ? (
-            <p className="py-4 text-sm italic text-ink-faint">
+ <p className="py-4 text-sm text-ink-faint">
               No hay entornos creados todavía. Creá uno desde la tab Entornos.
             </p>
           ) : (

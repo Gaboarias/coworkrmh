@@ -183,14 +183,14 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
       >
         {/* Mark — square con P, color = project-color (default ink) */}
         <div
-          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[5px] bg-ink text-[16px] font-bold text-bg"
+          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[5px] bg-ink text-[14px] font-bold text-bg"
           style={{ letterSpacing: "-0.03em" }}
         >
           P
         </div>
         {!collapsed && (
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[15px] font-bold leading-none tracking-[-0.02em] text-ink">
+            <p className="truncate text-[13px] font-bold leading-none tracking-[-0.02em] text-ink">
               Pistachio
             </p>
             <p className="mt-1 truncate font-mono text-[8.5px] uppercase tracking-[0.2em] text-ink-faint">
@@ -275,7 +275,7 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
                         {!collapsed && (
                           <span
                             className={cn(
-                              "flex-1 truncate text-[15px] leading-none",
+                              "flex-1 truncate text-[13px] leading-none",
                               active ? "font-bold" : "font-medium"
                             )}
                           >
@@ -318,7 +318,7 @@ export function Sidebar({ wsData }: { wsData: WsData }) {
         >
           <Settings className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.75} />
           {!collapsed && (
-            <span className="text-[15px] font-medium leading-none">
+            <span className="text-[13px] font-medium leading-none">
               Configuración
             </span>
           )}

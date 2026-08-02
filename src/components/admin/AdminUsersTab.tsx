@@ -154,7 +154,7 @@ export const AdminUsersTab = ({
                 </span>
               </p>
               {workspaces.length === 0 ? (
-                <p className="text-xs italic text-ink-faint">
+ <p className="text-xs text-ink-faint">
                   No hay entornos creados todavía.
                 </p>
               ) : (

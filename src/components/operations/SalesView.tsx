@@ -281,7 +281,7 @@ function FieldWithLabel({
       <label className="mb-2 block text-xs font-medium text-ink-soft">
         {label}
         {hint && (
-          <span className="ml-1 font-normal italic text-ink-faint">
+ <span className="ml-1 font-normal text-ink-faint">
             — {hint}
           </span>
         )}
@@ -307,7 +307,7 @@ function CalcStat({
       </span>
       <span
         className={
-          "text-[15px] font-bold tabular-nums " +
+          "text-[13px] font-bold tabular-nums " +
           (positive === false
             ? "text-urgent"
             : positive === true

@@ -149,7 +149,7 @@ export function ProjectsExplorer({
 
       {/* ── Specimens ────────────────────────────────────────── */}
       {visible.length === 0 ? (
-        <p className="py-12 text-center text-sm italic text-ink-faint">
+ <p className="py-12 text-center text-sm text-ink-faint">
           No hay proyectos en esta categoría.
         </p>
       ) : (
@@ -231,12 +231,12 @@ function ProjectSpecimenBlock({
           className="group/title block"
           aria-label={`Abrir proyecto ${s.name}`}
         >
-          <h2 className="flex items-start gap-4 text-[44px] font-bold leading-[0.95] tracking-[-0.04em] text-ink sm:text-[60px] md:text-[76px] lg:text-[88px]">
+          <h2 className="flex items-start gap-4 text-[28px] font-bold leading-[0.95] tracking-[-0.04em] text-ink sm:text-[36px] md:text-[46px] lg:text-[52px]">
             <span className="min-w-0 flex-1">
               {s.name}
               <span
                 aria-hidden
-                className="text-[44px] sm:text-[60px] md:text-[76px] lg:text-[88px]"
+                className="text-[28px] sm:text-[36px] md:text-[46px] lg:text-[52px]"
                 style={{ color: accent }}
               >
                 .
@@ -251,7 +251,7 @@ function ProjectSpecimenBlock({
 
         {/* Description */}
         {s.description && (
-          <p className="mt-6 max-w-[60ch] text-[17px] italic leading-[1.5] text-ink-soft sm:text-[19px]">
+ <p className="mt-6 max-w-[60ch] text-[15px] leading-[1.5] text-ink-soft sm:text-[17px]">
             {s.description}
           </p>
         )}
@@ -341,7 +341,7 @@ function Stat({
       </dt>
       <dd
         className={cn(
-          "text-[44px] font-bold leading-none tracking-[-0.04em] tabular-nums sm:text-[52px]",
+          "text-[28px] font-bold leading-none tracking-[-0.04em] tabular-nums sm:text-[32px]",
           numColor
         )}
       >
@@ -359,7 +359,7 @@ function Stat({
         </div>
       )}
       {sub && (
-        <span className="text-[14px] italic text-ink-soft">{sub}</span>
+ <span className="text-[14px] text-ink-soft">{sub}</span>
       )}
     </div>
   );

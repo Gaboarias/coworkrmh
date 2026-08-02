@@ -83,7 +83,7 @@ export default async function CotizadorPage() {
                   className="flex min-w-0 flex-1 items-baseline gap-3"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[16px] font-bold text-ink">
+                    <span className="block truncate text-[14px] font-bold text-ink">
                       {q.title}
                     </span>
                     <span className="block truncate text-[14px] text-ink-soft">
@@ -93,7 +93,7 @@ export default async function CotizadorPage() {
                   </span>
                 </Link>
                 <div className="flex flex-shrink-0 items-baseline gap-4">
-                  <span className="text-[16px] font-bold tabular-nums text-ink">
+                  <span className="text-[14px] font-bold tabular-nums text-ink">
                     {formatMoney(total)}
                   </span>
                   <span

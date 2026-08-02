@@ -89,7 +89,7 @@ export function ReportsView({ report }: Props) {
         <div>
           <HairlineRule label="Ventas por categoría" count={`${report.salesByCategory.length}`} />
           {report.salesByCategory.length === 0 ? (
-            <p className="mt-4 text-sm italic text-ink-faint">
+ <p className="mt-4 text-sm text-ink-faint">
               Sin ventas en los últimos 30 días.
             </p>
           ) : (
@@ -144,7 +144,7 @@ export function ReportsView({ report }: Props) {
             count={`${report.tasksByStatus.reduce((a, r) => a + r.count, 0)} totales`}
           />
           {report.tasksByStatus.length === 0 ? (
-            <p className="mt-4 text-sm italic text-ink-faint">
+ <p className="mt-4 text-sm text-ink-faint">
               Sin tareas aún.
             </p>
           ) : (
@@ -204,7 +204,7 @@ export function ReportsView({ report }: Props) {
           count={`${report.topContributors.length}`}
         />
         {report.topContributors.length === 0 ? (
-          <p className="mt-4 text-sm italic text-ink-faint">
+ <p className="mt-4 text-sm text-ink-faint">
             Sin tareas completadas con asignación.
           </p>
         ) : (
@@ -214,7 +214,7 @@ export function ReportsView({ report }: Props) {
                 <span className="h-list-item-n">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="flex-1 truncate text-[16px] font-medium text-ink">
+                <span className="flex-1 truncate text-[14px] font-medium text-ink">
                   {c.name ?? "Sin nombre"}
                 </span>
                 <span className="font-mono text-[13px] tabular-nums text-ink-soft">
@@ -261,14 +261,14 @@ function Kpi({ label, value, sub, accent }: KpiProps) {
       </dt>
       <dd
         className={
-          "text-[56px] font-bold tabular-nums leading-none tracking-[-0.04em] " +
+          "text-[34px] font-bold tabular-nums leading-none tracking-[-0.04em] " +
           numColor
         }
       >
         {value}
       </dd>
       {sub && (
-        <span className="text-[14px] italic text-ink-soft">{sub}</span>
+ <span className="text-[14px] text-ink-soft">{sub}</span>
       )}
     </div>
   );

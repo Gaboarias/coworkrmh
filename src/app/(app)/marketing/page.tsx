@@ -49,7 +49,7 @@ export default async function MarketingPage() {
       <section className="mt-16">
         <HairlineRule label="Historial" count={`${rows.length}`} />
         {rows.length === 0 ? (
-          <p className="mt-5 text-[15px] text-ink-soft">
+          <p className="mt-5 text-[13px] text-ink-soft">
             Todavía no hay campañas. Creá la primera arriba.
           </p>
         ) : (
@@ -61,7 +61,7 @@ export default async function MarketingPage() {
                   className="row-hover -mx-3 flex items-center gap-4 rounded-md px-3 py-3"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[16px] font-bold text-ink">
+                    <p className="truncate text-[14px] font-bold text-ink">
                       {c.name}
                     </p>
                     <p className="truncate text-[14px] text-ink-soft">

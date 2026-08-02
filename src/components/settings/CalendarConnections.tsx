@@ -64,7 +64,7 @@ export function CalendarConnections({
           strokeWidth={1.75}
         />
         <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-bold text-ink">Google Calendar</p>
+          <p className="text-[13px] font-bold text-ink">Google Calendar</p>
           <p className="mt-1 text-[13px] text-ink-soft">
             Conectá tu calendario para ver tus reuniones dentro del calendario
             de Pistachio. Solo lectura.

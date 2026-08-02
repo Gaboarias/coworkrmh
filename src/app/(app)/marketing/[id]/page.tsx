@@ -100,7 +100,7 @@ function Meta({ label, value }: { label: string; value: string }) {
       <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-ink-faint">
         {label}
       </dt>
-      <dd className="break-words text-[15px] text-ink">{value}</dd>
+      <dd className="break-words text-[13px] text-ink">{value}</dd>
     </div>
   );
 }

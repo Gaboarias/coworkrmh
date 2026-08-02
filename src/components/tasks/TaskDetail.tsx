@@ -314,14 +314,14 @@ export function TaskDetail({
                 aria-label="Editar título de la tarea"
                 // foco-ok: el campo sólo existe mientras se edita el título y se
                 // monta enfocado; el borde inferior en project-color marca el modo.
-                className="mt-4 w-full border-b-2 bg-transparent text-[32px] font-bold leading-[1.05] tracking-[-0.03em] text-ink outline-none sm:text-[44px] md:text-[52px]"
+                className="mt-4 w-full border-b-2 bg-transparent text-[26px] font-bold leading-[1.05] tracking-[-0.03em] text-ink outline-none sm:text-[28px] md:text-[32px]"
                 style={{ borderColor: "var(--project-color)" }}
               />
             ) : (
               <h2
                 onClick={startEditTitle}
                 title="Click para editar el título"
-                className="mt-4 cursor-text text-[32px] font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[44px] md:text-[52px]"
+                className="mt-4 cursor-text text-[26px] font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[28px] md:text-[32px]"
               >
                 {title}
                 <span aria-hidden style={{ color: "var(--project-color)" }}>
@@ -444,7 +444,7 @@ export function TaskDetail({
               <SectionLabel icon={<CalendarDays className="h-3 w-3" />}>
                 Fecha límite
               </SectionLabel>
-              <p className="mt-2 text-[20px] font-bold tabular-nums text-ink">
+              <p className="mt-2 text-[18px] font-bold tabular-nums text-ink">
                 {formatDateCR(task.dueDate)}
               </p>
             </section>
@@ -483,7 +483,7 @@ export function TaskDetail({
                   : `${comments.length} ${comments.length === 1 ? "entrada" : "entradas"}`}
               </span>
             </div>
-            <p className="mt-1 text-[13px] italic text-ink-soft">
+ <p className="mt-1 text-[13px] text-ink-soft">
               Las notas son append-only. Borrar permitido sólo al autor en los primeros 5 min.
             </p>
 
@@ -519,7 +519,7 @@ export function TaskDetail({
             {/* Timeline de entradas */}
             <ol className="mt-8 space-y-6">
               {!commentsLoading && comments.length === 0 && (
-                <li className="py-6 text-center text-sm italic text-ink-faint">
+ <li className="py-6 text-center text-sm text-ink-faint">
                   Sin entradas todavía. Sé el primero en anotar algo.
                 </li>
               )}
@@ -556,7 +556,7 @@ export function TaskDetail({
                       </button>
                     )}
                   </header>
-                  <p className="mt-2 whitespace-pre-wrap text-[15px] leading-[1.55] text-ink">
+                  <p className="mt-2 whitespace-pre-wrap text-[13px] leading-[1.55] text-ink">
                     {c.body}
                   </p>
                 </li>

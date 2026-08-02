@@ -116,12 +116,12 @@ export function Modal({
           <div className="flex items-start justify-between gap-4 border-b border-rule px-5 py-4">
             <div>
               {title && (
-                <h2 className="text-[16px] font-bold tracking-[-0.02em] text-ink">
+                <h2 className="text-[14px] font-bold tracking-[-0.02em] text-ink">
                   {title}
                 </h2>
               )}
               {description && (
-                <p className="mt-1 text-[15px] text-ink-soft">{description}</p>
+                <p className="mt-1 text-[13px] text-ink-soft">{description}</p>
               )}
             </div>
             <IconButton tone="faint" size="sm" onClick={requestClose} label="Cerrar">
