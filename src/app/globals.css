@@ -3,6 +3,36 @@
 @tailwind utilities;
 
 /* ============================================================
+   El signo de colón (₡, U+20A1)
+   ────────────────────────────────────────────────────────────
+   JetBrains Mono se carga con `subsets: ["latin"]`, y el rango
+   latin de Google NO incluye U+20A1 — sí el euro (U+20AC), no el
+   colón. Todo monto en CRC cae entonces a una fuente del sistema
+   sólo para ese carácter, con otra métrica: el símbolo se dibuja
+   más grande y más pesado que las cifras que acompaña.
+
+   Es un fallback silencioso. No rompe nada, no falla ningún test,
+   y sólo se ve mal en Costa Rica, que es donde se usa la app.
+
+   Se arregla acá y no en `formatMoney()` porque el símbolo se
+   concatena como texto plano en más de veinte lugares —y también
+   fuera del DOM, en el PDF—. Una fuente declarada para un único
+   punto de código alcanza a todos sin tocar ninguno.
+
+   `size-adjust` compensa la diferencia de métrica del fallback.
+   Si el símbolo sigue viéndose grande o queda chico, este número
+   es la única perilla.
+   ============================================================ */
+@font-face {
+  font-family: "ColonCRC";
+  src: local("Segoe UI"), local("Helvetica Neue"), local("Arial"),
+    local("DejaVu Sans");
+  unicode-range: U+20A1;
+  size-adjust: 84%;
+  font-display: swap;
+}
+
+/* ============================================================
    Consola — design tokens
    ────────────────────────────────────────────────────────────
    Vocabulario de terminal: azul marino, monoespaciada, filetes de
@@ -216,7 +246,10 @@
      baja a 400: a 500 la mancha de texto se cierra y deja de respirar.
      ──────────────────────────────────────────────────────────── */
   body {
-    font-family: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
+    /* "ColonCRC" va PRIMERO: sólo declara U+20A1, así que no toca ningún otro
+       carácter — el resto sigue cayendo en JetBrains Mono como corresponde. */
+    font-family: "ColonCRC", var(--font-mono), "JetBrains Mono", ui-monospace,
+      monospace;
     font-weight: 400;
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
     line-height: 1.55;
