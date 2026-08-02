@@ -45,6 +45,13 @@ export default function RootLayout({
         {/*
           Theme inicial sincronizado para evitar flash (FOUC). next-themes
           hidrata después con su propio script.
+
+          El `'dark'` de acá DEBE coincidir con el `defaultTheme` de
+          ThemeProvider. Si se separan, cada carga pinta un tema y la
+          hidratación lo cambia por el otro: un parpadeo en toda la app que no
+          rompe nada y que nadie sabe de dónde sale. Un test de conformidad
+          compara los dos valores.
+
           dangerouslySetInnerHTML es intencional: el string es un literal
           hardcodeado — no contiene ni interpola datos de usuario, por lo
           que no hay riesgo de XSS. Patrón estándar para inline scripts de
@@ -52,7 +59,7 @@ export default function RootLayout({
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('pistachio-theme')||'light';if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}`,
+            __html: `try{var t=localStorage.getItem('pistachio-theme')||'dark';if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}`,
           }}
         />
       </head>

@@ -113,6 +113,51 @@ describe("coherencia de tema (SC-003)", () => {
   });
 });
 
+describe("tema por defecto", () => {
+  /**
+   * El default vive en dos lugares y tiene que decir lo mismo:
+   *
+   *   1. `ThemeProvider` → `defaultTheme`, que aplica next-themes al hidratar.
+   *   2. El script inline de `layout.tsx`, que corre ANTES de la hidratación
+   *      justamente para que no haya flash.
+   *
+   * Si se separan, cada carga pinta un tema y la hidratación lo cambia por el
+   * otro. No rompe nada: sólo parpadea, en toda la app, sin que quede claro de
+   * dónde sale. Es el tipo de desajuste que sobrevive años.
+   */
+  const layout = readFileSync("src/app/layout.tsx", "utf8");
+  const provider = readFileSync(
+    "src/components/providers/ThemeProvider.tsx",
+    "utf8"
+  );
+
+  it("el script inline y ThemeProvider declaran el mismo default", () => {
+    const inScript = /getItem\('pistachio-theme'\)\s*\|\|\s*'(\w+)'/.exec(layout);
+    const inProvider = /defaultTheme="(\w+)"/.exec(provider);
+
+    expect(inScript, "no se encontró el default en el script inline").not.toBeNull();
+    expect(inProvider, "no se encontró defaultTheme en ThemeProvider").not.toBeNull();
+    expect(
+      inScript![1],
+      `el script inline dice "${inScript![1]}" y ThemeProvider "${inProvider![1]}": ` +
+        "la app va a parpadear en cada carga"
+    ).toBe(inProvider![1]);
+  });
+
+  it("la clave de storage es la misma en los dos", () => {
+    // Con claves distintas, el script lee una preferencia que next-themes nunca
+    // escribió: el usuario elige claro y en la carga siguiente vuelve a oscuro.
+    expect(layout).toContain("'pistachio-theme'");
+    expect(provider).toContain('storageKey="pistachio-theme"');
+  });
+
+  it("Consola arranca en oscuro", () => {
+    // La dirección es dark-first: el marino es la decisión y el claro su
+    // traducción. Con el default en claro, quien entra nuevo no la ve nunca.
+    expect(provider).toMatch(/defaultTheme="dark"/);
+  });
+});
+
 describe("voz tipográfica (Consola)", () => {
   /**
    * `globals.css` fija la mono en `body` dentro de `@layer base`, pero las
