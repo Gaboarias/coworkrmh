@@ -185,6 +185,37 @@ describe("voz tipográfica (Consola)", () => {
     );
   });
 
+  /**
+   * El signo de colón (₡, U+20A1) no está en el subset `latin` de JetBrains
+   * Mono, así que cae a una fuente del sistema y se dibuja 1.6× más ancho que
+   * un dígito — medido en el navegador, no estimado.
+   *
+   * El arreglo es una `@font-face` que cubre sólo ese punto de código. La
+   * primera versión la puso únicamente en la regla de `body` de globals.css, y
+   * quedó INERTE: la utilidad `font-mono` se emite después del @layer base y la
+   * pisa. Exactamente el mismo fallo que este archivo ya vigila para
+   * `font-sans`, repetido tres commits después.
+   *
+   * Por eso la comprobación es que esté en la CONFIG de Tailwind, que es lo que
+   * termina en la utilidad, y no en la hoja de estilos.
+   */
+  it("la fuente del colón está en la pila de font-mono, no sólo en body", () => {
+    const css = readFileSync("src/app/globals.css", "utf8");
+    const config = readFileSync("tailwind.config.ts", "utf8");
+
+    expect(css, "falta la @font-face que cubre U+20A1").toMatch(
+      /@font-face[\s\S]*?unicode-range:\s*U\+20A1/i
+    );
+
+    const monoStack = /mono:\s*\[([\s\S]*?)\]/.exec(config);
+    expect(monoStack, "no se encontró fontFamily.mono en tailwind.config").not.toBeNull();
+    expect(
+      monoStack![1],
+      "ColonCRC no está en la pila de font-mono: la @font-face queda inerte " +
+        "porque la utilidad de Tailwind pisa la regla de body"
+    ).toMatch(/ColonCRC/);
+  });
+
   it("la variable de la mono está conectada a la fuente cargada", () => {
     const layout = readFileSync("src/app/layout.tsx", "utf8");
     // Sin `variable: "--font-mono"` la var no existe y `font-mono` cae al

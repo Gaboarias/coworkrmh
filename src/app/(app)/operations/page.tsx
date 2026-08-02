@@ -10,10 +10,12 @@ import { buttonVariants } from "@/components/ui/Button";
 import { StatStrip } from "@/components/ui/StatStrip";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { HairlineRule } from "@/components/shared/HairlineRule";
-import {
-  OperationsNav,
-  OPERATIONS_MODULE_COUNT,
-} from "@/components/operations/OperationsNav";
+import { OperationsNav } from "@/components/operations/OperationsNav";
+// Desde el módulo de constantes y NO desde OperationsNav: ese archivo es
+// `"use client"`, y este es un Server Component. Importar un valor de un módulo
+// cliente devuelve una referencia, no el número — se publicó como
+// `[object Object]` en el encabezado.
+import { OPERATIONS_MODULE_COUNT } from "@/lib/constants/operationsModules";
 import { NoEntorno } from "@/components/operations/NoEntorno";
 import { formatDateCR } from "@/lib/utils/datetime";
 

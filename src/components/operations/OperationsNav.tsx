@@ -1,23 +1,15 @@
 "use client";
 
 import { TabNav } from "@/components/shared/TabNav";
-
-const tabs = [
-  { href: "/operations", label: "Resumen", exact: true },
-  { href: "/operations/catalogo", label: "Catálogo" },
-  { href: "/operations/cotizador", label: "Cotizador" },
-  { href: "/operations/ventas", label: "Ventas" },
-  { href: "/operations/gastos", label: "Gastos" },
-  { href: "/operations/equipo", label: "Roles & acuerdos" },
-];
+import { OPERATIONS_TABS } from "@/lib/constants/operationsModules";
 
 /**
- * Cuántos módulos tiene el ERP, sin contar "Resumen", que es el índice.
+ * La lista de módulos NO vive acá.
  *
- * Sale de acá porque esta lista es la navegación real: el dashboard tenía su
- * propia copia de los cinco módulos y las dos podían separarse sin que nada
- * fallara.
+ * Este archivo es `"use client"`, y un Server Component que importe un valor
+ * suyo recibe una referencia de cliente en vez del valor. El dashboard hacía
+ * exactamente eso para contar los módulos y publicaba `[object Object]`.
+ * La constante vive en `@/lib/constants/operationsModules`, que no tiene
+ * directiva y por lo tanto sirve a los dos lados.
  */
-export const OPERATIONS_MODULE_COUNT = tabs.length - 1;
-
-export const OperationsNav = () => <TabNav tabs={tabs} />;
+export const OperationsNav = () => <TabNav tabs={[...OPERATIONS_TABS]} />;

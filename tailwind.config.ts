@@ -128,7 +128,22 @@ const config: Config = {
         // Una sola fuente. Display = mismo Satoshi en mayor peso/tamaño.
         sans: ["Satoshi", "system-ui", "-apple-system", "sans-serif"],
         display: ["Satoshi", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"],
+        // "ColonCRC" primero: declara ÚNICAMENTE U+20A1 (el signo de colón),
+        // que el subset `latin` de JetBrains Mono no trae. Sin él, ese carácter
+        // cae a una fuente del sistema y se dibuja 1.6× más ancho que un dígito
+        // — medido en la corrida de QA.
+        //
+        // Va acá y no sólo en la regla de `body`: la utilidad `font-mono` se
+        // emite DESPUÉS del @layer base y pisa esa regla. Es el mismo fallo que
+        // ya se corrigió una vez con `font-sans`, y la primera versión de este
+        // arreglo volvió a caer en él.
+        mono: [
+          "ColonCRC",
+          "var(--font-mono)",
+          "JetBrains Mono",
+          "ui-monospace",
+          "monospace",
+        ],
       },
       letterSpacing: {
         "title": "-0.04em",
