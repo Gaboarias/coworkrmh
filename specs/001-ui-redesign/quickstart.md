@@ -7,9 +7,12 @@ Guía para validar que cada fase del rediseño cumple paridad + identidad + acce
 - Build base verde antes de empezar.
 
 ## Gate por fase (correr siempre)
+
+Un solo comando. Es el gate que fija la constitución v1.0.1 §Flujo de trabajo y
+gates de calidad; no hay una segunda versión del gate en ningún otro documento.
+
 ```bash
-npx tsc --noEmit        # sin errores de tipos
-npm run build           # build de producción verde
+npm run verify          # tsc --noEmit + next lint + vitest run
 ```
 
 ## Validación funcional (paridad)
@@ -37,4 +40,4 @@ Por cada pantalla migrada, repetir las acciones clave y confirmar mismo resultad
 - Con "menos movimiento" del SO activo → sin animaciones de movimiento.
 
 ## Criterio de aceptación
-Todas las casillas anteriores OK + `tsc`/`build` verdes ⇒ la fase está lista para commit/deploy.
+Todas las casillas anteriores OK + `npm run verify` verde ⇒ la fase está lista para commit/deploy.

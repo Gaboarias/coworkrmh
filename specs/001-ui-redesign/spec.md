@@ -4,7 +4,8 @@
 
 **Created**: 2026-06-29
 
-**Status**: Draft
+**Status**: Implemented (2026-08-01) — ver `tasks.md` para el detalle y los tres
+puntos de verificación manual que quedan abiertos.
 
 **Input**: Rediseño completo del UI web de Pistachio (PM + CRM + ERP interno de ReWind Media House) hacia una dirección "Operacional con calidez": claridad y densidad tipo Linear/Supabase conservando la identidad pistacho, light + dark, toggle de densidad para tablas ERP, progressive disclosure, reskin de primitivos sin tocar lógica.
 
@@ -100,7 +101,7 @@ Como usuaria, quiero transiciones y feedback sutiles (apertura de modales/panele
 - **FR-003**: Todos los componentes base (botón, input, select, modal, superficie/tarjeta, badge/pill, encabezado de página, sidebar, topbar, tabla, stat strip) DEBEN reskinearse a la nueva identidad sin cambiar su comportamiento ni su API observable por el usuario.
 - **FR-004**: Cada pantalla DEBE migrarse reusando los primitivos nuevos, conservando el 100% de las funcionalidades actuales.
 - **FR-005**: El dashboard DEBE liderar con un resumen de atención (urgencias/pendientes/riesgos) y ofrecer drill-down al detalle.
-- **FR-006**: Las vistas de tablas del ERP DEBEN ofrecer un control de densidad (compacto/cómodo) con la elección persistida.
+- **FR-006**: Las vistas de tablas del ERP DEBEN ofrecer un control de densidad (compacto/cómodo) con la elección persistida. Son **seis**: Catálogo, Ventas, Gastos, Cotizador, Clientes/cobros y Equipo.
 - **FR-007**: Las microinteracciones DEBEN respetar la preferencia de "menos movimiento" del sistema.
 - **FR-008**: El accent de marca DEBE ser el verde pistacho (no un azul SaaS genérico) y convivir con los colores semánticos (éxito/aviso/urgente/info) y con el color dinámico por proyecto.
 - **FR-009**: La UI DEBE mantener accesibilidad: contraste suficiente (objetivo WCAG AA), foco visible en todos los controles interactivos, y nombres accesibles (aria-label) en botones de solo ícono.
@@ -111,7 +112,8 @@ Como usuaria, quiero transiciones y feedback sutiles (apertura de modales/panele
 ### Key Entities *(include if feature involves data)*
 
 - **Token de diseño**: unidad nombrada de identidad (color, tipografía, espaciado, radio) que la UI consume; tiene valor en claro y en oscuro.
-- **Preferencia de tema**: elección del usuario (claro/oscuro/sistema), persistida.
+- **Preferencia de tema**: elección del usuario (claro/oscuro), persistida. Sin
+  opción "sistema": Edition 04 decidió dos modos explícitos, cuidados por igual.
 - **Preferencia de densidad**: elección del usuario para tablas ERP (compacto/cómodo), persistida.
 
 ## Success Criteria *(mandatory)*
@@ -121,9 +123,9 @@ Como usuaria, quiero transiciones y feedback sutiles (apertura de modales/panele
 - **SC-001**: Paridad funcional total: el 100% de las acciones disponibles antes del rediseño siguen disponibles y producen el mismo resultado.
 - **SC-002**: Toda la app (todas las pantallas en alcance) usa exclusivamente los primitivos/tokens nuevos; cero pantallas con el estilo anterior.
 - **SC-003**: El cambio de tema claro/oscuro afecta el 100% de las pantallas en alcance de forma coherente y persiste entre sesiones.
-- **SC-004**: En el dashboard, un usuario identifica "qué necesita atención hoy" sin hacer scroll por debajo del primer bloque.
+- **SC-004**: En el dashboard, con viewport de referencia **1280×720** (desktop, según el Target Platform del plan), el bloque de atención queda completo sobre el pliegue: un usuario identifica "qué necesita atención hoy" sin hacer scroll.
 - **SC-005**: Contraste WCAG AA en texto y controles en ambos temas; foco visible en el 100% de los controles interactivos.
-- **SC-006**: En las tablas del ERP, el modo compacto muestra al menos ~40% más filas que el modo cómodo en la misma altura de pantalla.
+- **SC-006**: En las tablas del ERP, el modo compacto muestra al menos **40%** más filas que el modo cómodo en la misma altura de pantalla (viewport de referencia 1280×720).
 - **SC-007**: El portal de clientes se ve en claro el 100% de las veces, sin importar la preferencia interna.
 - **SC-008**: Build de producción verde y sin regresiones funcionales detectables tras cada pantalla migrada.
 

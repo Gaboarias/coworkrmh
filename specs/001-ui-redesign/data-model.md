@@ -11,10 +11,13 @@ Unidad nombrada de identidad visual consumida por toda la UI.
 - **Fuente**: CSS vars en `globals.css` (`:root` claro, `:root[data-theme="dark"]` oscuro); mapeadas a nombres Tailwind en `tailwind.config.ts`.
 
 ## ThemePreference
-- **value**: `light` | `dark` | `system`.
-- **default**: `system`.
-- **storage**: cookie `theme` (SSR, anti-FOUC) + espejo en `localStorage`.
-- **applied**: atributo `data-theme` en `<html>`.
+- **value**: `light` | `dark`. Sin `system` — Edition 04 decidió dos modos
+  explícitos, cuidados por igual (`ThemeToggle.tsx`, `enableSystem={false}`).
+- **default**: `light`.
+- **storage**: `localStorage`, clave `pistachio-theme` (gestionada por
+  `next-themes`), con script inline en `layout.tsx` para evitar FOUC.
+- **applied**: clase `.dark` en `<html>` (`darkMode: "class"` en
+  `tailwind.config.ts`).
 
 ## DensityPreference
 - **value**: `compact` | `comfortable`.

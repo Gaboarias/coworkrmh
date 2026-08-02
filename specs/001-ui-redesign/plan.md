@@ -16,7 +16,7 @@ Rediseñar la capa visual de la web app (no la lógica) hacia "Operacional con c
 
 **Storage**: Preferencias de UI (tema, densidad) → cookie + `localStorage` (sin tocar DB). Datos de negocio → Neon/Drizzle (fuera de alcance)
 
-**Testing**: `tsc --noEmit` + `next build` como gate por fase; verificación visual/manual por pantalla; (sin suite e2e en el repo hoy)
+**Testing**: `npm run verify` (`tsc --noEmit` + `next lint` + `vitest run`) como gate por fase — es el gate que fija la constitución v1.0.1 §Flujo de trabajo. Al 2026-08-01 el repo tiene 10 archivos de test y 114 tests, incluidos dos de conformidad (`action-guards`, `button-conformance`). Verificación visual/manual por pantalla según `quickstart.md`. Sin suite e2e.
 
 **Target Platform**: Navegador desktop primero (la app es desktop-first; responsive ya existente se preserva)
 
@@ -32,14 +32,28 @@ Rediseñar la capa visual de la web app (no la lógica) hacia "Operacional con c
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-La constitución del proyecto (`.specify/memory/constitution.md`) está **sin ratificar** (template con placeholders). Se aplican los principios de-facto vigentes del proyecto como gates:
+Evaluado contra `.specify/memory/constitution.md` **v1.0.1**.
+Los cuatro principios que esta sección aplicaba como "de-facto" son ahora vinculantes.
 
-- **No romper funcionalidad** (cambio solo visual) — PASS (enforced por paridad + build verde por fase).
-- **Mínimas dependencias** (sin libs nuevas salvo `motion` ya aprobada) — PASS.
-- **Accesibilidad AA** (contraste, foco, aria-labels) — PASS (requisito explícito).
-- **Reversibilidad / incremental** (pantalla por pantalla, cada paso desplegable) — PASS.
+> **Alcance de este gate**: evalúa el **plan**, no el estado del código. La feature
+> está mayormente implementada, y `/speckit-analyze` encontró dos incumplimientos
+> vigentes que el plan no anticipaba — reduced-motion (50 de 51 animaciones) y
+> literales de color (14). Ninguno contradice el plan; los dos se corrigen en
+> `tasks.md` Phases 2 y 6. Un PASS acá no significa "el código cumple".
 
-Recomendación (no bloqueante): correr `/speckit-constitution` para ratificar principios formalmente antes de features futuras.
+- **I. Paridad funcional (NO NEGOCIABLE)** — PASS. El rediseño es solo capa de
+  presentación (FR-011); la paridad es criterio de éxito explícito (SC-001) y se
+  verifica con `npm run verify` en verde por fase (SC-008).
+- **II. Dependencias mínimas** — PASS. Sin librerías nuevas; `motion` ya está en el
+  proyecto. Los primitivos de `src/components/ui/` son de uso obligatorio.
+- **III. Accesibilidad AA** — PASS con salvedad. Contraste en ambos temas, foco
+  visible y nombre accesible en botones de solo ícono son requisito explícito
+  (FR-009, SC-005), y `prefers-reduced-motion` está cubierto por FR-007. **El
+  código no lo cumple todavía**: ver la nota de alcance arriba y T002–T005.
+- **IV. Entrega incremental y reversible** — PASS. La migración es pantalla por
+  pantalla, cada paso verificable y desplegable solo (US3, Assumptions).
+
+Sin violaciones que registrar en Complexity Tracking.
 
 ## Project Structure
 
@@ -68,7 +82,8 @@ src/
 ├── components/
 │   ├── ui/                       # primitivos: Button, Input, Select, Modal, Card, Badge…
 │   ├── layout/                   # Sidebar, Topbar, AppShell, ThemeToggle, Breadcrumbs
-│   ├── providers/                # MotionProvider (ya), ThemeProvider/DensityProvider (nuevos)
+│   ├── providers/                # MotionProvider, ThemeProvider, SessionProvider
+│   │                             #   (la densidad NO es provider: src/lib/hooks/useDensity.ts)
 │   ├── tasks/ projects/ operations/ clients/ reports/ notes/ settings/ …
 │   └── shared/                   # PageHeader, HairlineRule, EmptyState…
 └── tailwind.config.ts            # ← mapea tokens semánticos a las CSS vars
