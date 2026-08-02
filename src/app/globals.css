@@ -202,30 +202,60 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
+  /* ────────────────────────────────────────────────────────────
+     Voz tipográfica de Consola.
+
+     La dirección pide monoespaciada de punta a punta, pero leer un párrafo en
+     mono es peor y "de punta a punta" no vale el costo. La línea se traza así:
+
+       mono  → estructura, etiqueta, número y control. Todo el cromo.
+       lectura → frases que escribió una persona: notas, descripciones,
+                 mensajes. Ahí manda `.prose` y `.reading`.
+
+     Mono avanza ~20% más ancho que Satoshi al mismo tamaño, así que el peso
+     baja a 400: a 500 la mancha de texto se cierra y deja de respirar.
+     ──────────────────────────────────────────────────────────── */
   body {
-    font-family: "Satoshi", system-ui, -apple-system, sans-serif;
-    font-weight: 500;
-    font-feature-settings: "ss01" 1, "kern" 1, "liga" 1, "calt" 1;
-    line-height: 1.647; /* 28px sobre 17px — ritmo vertical base-4 (7×4) */
+    font-family: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
+    font-weight: 400;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    line-height: 1.55;
   }
 
-  /* Headings: Satoshi bold + tight tracking, generous size */
+  /* Títulos: la misma mono, sin caja alta. Un título largo en mayúsculas se
+     lee peor, y la jerarquía ya la dan el tamaño y el peso. */
   h1, h2, h3, h4 {
+    font-family: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  h1 { letter-spacing: -0.03em; }
+  h3, h4 { font-weight: 500; }
+
+  /* Texto para leer, no para operar. El editor de notas y las descripciones
+     vuelven a la cara de lectura: es donde la mono cuesta de verdad. */
+  .prose, .reading {
+    font-family: "Satoshi", system-ui, -apple-system, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.65;
+  }
+  .prose h1, .prose h2, .prose h3, .prose h4 {
     font-family: "Satoshi", system-ui, sans-serif;
     font-weight: 700;
     letter-spacing: -0.025em;
-    line-height: 1.1;
   }
-  h1 { letter-spacing: -0.035em; font-weight: 700; }
-  h2 { letter-spacing: -0.025em; font-weight: 700; }
-  h3 { font-weight: 600; }
 
-  /* Tabular numerals donde importa */
+  /* Tabular numerals donde importa.
+     La mono ya alinea cifras por diseño, pero los pocos lugares que siguen en
+     Satoshi (montos dentro de prosa) lo necesitan igual. */
   .tabular, td.numeric, .kpi-value, .money, .num {
     font-variant-numeric: tabular-nums lining-nums;
   }
 
-  /* Mono utility (labels técnicos) */
+  /* Etiqueta técnica: la caja alta con tracking ancho es el único lugar donde
+     Consola levanta la voz fuera del CTA. */
   .mono, .eyebrow, .issue-num {
     font-family: var(--font-mono), "JetBrains Mono", monospace;
     font-weight: 500;

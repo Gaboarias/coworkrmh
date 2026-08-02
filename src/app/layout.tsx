@@ -5,10 +5,12 @@ import { Toaster } from "sonner";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
-// Tipografía Edition 04:
+// Tipografía Consola:
+// - JetBrains Mono — via next/font/google. Es la voz de toda la interfaz:
+//   estructura, etiquetas, números y controles.
 // - Satoshi (Fontshare via CSS API <link>, no via npm — Fontshare no publica
-//   en npm registry). Carga via Fontshare CDN, font-family: "Satoshi".
-// - JetBrains Mono — via next/font/google. Labels técnicos, timestamps.
+//   en npm registry). Queda reservada a `.prose` y `.reading`: el editor de
+//   notas y las descripciones, que son texto para leer y no para operar.
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -54,7 +56,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${jetbrainsMono.variable} font-sans antialiased`}>
+      {/* `font-mono` y no `font-sans`: la utilidad de Tailwind se emite después
+          del @layer base, así que gana sobre la regla de `body` en globals.css.
+          Con `font-sans` acá, el cambio de voz de Consola no se aplicaba en
+          ningún lado y no rompía nada — fallaba en silencio. */}
+      <body className={`${jetbrainsMono.variable} font-mono antialiased`}>
         <ThemeProvider>
           <SessionProvider>
             {children}
@@ -63,9 +69,12 @@ export default function RootLayout({
               toastOptions={{
                 style: {
                   background: "var(--surface-el)",
-                  border: "1px solid var(--border)",
+                  border: "1px solid var(--rule-strong)",
                   color: "var(--ink)",
-                  fontFamily: "Satoshi, system-ui, sans-serif",
+                  // Un toast es cromo, no lectura: va en la voz de la interfaz.
+                  fontFamily: "var(--font-mono), ui-monospace, monospace",
+                  fontSize: "13px",
+                  borderRadius: "2px",
                 },
               }}
             />

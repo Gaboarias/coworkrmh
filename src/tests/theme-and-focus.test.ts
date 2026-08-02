@@ -113,6 +113,42 @@ describe("coherencia de tema (SC-003)", () => {
   });
 });
 
+describe("voz tipográfica (Consola)", () => {
+  /**
+   * `globals.css` fija la mono en `body` dentro de `@layer base`, pero las
+   * utilidades de Tailwind se emiten después: un `font-sans` en el className del
+   * `<body>` gana y deja toda la app en la cara de lectura.
+   *
+   * Es el peor tipo de fallo: no rompe el build, no rompe un test, y la app se
+   * ve perfectamente bien — sólo que en la tipografía equivocada. Estuvo así
+   * hasta que se miró el className a mano.
+   */
+  it("el body no pisa la mono con una utilidad de familia", () => {
+    const layout = readFileSync("src/app/layout.tsx", "utf8");
+    // La etiqueta entera: el className es un template literal con
+    // `${fuente.variable}` adentro, así que cortar en la primera llave se come
+    // justo la parte que interesa.
+    const body = /<body[\s\S]*?>/.exec(layout);
+    expect(body, "no se encontró la etiqueta <body>").not.toBeNull();
+    const tag = body![0];
+    expect(
+      tag,
+      `el <body> lleva font-sans y anula la voz de Consola: ${tag}`
+    ).not.toMatch(/\bfont-sans\b/);
+    expect(tag, "el <body> debe fijar font-mono explícitamente").toMatch(
+      /\bfont-mono\b/
+    );
+  });
+
+  it("la variable de la mono está conectada a la fuente cargada", () => {
+    const layout = readFileSync("src/app/layout.tsx", "utf8");
+    // Sin `variable: "--font-mono"` la var no existe y `font-mono` cae al
+    // monospace genérico del sistema: se ve parecido y no es la fuente.
+    expect(layout).toMatch(/variable:\s*"--font-mono"/);
+    expect(layout).toMatch(/\$\{\w+\.variable\}/);
+  });
+});
+
 describe("aislamiento del portal (SC-007)", () => {
   const layout = readFileSync(`${PORTAL}/layout.tsx`, "utf8");
 
