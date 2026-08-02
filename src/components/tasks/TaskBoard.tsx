@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useState } from "react";
 import { updateTask } from "@/lib/actions/tasks";
+import { useOptimisticList } from "@/lib/hooks/useOptimisticList";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { TaskPriorityBadge } from "./TaskPriorityBadge";
 import { formatDateCR, isPastDateCR } from "@/lib/utils/datetime";
@@ -42,32 +41,24 @@ export function TaskBoard({
   canEdit,
   onSelectTask,
 }: TaskBoardProps) {
-  const router = useRouter();
-  const [items, setItems] = useState(tasks);
   const [dragOver, setDragOver] = useState<TaskStatus | null>(null);
 
-  // Resync con props cuando cambia el set/estado (crear tarea, refresh, etc.),
-  // sin clobberear un drag en vuelo si nada cambió.
-  const sig = tasks.map((t) => `${t.id}:${t.status}`).join("|");
-  useEffect(() => {
-    setItems(tasks);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sig]);
+  // La receta optimista que este componente tenía escrita a mano vive ahora en
+  // `useOptimisticList`, que además arregla dos casos que la versión local
+  // erraba: el snapshot salía del render y no del estado vigente (dos arrastres
+  // seguidos sobre la misma tarjeta revertían al valor equivocado), y revertía
+  // aunque el componente ya estuviera desmontado.
+  const { items, apply } = useOptimisticList(tasks, (t) => `${t.id}:${t.status}`);
 
   async function move(taskId: string, to: TaskStatus) {
     const t = items.find((x) => x.id === taskId);
     if (!t || t.status === to) return;
-    const prev = items;
-    setItems((arr) =>
-      arr.map((x) => (x.id === taskId ? { ...x, status: to } : x))
+    await apply(
+      taskId,
+      { status: to } as Partial<BoardTask>,
+      () => updateTask(taskId, projectId, { status: to }),
+      { errorMessage: "No se pudo mover la tarea" }
     );
-    try {
-      await updateTask(taskId, projectId, { status: to });
-      router.refresh();
-    } catch {
-      setItems(prev);
-      toast.error("No se pudo mover la tarea");
-    }
   }
 
   return (
