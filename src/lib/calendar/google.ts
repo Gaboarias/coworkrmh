@@ -83,6 +83,26 @@ export async function exchangeGoogleCode(code: string): Promise<GoogleTokens> {
   };
 }
 
+/**
+ * El refresh token dejó de servir de forma PERMANENTE.
+ *
+ * Se distingue de un fallo pasajero a propósito. Google devuelve
+ * `invalid_grant` cuando el usuario revocó el acceso, cambió la contraseña, o
+ * —el caso que nos toca— cuando la app está en modo Testing y pasaron los 7
+ * días de vida que Google le da a los refresh tokens ahí.
+ *
+ * Un 5xx o un problema de red NO son esto: reconectar por un blip sería peor
+ * que el bug que esto viene a arreglar.
+ */
+export class GoogleAuthRevokedError extends Error {
+  constructor(detalle?: string) {
+    super(
+      `Google rechazó el refresh token de forma permanente${detalle ? `: ${detalle}` : ""}`
+    );
+    this.name = "GoogleAuthRevokedError";
+  }
+}
+
 export async function refreshGoogleAccess(
   refreshToken: string
 ): Promise<{ accessToken: string; expiresIn: number }> {
@@ -96,7 +116,22 @@ export async function refreshGoogleAccess(
       grant_type: "refresh_token",
     }),
   });
-  if (!res.ok) throw new Error(`Google token refresh falló (${res.status})`);
+
+  if (!res.ok) {
+    // El cuerpo del 400 es lo único que separa "hay que reconectar" de
+    // "reintentá más tarde". Sin leerlo, los dos se ven igual.
+    let code = "";
+    try {
+      code = ((await res.json()) as { error?: string }).error ?? "";
+    } catch {
+      /* cuerpo no-JSON: se trata como transitorio */
+    }
+    if (res.status === 400 && code === "invalid_grant") {
+      throw new GoogleAuthRevokedError(code);
+    }
+    throw new Error(`Google token refresh falló (${res.status})`);
+  }
+
   const data = await res.json();
   return { accessToken: data.access_token, expiresIn: data.expires_in };
 }

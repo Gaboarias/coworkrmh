@@ -23,18 +23,17 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/lib/db/schema";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { sendPasswordResetEmail, getAppUrl } from "@/lib/email";
 import { logAdminAction } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
-function baseUrl(req: Request) {
-  const origin = req.headers.get("origin");
-  if (origin) return origin;
-  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
-  const proto = req.headers.get("x-forwarded-proto") ?? "https";
-  return `${proto}://${host}`;
-}
+// El link salía de un `baseUrl(req)` que leía `Origin` / `X-Forwarded-Host`,
+// headers que elige quien llama. Ver el comentario largo en
+// api/auth/forgot-password: era toma de cuenta. Acá el endpoint exige admin,
+// así que el atacante tendría que serlo — pero la URL igual tiene que salir de
+// la configuración del servidor, no de un header, y además así el link que se
+// copia a mano coincide con el que llega por correo.
 
 export async function POST(
   request: Request,
@@ -71,7 +70,7 @@ export async function POST(
     expiresAt,
   });
 
-  const resetUrl = `${baseUrl(request)}/reset-password?token=${rawToken}`;
+  const resetUrl = `${getAppUrl()}/reset-password?token=${rawToken}`;
 
   // Best-effort email — no bloquear el response si falla.
   let emailSent = false;

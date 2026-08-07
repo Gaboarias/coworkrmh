@@ -19,15 +19,30 @@ export async function GET(
 
   const id = params.id;
 
+  /**
+   * `sent` = todo lo que ya salió de nuestro lado.
+   *
+   * El filtro decía `IN ('sent','delivered','opened','clicked')`, pero
+   * `campaign_sends.status` es el enum `send_status`, que NO tiene `opened` ni
+   * `clicked` — esos dos viven en `email_event_type`, otro enum, y se cuentan
+   * abajo contra `email_events`. Postgres castea los literales del IN al tipo
+   * de la columna y tira 22P02; como esta query estaba fuera del try, la ruta
+   * devolvía 500 y la pantalla de detalle de campaña no cargaba nunca.
+   *
+   * Los cuatro estados de acá son los posteriores al despacho: un rebote o una
+   * queja implican que el correo salió, así que cuentan como enviado. Es lo que
+   * hace que `bounceRate = bounced / sent` signifique algo.
+   */
   const sendsRes = await db.execute(sql`
     SELECT
-      count(*)::int                                                            AS total,
-      count(*) FILTER (WHERE status IN ('sent','delivered','opened','clicked'))::int AS sent,
-      count(*) FILTER (WHERE status = 'delivered')::int                        AS delivered,
-      count(*) FILTER (WHERE status = 'bounced')::int                          AS bounced,
-      count(*) FILTER (WHERE status = 'complained')::int                       AS complained,
-      count(*) FILTER (WHERE status = 'failed')::int                           AS failed,
-      count(*) FILTER (WHERE status = 'queued')::int                           AS queued
+      count(*)::int                                                                     AS total,
+      count(*) FILTER (WHERE status IN ('sent','delivered','bounced','complained'))::int AS sent,
+      count(*) FILTER (WHERE status = 'delivered')::int                                 AS delivered,
+      count(*) FILTER (WHERE status = 'bounced')::int                                   AS bounced,
+      count(*) FILTER (WHERE status = 'complained')::int                                AS complained,
+      count(*) FILTER (WHERE status = 'failed')::int                                    AS failed,
+      count(*) FILTER (WHERE status = 'queued')::int                                    AS queued,
+      count(*) FILTER (WHERE status = 'sending')::int                                   AS sending
     FROM campaign_sends WHERE campaign_id = ${id}
   `);
 

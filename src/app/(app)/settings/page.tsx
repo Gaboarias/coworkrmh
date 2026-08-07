@@ -49,6 +49,7 @@ export default async function SettingsPage() {
         configured={googleConfigured()}
         connected={calStatus.connected}
         email={calStatus.email}
+        needsReconnect={calStatus.needsReconnect}
       />
     </div>
   );

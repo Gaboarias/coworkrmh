@@ -41,5 +41,7 @@ next-env.d.ts
 
 # Artefactos de QA (screenshots, inventarios generados)
 /qa-artifacts/
+# Snapshots y logs de consola que deja el MCP de Playwright al navegar
+/.playwright-mcp/
 
 debug.log

@@ -8,15 +8,12 @@ import {
   passwordResetTokens,
   workspaceMembers,
 } from "@/lib/db/schema";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { sendPasswordResetEmail, getAppUrl } from "@/lib/email";
 
-function baseUrl(req: Request) {
-  const origin = req.headers.get("origin");
-  if (origin) return origin;
-  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
-  const proto = req.headers.get("x-forwarded-proto") ?? "https";
-  return `${proto}://${host}`;
-}
+// El link salía de un `baseUrl(req)` que leía `Origin` / `X-Forwarded-Host`,
+// headers que elige quien llama. Ver el comentario largo en
+// api/auth/forgot-password: era toma de cuenta. El origen del link ahora sale
+// de la configuración del servidor.
 
 const ROLES = ["admin", "manager", "member"] as const;
 
@@ -92,7 +89,7 @@ export async function POST(request: Request) {
     expiresAt,
   });
 
-  const inviteUrl = `${baseUrl(request)}/reset-password?token=${rawToken}`;
+  const inviteUrl = `${getAppUrl()}/reset-password?token=${rawToken}`;
 
   let emailSent = false;
   try {

@@ -11,6 +11,8 @@
 
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { getActiveWorkspace } from "@/lib/workspace";
+import { hasFeature } from "@/lib/entitlements";
 
 export class EmailAuthError extends Error {
   status: number;
@@ -20,12 +22,29 @@ export class EmailAuthError extends Error {
   }
 }
 
-/** Lanza EmailAuthError si no es admin. Devuelve el user si pasa. */
+/**
+ * Lanza EmailAuthError si no es admin O si el entorno activo no tiene la
+ * feature. Devuelve el user si pasa.
+ *
+ * El chequeo de TIER va acá y no sólo en las páginas: las páginas usan
+ * `requireFeature("blaster")`, pero el middleware no toca `/api/*` y estas
+ * rutas son endpoints HTTP invocables directo. Sin esto, un admin de un
+ * entorno `basic` —que no ve Campañas en el sidebar— podía lanzar una campaña
+ * con un fetch. El rol y el tier son dos ejes distintos y hacían falta los dos.
+ */
 export async function requireEmailRole() {
   const session = await auth();
   if (!session?.user) throw new EmailAuthError("No autenticado", 401);
   if (session.user.role !== "admin")
     throw new EmailAuthError("No autorizado", 403);
+
+  const ws = await getActiveWorkspace();
+  if (!ws || !hasFeature(ws.tier, "blaster")) {
+    throw new EmailAuthError(
+      "Este entorno no tiene habilitadas las campañas",
+      403
+    );
+  }
   return session.user;
 }
 

@@ -9,11 +9,37 @@ function getResend() {
 }
 
 /**
- * URL base de la app para construir links absolutos en emails.
- * Prioridad: APP_URL → VERCEL_URL (inyectado por Vercel) → localhost.
+ * URL base de la app para construir links absolutos.
+ *
+ * Es la ÚNICA fuente de la que puede salir un link que viaja en un correo.
+ * No se deriva del request a propósito: los headers `Origin`, `Host` y
+ * `X-Forwarded-Host` los elige quien llama, así que un link de reset armado
+ * con ellos apunta a donde quiera el atacante — firmado con nuestro DKIM.
+ *
+ * Prioridad: APP_URL → VERCEL_URL → localhost (sólo fuera de producción).
+ *
+ * En producción NO hay fallback. `VERCEL_URL` es la URL del DEPLOYMENT y
+ * cambia en cada push: sirve para links internos y arruina las dos cosas que
+ * exigen una URL estable — el `redirect_uri` de Google (que tiene que
+ * coincidir exacto con uno registrado, sin comodines) y cualquier link que
+ * quede guardado en la bandeja de alguien. Y caer a localhost hornearía
+ * `http://localhost:3000` dentro de un correo que le llega a un cliente.
+ *
+ * Los tres fallan en silencio: nadie se entera hasta que alguien de afuera
+ * pregunta por qué el link no funciona. Por eso acá revienta.
  */
 export function getAppUrl(): string {
   if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, "");
+
+  // VERCEL_ENV distingue production de preview; NODE_ENV vale "production" en
+  // los dos, así que no sirve para esto.
+  if (process.env.VERCEL_ENV === "production") {
+    throw new Error(
+      "APP_URL no está configurada en producción. Sin ella los links de los " +
+        "correos apuntarían a la URL del deployment, que cambia en cada push."
+    );
+  }
+
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return "http://localhost:3000";
 }

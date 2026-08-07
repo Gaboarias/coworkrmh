@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CalendarClock, Check, Unlink } from "lucide-react";
+import { CalendarClock, Check, Unlink, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { disconnectCalendar } from "@/lib/actions/calendar";
 import { Button, buttonVariants } from "@/components/ui/Button";
@@ -12,6 +12,13 @@ interface CalendarConnectionsProps {
   configured: boolean;
   connected: boolean;
   email: string | null;
+  /**
+   * Hay conexión guardada pero Google ya no la acepta. Se muestra distinto de
+   * "sin conectar" a propósito: la persona SÍ conectó, y necesita saber que
+   * dejó de funcionar y por qué. Si no, ve un calendario vacío y cree que la
+   * app perdió sus reuniones.
+   */
+  needsReconnect?: boolean;
 }
 
 /**
@@ -23,6 +30,7 @@ export function CalendarConnections({
   configured,
   connected,
   email,
+  needsReconnect = false,
 }: CalendarConnectionsProps) {
   const router = useRouter();
   const params = useSearchParams();
@@ -74,6 +82,41 @@ export function CalendarConnections({
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
               No configurado — falta el setup OAuth en el servidor.
             </p>
+          ) : connected && needsReconnect ? (
+            <div className="mt-3">
+              <p className="inline-flex items-start gap-2 text-[13px] font-medium text-warn">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                <span>
+                  Google dejó de aceptar el acceso
+                  {email ? ` de ${email}` : ""}. Tus reuniones no se están
+                  mostrando.
+                </span>
+              </p>
+              <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+                Pasa cuando revocás el permiso o cambiás la contraseña de
+                Google. También cada 7 días mientras la app siga pendiente de
+                revisión por parte de Google — es un límite de ellos, no un
+                error tuyo.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <a
+                  href="/api/calendar/google/connect"
+                  className={buttonVariants({ size: "sm" })}
+                >
+                  <CalendarClock className="h-3.5 w-3.5" />
+                  Reconectar
+                </a>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDisconnect}
+                  disabled={busy}
+                >
+                  <Unlink className="h-3.5 w-3.5" />
+                  {busy ? "Quitando…" : "Quitar conexión"}
+                </Button>
+              </div>
+            </div>
           ) : connected ? (
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 text-[13px] font-medium text-ink">

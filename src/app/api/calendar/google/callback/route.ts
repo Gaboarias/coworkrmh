@@ -52,6 +52,9 @@ export async function GET(request: Request) {
       accessToken: encryptToken(t.accessToken),
       refreshToken: encryptToken(t.refreshToken),
       expiresAt: new Date(Date.now() + t.expiresIn * 1000),
+      // Reconectar limpia la marca de caída; si no, la conexión nueva nacería
+      // muerta y la UI seguiría pidiendo reconectar para siempre.
+      invalidatedAt: null,
       updatedAt: new Date(),
     };
 

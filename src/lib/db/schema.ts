@@ -436,6 +436,20 @@ export const calendarConnections = pgTable(
     accessToken: text("access_token").notNull(), // cifrado
     refreshToken: text("refresh_token").notNull(), // cifrado
     expiresAt: timestamp("expires_at").notNull(),
+    /**
+     * Cuándo Google dejó de aceptar el refresh token (null = conexión sana).
+     *
+     * La pantalla de consentimiento va en modo Testing, y ahí Google CADUCA
+     * los refresh tokens a los 7 días. Sin esta columna el síntoma es: el
+     * refresh falla, `getUserMeetings` se come el error y devuelve [], y
+     * `/settings` sigue diciendo "conectado". O sea que el calendario se
+     * vaciaría solo una vez por semana sin que nada lo diga.
+     *
+     * Se sella únicamente con `invalid_grant` (revocado o caducado, que es
+     * permanente), nunca con un 5xx transitorio: marcar la conexión muerta por
+     * un problema de red de Google sería peor que el bug original.
+     */
+    invalidatedAt: timestamp("invalidated_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -975,6 +989,15 @@ export const sendStatusEnum = pgEnum("send_status", [
   "bounced",
   "complained",
   "failed",
+  // Se dio de baja entre el lanzamiento y el envío. Estado propio y no
+  // `failed` porque no falló nada: se respetó una baja. Contarlo como error
+  // haría que la métrica de fallos de la campaña mienta.
+  "suppressed",
+  // Retenido porque alguien pausó la campaña. Sacarlo de `queued` es lo que
+  // efectivamente frena el envío: processCampaignBatch sólo levanta `queued`.
+  // Tampoco puede quedar en `sending`, o el reaper lo tomaría por abandonado
+  // y lo reencolaría — justo lo contrario de pausar.
+  "paused",
 ]);
 
 export const suppressionReasonEnum = pgEnum("suppression_reason", [
@@ -1029,6 +1052,11 @@ export const campaignSends = pgTable(
     email: text("email").notNull(),
     mergeData: jsonb("merge_data"), // { nombre, empresa, ... }
     status: sendStatusEnum("status").default("queued").notNull(),
+    // Cuántas veces se reclamó este envío. Lo usa reclaimStalledSends para
+    // dejar de reintentar un envío que se corta siempre en el mismo punto:
+    // si el proceso muere DESPUÉS de que Resend aceptó el correo, reintentar
+    // manda una copia más. Dos copias es tolerable, infinitas no.
+    attempts: integer("attempts").default(0).notNull(),
     providerMessageId: text("provider_message_id"), // id de Resend
     error: text("error"),
     sentAt: timestamp("sent_at", { withTimezone: true }),

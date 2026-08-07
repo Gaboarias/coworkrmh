@@ -43,6 +43,13 @@
       "when": 1785703804406,
       "tag": "0005_motionless_hemingway",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786065859521,
+      "tag": "0006_careless_red_ghost",
+      "breakpoints": true
     }
   ]
 }

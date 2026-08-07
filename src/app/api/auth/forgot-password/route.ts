@@ -3,7 +3,7 @@ import { randomBytes, createHash } from "crypto";
 import { eq, desc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/lib/db/schema";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { sendPasswordResetEmail, getAppUrl } from "@/lib/email";
 import { forgotPasswordBodySchema, parseBody } from "@/lib/validation/auth";
 
 const GENERIC = {
@@ -11,13 +11,19 @@ const GENERIC = {
     "Si existe una cuenta con ese correo, te enviamos un enlace para restablecer la contraseña.",
 };
 
-function baseUrl(req: Request) {
-  const origin = req.headers.get("origin");
-  if (origin) return origin;
-  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
-  const proto = req.headers.get("x-forwarded-proto") ?? "https";
-  return `${proto}://${host}`;
-}
+/**
+ * El link salía de un `baseUrl(req)` que leía `Origin` y, si no venía,
+ * `X-Forwarded-Host`. Los tres headers los elige quien hace el request.
+ *
+ * O sea que un POST a este endpoint con el correo de una víctima y
+ * `Origin: https://atacante.com` hacía que le llegara un correo REAL —salido
+ * de nuestro dominio, firmado con nuestro DKIM, indistinguible de uno
+ * legítimo— con el link de reset apuntando al atacante y un token válido
+ * adentro. Toma de cuenta con un solo request y sin autenticarse.
+ *
+ * Ahora el origen del link es `getAppUrl()`, que sale de la configuración del
+ * servidor y no de nada que mande el cliente.
+ */
 
 export async function POST(req: Request) {
   try {
@@ -62,7 +68,7 @@ export async function POST(req: Request) {
       expiresAt,
     });
 
-    const resetUrl = `${baseUrl(req)}/reset-password?token=${rawToken}`;
+    const resetUrl = `${getAppUrl()}/reset-password?token=${rawToken}`;
     await sendPasswordResetEmail(user.email, resetUrl);
 
     return NextResponse.json(GENERIC);
